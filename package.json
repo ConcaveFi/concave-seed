@@ -1,0 +1,19 @@
+{
+  "name": "merkle-airdrop-starter",
+  "version": "1.0.0",
+  "description": "Quickly bootstrap an ERC20 token airdrop to a Merkle tree of recipients.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anish-Agnihotri/merkle-airdrop-starter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Anish-Agnihotri/merkle-airdrop-starter/issues"
+  },
+  "homepage": "https://github.com/Anish-Agnihotri/merkle-airdrop-starter#readme"
+}

@@ -1,0 +1,19 @@
+# Misc
+.DS_Store
+
+# Contracts
+contracts/cache
+contracts/out
+
+# Generator
+generator/node_modules
+generator/dist
+generator/*.log
+generator/merkle.json
+
+# Frontend
+frontend/.env.local
+frontend/node_modules
+frontend/out
+frontend/.next
+frontend/.vercel
