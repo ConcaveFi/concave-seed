@@ -66,10 +66,8 @@ export default function Claim() {
         ) : (
           // Claim your airdrop
           <div className={styles.card}>
-            <h1>Claim your airdrop.</h1>
-            <p>Your address qualifies for {numTokens} tokens.</p>
             <button onClick={claimWithLoading} disabled={buttonLoading}>
-              {buttonLoading ? "Claiming Airdrop..." : "Claim Airdrop"}
+              {buttonLoading ? "Claiming Airdrop..." : `Claim Airdrop of ${numTokens} pCNV`}
             </button>
           </div>
         )}
