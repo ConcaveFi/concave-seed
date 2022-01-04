@@ -52,8 +52,7 @@ export default function Claim() {
         ) : numTokens == 0 ? (
           // Not part of airdrop
           <div className={styles.card}>
-            <h1>You do not qualify.</h1>
-            <p>Unfortunately, your address does not qualify for the airdrop.</p>
+            <h1>This wallet is not whitelisted</h1>
           </div>
         ) : alreadyClaimed ? (
           // Already claimed airdrop
