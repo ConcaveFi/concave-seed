@@ -13,12 +13,11 @@ import { createContainer } from "unstated-next"; // State management
  * @returns {Buffer} Merkle Tree node
  */
 function generateLeaf(address: string, value: string): Buffer {
-  const parsedAddress = ethers.utils.getAddress(address)
 
   return Buffer.from(
     // Hash in appropriate Merkle format
     ethers.utils
-      .solidityKeccak256(["address", "uint256"], [parsedAddress, value])
+      .solidityKeccak256(["address", "uint256"], [address, value])
       .slice(2),
     "hex"
   );
@@ -37,9 +36,14 @@ const merkleTree = new MerkleTree(
   keccak256,
   { sortPairs: true }
 );
-console.log('MERKLE TREE')
-console.log(merkleTree)
-
+const leaf : Buffer = generateLeaf(
+  ethers.utils.getAddress("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4"),
+  ethers.utils.parseUnits("1".toString(), 18).toString()
+  )
+console.log(leaf)
+console.log(merkleTree.getProof);
+const proof: string[] = merkleTree.getHexProof(leaf);
+console.log(proof)
 function useToken() {
   // Collect global ETH state
   const {
@@ -112,31 +116,29 @@ function useToken() {
       throw new Error("Not Authenticated");
     }
 
-    // // Collect token contract to gather user data
+    // Collect token contract to gather user data
     // const token: ethers.Contract = getContract();
-    // // Get properly formatted address
-    // const formattedAddress: string = ethers.utils.getAddress(address);
-    // // Get tokens for address
-    // const numTokens: string = ethers.utils
-    //   .parseUnits(config.airdrop[address].toString(), config.decimals)
-    //   .toString();
-    //   console.log(config.airdrop)
-    //   console.log(numTokens)
+    // Get properly formatted address
+    const formattedAddress: string = ethers.utils.getAddress(address);
+    console.log('formatted address')
+    console.log(typeof formattedAddress);
+    // Get tokens for address
+    
+    const numTokens: string = ethers.utils.parseUnits("1".toString(), 18).toString()
 
-    // // Generate hashed leaf from address
-    // const leaf: Buffer = generateLeaf(formattedAddress, numTokens);
-    // // Generate airdrop proof
-    // const proof: string[] = merkleTree.getHexProof(leaf);
+    // Generate hashed leaf from address
+    const leaf: Buffer = await generateLeaf(formattedAddress, numTokens);
+    // Generate airdrop proof
+    const proof: string[] = merkleTree.getHexProof(merkleTree.leaves[0]);
+    console.log(proof)
+    try {
 
-    // // Try to claim airdrop and refresh sync status
-    // try {
-
-    //   const tx = await token.claim(formattedAddress, numTokens, proof);
-    //   await tx.wait(1);
-    //   await syncStatus();
-    // } catch (e) {
-    //   console.error(`Error when claiming tokens: ${e}`);
-    // }
+      // const tx = await token.claim(formattedAddress, numTokens, proof);
+      // await tx.wait(1);
+      await syncStatus();
+    } catch (e) {
+      console.error(`Error when claiming tokens: ${e}`);
+    }
   };
 
   /**
