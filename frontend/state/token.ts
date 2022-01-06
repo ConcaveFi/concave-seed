@@ -5,7 +5,7 @@ import keccak256 from "keccak256"; // Keccak256 hashing
 import MerkleTree from "merkletreejs"; // MerkleTree.js
 import { useEffect, useState } from "react"; // React
 import { createContainer } from "unstated-next"; // State management
-
+const bytes32 = require('bytes32');
 /**
  * Generate Merkle Tree leaf from address and value
  * @param {string} address of airdrop claimee
@@ -36,14 +36,8 @@ const merkleTree = new MerkleTree(
   keccak256,
   { sortPairs: true }
 );
-const leaf : Buffer = generateLeaf(
-  ethers.utils.getAddress("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4"),
-  ethers.utils.parseUnits("1".toString(), 18).toString()
-  )
-console.log(leaf)
-console.log(merkleTree.getProof);
-const proof: string[] = merkleTree.getHexProof(leaf);
-console.log(proof)
+console.log('Merkle Tree');
+console.log(merkleTree)
 function useToken() {
   // Collect global ETH state
   const {
@@ -120,21 +114,74 @@ function useToken() {
     // const token: ethers.Contract = getContract();
     // Get properly formatted address
     const formattedAddress: string = ethers.utils.getAddress(address);
-    console.log('formatted address')
-    console.log(typeof formattedAddress);
     // Get tokens for address
-    
-    const numTokens: string = ethers.utils.parseUnits("1".toString(), 18).toString()
+    const indexOfTokens = config.airdrop[formattedAddress];
+    const leafData = config.airdrop[formattedAddress];
+    const leaf =  generateLeaf(
+      ethers.utils.getAddress(address),
+      ethers.utils.parseUnits(indexOfTokens.toString(), config.decimals).toString()
+    )
+    console.log('--LEAF--')
+      console.log(leaf);
+      console.log('----')
+      const indexOfLeaf = merkleTree.getLeafIndex(leaf);
+      console.log(indexOfLeaf)
 
     // Generate hashed leaf from address
-    const leaf: Buffer = await generateLeaf(formattedAddress, numTokens);
     // Generate airdrop proof
-    const proof: string[] = merkleTree.getHexProof(merkleTree.leaves[0]);
-    console.log(proof)
-    try {
+    const merkleRoot: string = merkleTree.getHexRoot();
+//     const stringify = JSON.stringify(proof);
+//     const parse = JSON.parse(stringify);
+//     const buffer = new ArrayBuffer(16);
+// const view = new DataView(buffer);
+// view.setUint32(0, parse[0].data.data);
 
-      // const tx = await token.claim(formattedAddress, numTokens, proof);
-      // await tx.wait(1);
+    const proof: string[] = merkleTree.getProof(leaf);
+    console.log(proof)
+    const bytes32Arr = [];
+    const parse = bytes32Arr.push(bytes32({input: proof[0].data}));
+    console.log(bytes32({input: proof}))
+ // 
+//     const byte32Proof = Uint32Array.from(parse[0].data.data)
+//     console.log('--Proof--')
+//       console.log(byte32Proof);
+//       console.log('----')
+//possibly getHexProo;
+    // const map1 = array1.map(x => x * 2);
+// let proofBuffer = [];
+// proof.map(x => {
+//   console.log('test')
+//   proofBuffer.push(x.data);
+// })
+// var proofConcat = Buffer.concat(proofBuffer);
+
+// console.log(proofConcat)
+    // var z = new Uint32Array(proof);
+
+
+
+//     const parsedLeaf = ethers.utils.formatBytes32String(JSON.stringify(leaf));
+//     console.log('LEAF');
+//     console.log(parsedLeaf);
+
+    try {
+    const getContract = (): ethers.Contract => {
+    return new ethers.Contract(
+      // Contract address
+      "0xf8e81D47203A594245E36C48e151709F0C19fBe8",
+      [
+        // hasClaimed mapping
+        "function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32)",
+        // Claim function
+        "function claim(address to, uint256 amount, bytes32[] calldata proof) external",
+      ],
+      // Get signer from authed provider
+      provider?.getSigner()
+    );
+  };
+    const token: ethers.Contract = getContract("0xf8e81D47203A594245E36C48e151709F0C19fBe8");
+      const tx = await token.claim(formattedAddress, indexOfTokens, proof);
+      await tx.wait(1);
       await syncStatus();
     } catch (e) {
       console.error(`Error when claiming tokens: ${e}`);
@@ -147,10 +194,6 @@ function useToken() {
   const syncStatus = async (): Promise<void> => {
     // Toggle loading
     setDataLoading(true);
-
-    // Force authentication
-    console.log('ADDRESS HERE ')
-    console.log(address)
     if (address) {
       // Collect number of tokens for address
       const tokens = getAirdropAmount(address);
