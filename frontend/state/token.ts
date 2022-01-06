@@ -128,6 +128,12 @@ function useToken() {
     // Generate airdrop proof
     const merkleRoot: string = merkleTree.getHexRoot();
     const proof: string[] = merkleTree.getHexProof(leaf);
+    const getHexLeaf: Buffer = merkleTree.getHexLeaves();
+    const indexedHexLeaf: Buffer = getHexLeaf[indexOfLeaf];
+    console.log(`Proof: ${proof}`)
+    console.log(`Merkle Root: ${merkleRoot}`);
+    console.log(indexedHexLeaf)
+
     try {
     const getContract = (): ethers.Contract => {
     return new ethers.Contract(
