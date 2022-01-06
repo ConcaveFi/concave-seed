@@ -121,49 +121,13 @@ function useToken() {
       ethers.utils.getAddress(address),
       ethers.utils.parseUnits(indexOfTokens.toString(), config.decimals).toString()
     )
-    console.log('--LEAF--')
-      console.log(leaf);
-      console.log('----')
       const indexOfLeaf = merkleTree.getLeafIndex(leaf);
-      console.log(indexOfLeaf)
+
 
     // Generate hashed leaf from address
     // Generate airdrop proof
     const merkleRoot: string = merkleTree.getHexRoot();
-//     const stringify = JSON.stringify(proof);
-//     const parse = JSON.parse(stringify);
-//     const buffer = new ArrayBuffer(16);
-// const view = new DataView(buffer);
-// view.setUint32(0, parse[0].data.data);
-
-    const proof: string[] = merkleTree.getProof(leaf);
-    console.log(proof)
-    const bytes32Arr = [];
-    const parse = bytes32Arr.push(bytes32({input: proof[0].data}));
-    console.log(bytes32({input: proof}))
- // 
-//     const byte32Proof = Uint32Array.from(parse[0].data.data)
-//     console.log('--Proof--')
-//       console.log(byte32Proof);
-//       console.log('----')
-//possibly getHexProo;
-    // const map1 = array1.map(x => x * 2);
-// let proofBuffer = [];
-// proof.map(x => {
-//   console.log('test')
-//   proofBuffer.push(x.data);
-// })
-// var proofConcat = Buffer.concat(proofBuffer);
-
-// console.log(proofConcat)
-    // var z = new Uint32Array(proof);
-
-
-
-//     const parsedLeaf = ethers.utils.formatBytes32String(JSON.stringify(leaf));
-//     console.log('LEAF');
-//     console.log(parsedLeaf);
-
+    const proof: string[] = merkleTree.getHexProof(leaf);
     try {
     const getContract = (): ethers.Contract => {
     return new ethers.Contract(
@@ -180,7 +144,8 @@ function useToken() {
     );
   };
     const token: ethers.Contract = getContract("0xf8e81D47203A594245E36C48e151709F0C19fBe8");
-      const tx = await token.claim(formattedAddress, indexOfTokens, proof);
+    console.log(token)  
+    const tx = await token.claim(formattedAddress, indexOfTokens, proof);
       await tx.wait(1);
       await syncStatus();
     } catch (e) {
