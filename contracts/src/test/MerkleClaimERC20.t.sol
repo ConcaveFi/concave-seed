@@ -206,6 +206,31 @@ contract Tests is MerkleClaimERC20Test {
             aliceProof
         );
     }
+    /// @notice Let Bob claim on behalf of Alice
+    function test_bob_claim_for_alice() public {
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        // Collect Alice balance of tokens before claim
+        uint256 alicePreBalance = ALICE.tokenBalance();
+
+        // Claim tokens
+        BOB.claim(
+            // Claiming for Alice
+            address(ALICE),
+            100e18,
+            100e18,
+            FRAX,
+            aliceProof
+        );
+
+        // Collect Alice balance of tokens after claim
+        uint256 alicePostBalance = ALICE.tokenBalance();
+
+        // Assert Alice balance before + 100 tokens = after balance
+        assertEq(alicePostBalance, alicePreBalance + 100e18);
+    }
   // /// @notice Allow Alice to claim 100e18 tokens
   // function testAliceClaim() public {
   //   // Setup correct proof for Alice

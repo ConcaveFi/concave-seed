@@ -66,7 +66,9 @@ contract MerkleClaimERC20Test is DSTest {
     vm.stopPrank();
     vm.startPrank(address(ALICE));
     IERC20(_DAI).approve(address(TOKEN),3000e18);
-
-    emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
+    vm.stopPrank();
+    vm.startPrank(address(BOB));
+    IERC20(_FRAX).approve(address(TOKEN),3000e18);
+    // emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
   }
 }
