@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 /// ============ Imports ============
 
 import { MerkleClaimERC20Test } from "./utils/MerkleClaimERC20Test.sol"; // Test scaffolding
+import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 
 /// @title Tests
 /// @notice MerkleClaimERC20 tests
@@ -12,6 +13,7 @@ contract Tests is MerkleClaimERC20Test {
 
     address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    uint256 constant ratio = 3;
 
     function testAliceClaim() public {
         // Setup correct proof for Alice
@@ -20,23 +22,37 @@ contract Tests is MerkleClaimERC20Test {
 
         // Collect Alice balance of tokens before claim
         uint256 alicePreBalance = ALICE.tokenBalance();
+        uint256 aliceDAIPreBalance = ALICE.stableBalance();
+
+        uint256 maxAmount = 100e18;
+        uint256 amountToClaim = 10e18;
 
         // Claim tokens
         ALICE.claim(
-        // Claiming for Alice
-        address(ALICE),
-        // 100 tokens
-        100e18,
-        DAI,
-        // With valid proof
-        aliceProof
+            address(ALICE),
+            amountToClaim,
+            maxAmount,
+            DAI,
+            aliceProof
         );
 
         // Collect Alice balance of tokens after claim
         uint256 alicePostBalance = ALICE.tokenBalance();
 
         // Assert Alice balance before + 100 tokens = after balance
-        assertEq(alicePostBalance, alicePreBalance + 100e18);
+        // assertEq(alicePostBalance, alicePreBalance + amountToClaim);
+        require(
+            alicePostBalance == alicePreBalance + amountToClaim,
+            "TOKEN_BALANCE_ERROR"
+        );
+        require(
+            ALICE.stableBalance() == aliceDAIPreBalance - amountToClaim*ratio,
+            "USER_DAI_BALANCE_ERROR"
+        );
+        require(
+            IERC20(DAI).balanceOf(_treasury) == amountToClaim*ratio,
+            "TOKEN_DAI_BALANCE_ERROR"
+        );
     }
   // /// @notice Allow Alice to claim 100e18 tokens
   // function testAliceClaim() public {

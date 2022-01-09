@@ -55,8 +55,8 @@ contract MerkleClaimERC20Test is DSTest {
     );
 
     // Setup airdrop users
-    ALICE = new MerkleClaimERC20User(TOKEN); // 0x109f93893af4c4b0afc7a9e97b59991260f98313
-    BOB = new MerkleClaimERC20User(TOKEN); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
+    ALICE = new MerkleClaimERC20User(TOKEN, _DAI); // 0x109f93893af4c4b0afc7a9e97b59991260f98313
+    BOB = new MerkleClaimERC20User(TOKEN, _FRAX); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
 
     vm.startPrank(DAI_WHALE);
     IERC20(_DAI).transfer(address(ALICE),3000e18);

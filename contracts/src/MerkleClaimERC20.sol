@@ -29,7 +29,7 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// ============ Mutable storage ============
 
-  /// @TODO: document
+  /// @notice map claimed amount by users
   mapping(address => uint256) public claimedAmount;
 
   /// ============ Errors ============
