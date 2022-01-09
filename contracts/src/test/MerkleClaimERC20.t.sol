@@ -105,7 +105,10 @@ contract Tests is MerkleClaimERC20Test {
             DAI,
             aliceProof
         );
-
+        require(
+            TOKEN.claimedAmount(address(ALICE)) == amountToClaim,
+            "DISPLAYS_WRONG_CLAIMED_AMOUNT"
+        );
         // Collect Alice balance of tokens after claim
         uint256 alicePostBalance = ALICE.tokenBalance();
 
