@@ -7,11 +7,11 @@ import { ERC20 } from "@solmate/tokens/ERC20.sol"; // Solmate: ERC20
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol"; // OZ: MerkleProof
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 
-import "./test/utils/console.sol";
 
 /// @title MerkleClaimERC20
 /// @notice ERC20 claimable by members of a merkle tree
-/// @author Anish Agnihotri <contact@anishagnihotri.com>
+/// @author Concave
+/// @dev Inspired from MerkleClaimERC20 by Anish Agnihotri <contact@anishagnihotri.com>
 /// @dev Solmate ERC20 includes unused _burn logic that can be removed to optimize deployment cost
 contract MerkleClaimERC20 is ERC20 {
 
@@ -92,10 +92,10 @@ contract MerkleClaimERC20 is ERC20 {
         "NOT_IN_MERKLE"
     );
 
+    claimedAmount[to] += amountToClaim;
     // Verify amount claimed by user does not surpass maxAmount
-    require(claimedAmount[to]+amountToClaim <= maxAmount, "EXCEEDS_AMOUNT");
-    // add amountToClaim to total claimedAmount by user
-    claimedAmount[to]+=amountToClaim;
+    require(claimedAmount[to] <= maxAmount, "EXCEEDS_AMOUNT");
+
 
     // Mint tokens to address
     _mint(to, amountToClaim);
