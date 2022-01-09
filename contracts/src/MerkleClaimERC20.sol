@@ -23,7 +23,6 @@ contract MerkleClaimERC20 is ERC20 {
   uint256 public constant ratio = 3;
   /// @notice treasury address to which deposited tokens are sent
   address public immutable treasury;
-
   /// @notice ERC20-claimee inclusion root
   bytes32 public immutable merkleRoot;
 
@@ -32,14 +31,6 @@ contract MerkleClaimERC20 is ERC20 {
   /// @notice map claimed amount by users
   mapping(address => uint256) public claimedAmount;
 
-  /// ============ Errors ============
-
-  /// @notice Thrown if address has already claimed
-  error AlreadyClaimed();
-  /// @notice Thrown if address/amount are not part of Merkle tree
-  error NotInMerkle();
-  /// @notice Thrown in deposit token is not approved
-  error NotValidDepositToken();
 
   /// ============ Constructor ============
 
@@ -75,14 +66,12 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// ============ Functions ============
 
-
-
-  /// @notice Allows claiming tokens if address is part of merkle tree
-  /// @param to address of claimee
-  /// @param amountToClaim amount of tokens claimee wishes to claim
-  /// @param maxAmount max amount of tokens claimee can claim
-  /// @param token address of token user wishes to deposit
-  /// @param proof merkle proof to prove address and amount are in tree
+  /// @notice Allows claiming tokens if address+amount is part of merkle tree
+  /// @param to             address of claimee
+  /// @param amountToClaim  amount of tokens claimee wishes to claim
+  /// @param maxAmount      max amount of tokens claimee can claim
+  /// @param token          address of token user wishes to deposit
+  /// @param proof          merkle proof to prove address and amount are in tree
   function claim(
       address to,
       uint256 amountToClaim,
@@ -90,12 +79,18 @@ contract MerkleClaimERC20 is ERC20 {
       address token,
       bytes32[] calldata proof
   ) external {
-    // Throw if deposit token isn't approved (i.e isn't FRAX or DAI)
-    if (!approvedDeposits[token]) revert NotValidDepositToken();
+    // Require token to be approved (i.e isn't FRAX or DAI)
+    require(approvedDeposits[token],"NOT_APPROVED_TOKEN");
 
-    // Verify merkle proof, or revert if not in tree
-    bytes32 leaf = keccak256(abi.encodePacked(to, maxAmount));
-    require(MerkleProof.verify(proof, merkleRoot, leaf), "NOT_IN_MERKLE");
+    // Require merkle proof with `to` and `maxAmount` to be successfully verified
+    require(
+        MerkleProof.verify(
+            proof,
+            merkleRoot,
+            keccak256(abi.encodePacked(to, maxAmount))
+        ),
+        "NOT_IN_MERKLE"
+    );
 
     // Verify amount claimed by user does not surpass maxAmount
     require(claimedAmount[to]+amountToClaim <= maxAmount, "EXCEEDS_AMOUNT");
