@@ -9,6 +9,30 @@ import { MerkleClaimERC20Test } from "./utils/MerkleClaimERC20Test.sol"; // Test
 /// @notice MerkleClaimERC20 tests
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
 contract Tests is MerkleClaimERC20Test {
+    function testAliceClaim() public {
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        // Collect Alice balance of tokens before claim
+        uint256 alicePreBalance = ALICE.tokenBalance();
+
+        // Claim tokens
+        ALICE.claim(
+        // Claiming for Alice
+        address(ALICE),
+        // 100 tokens
+        100e18,
+        // With valid proof
+        aliceProof
+        );
+
+        // Collect Alice balance of tokens after claim
+        uint256 alicePostBalance = ALICE.tokenBalance();
+
+        // Assert Alice balance before + 100 tokens = after balance
+        assertEq(alicePostBalance, alicePreBalance + 100e18);
+    }
   // /// @notice Allow Alice to claim 100e18 tokens
   // function testAliceClaim() public {
   //   // Setup correct proof for Alice
