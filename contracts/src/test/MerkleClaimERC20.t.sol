@@ -58,7 +58,7 @@ contract Tests is MerkleClaimERC20Test {
     }
 
     /// @notice Allow Alice to claim maxAmount in multiple claims
-    function test_alice_claim_max_amount() public {
+    function test_alice_claim_max_amount_in_two_calls() public {
         // Setup correct proof for Alice
         bytes32[] memory aliceProof = new bytes32[](1);
         aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
@@ -109,7 +109,7 @@ contract Tests is MerkleClaimERC20Test {
         );
 
         // Collect Alice balance of tokens after claim
-        uint256 alicePostBalance = ALICE.tokenBalance();
+        alicePostBalance = ALICE.tokenBalance();
 
         // Assert Alice balance before + 100 tokens = after balance
         // assertEq(alicePostBalance, alicePreBalance + amountToClaim);
