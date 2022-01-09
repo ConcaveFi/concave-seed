@@ -59,9 +59,14 @@ contract MerkleClaimERC20Test is DSTest {
     BOB = new MerkleClaimERC20User(TOKEN); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
 
     vm.startPrank(DAI_WHALE);
-    IERC20(_DAI).transfer(address(ALICE),1*10**18);
+    IERC20(_DAI).transfer(address(ALICE),3000e18);
     vm.stopPrank();
     vm.startPrank(FRAX_WHALE);
-    IERC20(_FRAX).transfer(address(BOB),1*10**18);
+    IERC20(_FRAX).transfer(address(BOB),3000e18);
+    vm.stopPrank();
+    vm.startPrank(address(ALICE));
+    IERC20(_DAI).approve(address(TOKEN),3000e18);
+
+    emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
   }
 }

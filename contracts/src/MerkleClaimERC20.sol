@@ -7,6 +7,8 @@ import { ERC20 } from "@solmate/tokens/ERC20.sol"; // Solmate: ERC20
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol"; // OZ: MerkleProof
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 
+import "./test/utils/console.sol";
+
 /// @title MerkleClaimERC20
 /// @notice ERC20 claimable by members of a merkle tree
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
@@ -29,6 +31,9 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// @notice Mapping of addresses who have claimed tokens
   mapping(address => bool) public hasClaimed;
+
+  /// @TODO: remove hasClaimed, add commenting to claimedAmount;
+  mapping(address => uint256) public claimedAmount;
 
   /// ============ Errors ============
 
@@ -73,14 +78,16 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// ============ Functions ============
 
+
+
   /// @notice Allows claiming tokens if address is part of merkle tree
   /// @param to address of claimee
   /// @param amount of tokens owed to claimee
   /// @param token address of token user wishes to deposit
   /// @param proof merkle proof to prove address and amount are in tree
-  function claim(address to, uint256 amount, address token, bytes32[] calldata proof) external {
+  function claim(address to, uint256 desiredAmount, uint256 amount, address token, bytes32[] calldata proof) external {
     // Throw if address has already claimed tokens
-    if (hasClaimed[to]) revert AlreadyClaimed();
+    // if (hasClaimed[to]) revert AlreadyClaimed();
     // Throw if deposit token isn't approved (i.e isn't FRAX or DAI)
     if (!approvedDeposits[token]) revert NotValidDepositToken();
 
@@ -90,13 +97,15 @@ contract MerkleClaimERC20 is ERC20 {
     if (!isValidLeaf) revert NotInMerkle();
 
     // Set address to claimed
-    hasClaimed[to] = true;
+    // hasClaimed[to] = true;
+    require(claimedAmount[to]+desiredAmount <= amount, "EXCEEDS_AMOUNT");
+    claimedAmount[to]+=desiredAmount;
 
     // Mint tokens to address
-    _mint(to, amount);
+    _mint(to, desiredAmount);
     // Transfer amount*ratio of token to treasury address
-    IERC20(token).transferFrom(msg.sender,treasury,amount*ratio);
+    IERC20(token).transferFrom(msg.sender,treasury,desiredAmount*ratio);
     // Emit claim event
-    emit Claim(to, amount);
+    emit Claim(to, desiredAmount);
   }
 }

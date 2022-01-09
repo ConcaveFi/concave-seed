@@ -9,6 +9,10 @@ import { MerkleClaimERC20Test } from "./utils/MerkleClaimERC20Test.sol"; // Test
 /// @notice MerkleClaimERC20 tests
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
 contract Tests is MerkleClaimERC20Test {
+
+    address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
+    address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+
     function testAliceClaim() public {
         // Setup correct proof for Alice
         bytes32[] memory aliceProof = new bytes32[](1);
@@ -23,6 +27,7 @@ contract Tests is MerkleClaimERC20Test {
         address(ALICE),
         // 100 tokens
         100e18,
+        DAI,
         // With valid proof
         aliceProof
         );
