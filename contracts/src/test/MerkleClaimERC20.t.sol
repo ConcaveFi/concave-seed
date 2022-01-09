@@ -15,7 +15,8 @@ contract Tests is MerkleClaimERC20Test {
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     uint256 constant ratio = 3;
 
-    function testAliceClaim() public {
+    /// @notice Allow Alice to claim 100e18 tokens
+    function test_alice_claim_max_amount() public {
         // Setup correct proof for Alice
         bytes32[] memory aliceProof = new bytes32[](1);
         aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
@@ -25,7 +26,8 @@ contract Tests is MerkleClaimERC20Test {
         uint256 aliceDAIPreBalance = ALICE.stableBalance();
 
         uint256 maxAmount = 100e18;
-        uint256 amountToClaim = 10e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 amountToClaim = maxAmount;
 
         // Claim tokens
         ALICE.claim(
