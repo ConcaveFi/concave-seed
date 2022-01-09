@@ -35,8 +35,10 @@ contract MerkleClaimERC20User {
   /// @notice Allows user to claim tokens from contract
   /// @param to address of claimee
   /// @param amount of tokens owed to claimee
+  /// @param token address of token user wishes to deposit
   /// @param proof merkle proof to prove address and amount are in tree
-  function claim(address to, uint256 amount, bytes32[] calldata proof) public {
-    TOKEN.claim(to, amount, proof);
+  function claim(address to, uint256 amount, address token, bytes32[] calldata proof) public {
+    TOKEN.claim(to, amount, token, proof);
   }
+
 }
