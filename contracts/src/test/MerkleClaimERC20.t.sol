@@ -151,24 +151,24 @@ contract Tests is MerkleClaimERC20Test {
             DAI,
             aliceProof
         );
+    }
+    /// @notice Prevent Alice from claiming with invalid proof
+    function test_alice_revert_invalid_proof() public {
+        vm.expectRevert("NOT_IN_MERKLE");
+        // Setup incorrect proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xc11ae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
 
-        // // Collect Alice balance of tokens after claim
-        // uint256 alicePostBalance = ALICE.tokenBalance();
-        //
-        // // Assert Alice balance before + 100 tokens = after balance
-        // // assertEq(alicePostBalance, alicePreBalance + amountToClaim);
-        // require(
-        //     alicePostBalance == alicePreBalance + amountToClaim,
-        //     "TOKEN_BALANCE_ERROR"
-        // );
-        // require(
-        //     ALICE.stableBalance() == aliceDAIPreBalance - amountToClaim*ratio,
-        //     "USER_DAI_BALANCE_ERROR"
-        // );
-        // require(
-        //     IERC20(DAI).balanceOf(_treasury) == amountToClaim*ratio,
-        //     "TOKEN_DAI_BALANCE_ERROR"
-        // );
+        uint256 maxAmount = 100e18;
+        uint256 amountToClaim = 100e18;
+
+        ALICE.claim(
+            address(ALICE),
+            amountToClaim,
+            maxAmount,
+            DAI,
+            aliceProof
+        );
     }
   // /// @notice Allow Alice to claim 100e18 tokens
   // function testAliceClaim() public {

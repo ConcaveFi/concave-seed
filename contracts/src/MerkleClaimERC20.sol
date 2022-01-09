@@ -95,8 +95,7 @@ contract MerkleClaimERC20 is ERC20 {
 
     // Verify merkle proof, or revert if not in tree
     bytes32 leaf = keccak256(abi.encodePacked(to, maxAmount));
-    bool isValidLeaf = MerkleProof.verify(proof, merkleRoot, leaf);
-    if (!isValidLeaf) revert NotInMerkle();
+    require(MerkleProof.verify(proof, merkleRoot, leaf), "NOT_IN_MERKLE");
 
     // Verify amount claimed by user does not surpass maxAmount
     require(claimedAmount[to]+amountToClaim <= maxAmount, "EXCEEDS_AMOUNT");
