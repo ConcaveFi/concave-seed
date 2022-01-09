@@ -17,8 +17,11 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// ============ Immutable storage ============
 
-  /// @notice Mapping of addresses of valid deposit tokens
-  mapping(address => bool) public approvedDeposits;
+
+  /// @notice FRAX & DAI are only valid tokens
+  address public immutable FRAX;
+  address public immutable DAI;
+
   /// @notice ratio of deposits to claimed tokens (i.e: to claim 1 token, must deposit 3*1 of approvedDeposits)
   uint256 public constant ratio = 3;
   /// @notice treasury address to which deposited tokens are sent
@@ -52,8 +55,8 @@ contract MerkleClaimERC20 is ERC20 {
     address _treasury
   ) ERC20(_name, _symbol, _decimals) {
     merkleRoot = _merkleRoot; // Update root
-    approvedDeposits[_FRAX] = true; // set FRAX as an approvedDeposit
-    approvedDeposits[_DAI] = true; // set DAI as an approvedDeposit
+    FRAX = _FRAX;
+    DAI = _DAI;
     treasury = _treasury; // set treasury address
   }
 
@@ -79,8 +82,8 @@ contract MerkleClaimERC20 is ERC20 {
       address token,
       bytes32[] calldata proof
   ) external {
-    // Require token to be approved (i.e isn't FRAX or DAI)
-    require(approvedDeposits[token],"NOT_APPROVED_TOKEN");
+    // Require token to be DAI or FRAX
+    require(token == DAI || token == FRAX, "NOT_APPROVED_TOKEN");
 
     // Require merkle proof with `to` and `maxAmount` to be successfully verified
     require(
