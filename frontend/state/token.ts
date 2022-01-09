@@ -39,10 +39,6 @@ function useToken() {
   const [numTokens, setNumTokens] = useState<number>(0); // Number of claimable tokens
   const [alreadyClaimed, setAlreadyClaimed] = useState<boolean>(false); // Claim status
 
-  /**
-   * Get contract
-   * @returns {ethers.Contract} signer-initialized contract
-   */
   const getContract = (address: string, abi: string[]): ethers.Contract => {
     return new ethers.Contract(
       address,
@@ -65,15 +61,13 @@ function useToken() {
   };
 
   const claimAirdrop = async (): Promise<void> => {
-
     if (!address) {
       throw new Error("Not Authenticated");
     }
-
     const formattedAddress: string = ethers.utils.getAddress(address);
     const indexOfTokens = config.airdrop[formattedAddress];
     const leafData = config.airdrop[formattedAddress];
-    const leaf =  generateLeaf(
+    const leaf = generateLeaf(
       ethers.utils.getAddress(address),
       ethers.utils.parseUnits(indexOfTokens.toString(), config.decimals).toString()
     )
@@ -84,9 +78,8 @@ function useToken() {
     const indexedHexLeaf: Buffer = getHexLeaf[indexOfLeaf];
     console.log(`Proof: ${proof}`)
     console.log(`Merkle Root: ${merkleRoot}`);
-
     try {
-    const token: ethers.Contract = getContract("ABI", ["0xf8e81D47203A594245E36C48e151709F0C19fBe8"]);
+    const token: ethers.Contract = getContract("Address", ["0xf8e81D47203A594245E36C48e151709F0C19fBe8"]);
     const tx = await token.claim(formattedAddress, indexOfTokens, proof);
       await tx.wait(1);
       await syncStatus();
@@ -101,17 +94,20 @@ function useToken() {
   const syncStatus = async (): Promise<void> => {
     setDataLoading(true);
     if (address) {
+      // SWITCH ADDRESS TO PRODUCTION FOR 99
+      // const pCNV: ethers.Contract = getContract("0xf8e81D47203A594245E36C48e151709F0C19fBe8", [abi]);
+      // const pCNVbalanceOfAddress = pCNV.balanceOf(address);
+
+      // Set amount still eligible to claim
       const maxAmtForAddress = getAirdropAmount(address);
-      // SWITCH ADDRESS TO PRODUCTION FOR 135
-      // const token: ethers.Contract = getContract( pCNVAbi,"0xf8e81D47203A594245E36C48e151709F0C19fBe8");
-      // const pCNVbalance = token.balanceOf(address);
-      //Set amount still eligible to claim = 
-      // claimable = maxTokens - pCNVBalance
-      // setNumTokens(claimable);
+
+      // const claimable = maxAmtForAddress - pCNVBalanceOfAddress
+      // setNumTokens(claimable); (change line 104 to this)
       setNumTokens(maxAmtForAddress);
 
-      // if (pCNVBalance === maxTokens) {
-      //   setAlreadyClaimed(true);
+      // If current user
+      // if (pCNVBalance < maxAmtForAddress) {
+      //   setAlreadyClaimed(false);
       // }
     }
     setDataLoading(false);
@@ -121,6 +117,7 @@ function useToken() {
   useEffect(() => {
     syncStatus();
   }, [address]);
+
   return {
     dataLoading,
     numTokens,
