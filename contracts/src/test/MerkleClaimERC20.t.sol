@@ -170,6 +170,42 @@ contract Tests is MerkleClaimERC20Test {
             aliceProof
         );
     }
+    /// @notice Prevent Alice from claiming with invalid amount
+    function test_alice_revert_invalid_max_amount() public {
+        vm.expectRevert("NOT_IN_MERKLE");
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        uint256 maxAmount = 101e18;
+        uint256 amountToClaim = 100e18;
+
+        // Claim tokens
+        ALICE.claim(
+            address(ALICE),
+            amountToClaim,
+            maxAmount,
+            DAI,
+            aliceProof
+        );
+    }
+    /// @notice Prevent Bob from claiming
+    function test_prevent_bob_from_claiming() public {
+        vm.expectRevert("NOT_IN_MERKLE");
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        // Claim tokens
+        BOB.claim(
+            // Claiming for Bob
+            address(BOB),
+            100e18,
+            100e18,
+            DAI,
+            aliceProof
+        );
+    }
   // /// @notice Allow Alice to claim 100e18 tokens
   // function testAliceClaim() public {
   //   // Setup correct proof for Alice
