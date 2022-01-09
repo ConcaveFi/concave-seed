@@ -38,6 +38,7 @@ function useToken() {
   const [dataLoading, setDataLoading] = useState<boolean>(true); // Data retrieval status
   const [numTokens, setNumTokens] = useState<number>(0); // Number of claimable tokens
   const [alreadyClaimed, setAlreadyClaimed] = useState<boolean>(false); // Claim status
+  const [claimedAmount, setClaimedAmount] = useState<number>(0); // Claim status
 
   const getContract = (address: string, abi: string[]): ethers.Contract => {
     return new ethers.Contract(
@@ -76,7 +77,7 @@ function useToken() {
     const proof: string[] = merkleTree.getHexProof(leaf);
     const getHexLeaf: Buffer = merkleTree.getHexLeaves();
     const indexedHexLeaf: Buffer = getHexLeaf[indexOfLeaf];
-    console.log(`Proof: ${proof}`)
+    console.log(`Proof: ${proof}`);
     console.log(`Merkle Root: ${merkleRoot}`);
     try {
     const token: ethers.Contract = getContract("Address", ["0xf8e81D47203A594245E36C48e151709F0C19fBe8"]);
@@ -88,26 +89,21 @@ function useToken() {
     }
   };
 
-  /**
-   * After authentication, update number of tokens to claim + claim status
-   */
   const syncStatus = async (): Promise<void> => {
     setDataLoading(true);
     if (address) {
-      // SWITCH ADDRESS TO PRODUCTION FOR 99
       // const pCNV: ethers.Contract = getContract("0xf8e81D47203A594245E36C48e151709F0C19fBe8", [abi]);
+      // const merkle: ethers.Contract = getContract("0xf8e81D47203A594245E36C48e151709F0C19fBe8", [abi]);
       // const pCNVbalanceOfAddress = pCNV.balanceOf(address);
-
+      // const claimedAmount = merkle.claimed(address);
       // Set amount still eligible to claim
-      const maxAmtForAddress = getAirdropAmount(address);
-
-      // const claimable = maxAmtForAddress - pCNVBalanceOfAddress
+      const maxAmountForAddress = getAirdropAmount(address);
       // setNumTokens(claimable); (change line 104 to this)
-      setNumTokens(maxAmtForAddress);
-
+      setNumTokens(maxAmountForAddress);
       // If current user
-      // if (pCNVBalance < maxAmtForAddress) {
+      // if (pCNVBalanceOfAddress < maxAmountForAddress) {
       //   setAlreadyClaimed(false);
+      //   setClaimedAmount(claimedAmount)
       // }
     }
     setDataLoading(false);
@@ -123,7 +119,8 @@ function useToken() {
     numTokens,
     alreadyClaimed,
     claimAirdrop,
-    address
+    address,
+    claimedAmount
   };
 }
 

@@ -14,13 +14,15 @@ export default function Claim() {
     numTokens,
     alreadyClaimed,
     claimAirdrop,
+    claimedAmount
   }: {
     dataLoading: boolean;
-    numTokens: number;
     alreadyClaimed: boolean;
+    numTokens: number;
+    claimedAmount: number;
     claimAirdrop: Function;
   } = token.useContainer();
-  console.log(numTokens)
+  console.log(numTokens);
   // Local button loading
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
 
@@ -66,7 +68,7 @@ export default function Claim() {
           // Claim your airdrop
           <div className={styles.card}>
             <button onClick={claimWithLoading} disabled={buttonLoading}>
-              {buttonLoading ? "Claiming Airdrop..." : `Claim Airdrop of ${numTokens} pCNV`}
+              {buttonLoading ? "Claiming Airdrop..." : `Max pCNV Claimable: ${numTokens}: Total pCNV Claimed: ${claimedAmount}`}
             </button>
           </div>
         )}
