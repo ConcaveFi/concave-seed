@@ -29,10 +29,7 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// ============ Mutable storage ============
 
-  /// @notice Mapping of addresses who have claimed tokens
-  mapping(address => bool) public hasClaimed;
-
-  /// @TODO: remove hasClaimed, add commenting to claimedAmount;
+  /// @TODO: document
   mapping(address => uint256) public claimedAmount;
 
   /// ============ Errors ============
@@ -82,30 +79,35 @@ contract MerkleClaimERC20 is ERC20 {
 
   /// @notice Allows claiming tokens if address is part of merkle tree
   /// @param to address of claimee
-  /// @param amount of tokens owed to claimee
+  /// @param amountToClaim amount of tokens claimee wishes to claim
+  /// @param maxAmount max amount of tokens claimee can claim
   /// @param token address of token user wishes to deposit
   /// @param proof merkle proof to prove address and amount are in tree
-  function claim(address to, uint256 desiredAmount, uint256 amount, address token, bytes32[] calldata proof) external {
-    // Throw if address has already claimed tokens
-    // if (hasClaimed[to]) revert AlreadyClaimed();
+  function claim(
+      address to,
+      uint256 amountToClaim,
+      uint256 maxAmount,
+      address token,
+      bytes32[] calldata proof
+  ) external {
     // Throw if deposit token isn't approved (i.e isn't FRAX or DAI)
     if (!approvedDeposits[token]) revert NotValidDepositToken();
 
     // Verify merkle proof, or revert if not in tree
-    bytes32 leaf = keccak256(abi.encodePacked(to, amount));
+    bytes32 leaf = keccak256(abi.encodePacked(to, maxAmount));
     bool isValidLeaf = MerkleProof.verify(proof, merkleRoot, leaf);
     if (!isValidLeaf) revert NotInMerkle();
 
-    // Set address to claimed
-    // hasClaimed[to] = true;
-    require(claimedAmount[to]+desiredAmount <= amount, "EXCEEDS_AMOUNT");
-    claimedAmount[to]+=desiredAmount;
+    // Verify amount claimed by user does not surpass maxAmount
+    require(claimedAmount[to]+amountToClaim <= maxAmount, "EXCEEDS_AMOUNT");
+    // add amountToClaim to total claimedAmount by user
+    claimedAmount[to]+=amountToClaim;
 
     // Mint tokens to address
-    _mint(to, desiredAmount);
-    // Transfer amount*ratio of token to treasury address
-    IERC20(token).transferFrom(msg.sender,treasury,desiredAmount*ratio);
+    _mint(to, amountToClaim);
+    // Transfer amountToClaim*ratio of token to treasury address
+    IERC20(token).transferFrom(msg.sender, treasury, amountToClaim*ratio);
     // Emit claim event
-    emit Claim(to, desiredAmount);
+    emit Claim(to, amountToClaim);
   }
 }
