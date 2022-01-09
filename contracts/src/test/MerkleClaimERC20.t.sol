@@ -15,7 +15,7 @@ contract Tests is MerkleClaimERC20Test {
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     uint256 constant ratio = 3;
 
-    /// @notice Allow Alice to claim 100e18 tokens
+    /// @notice Allow Alice to claim maxAmount tokens
     function test_alice_claim_max_amount() public {
         // Setup correct proof for Alice
         bytes32[] memory aliceProof = new bytes32[](1);
@@ -53,6 +53,76 @@ contract Tests is MerkleClaimERC20Test {
         );
         require(
             IERC20(DAI).balanceOf(_treasury) == amountToClaim*ratio,
+            "TOKEN_DAI_BALANCE_ERROR"
+        );
+    }
+
+    /// @notice Allow Alice to claim maxAmount in multiple claims
+    function test_alice_claim_max_amount() public {
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        // Collect Alice balance of tokens before claim
+        uint256 alicePreBalance = ALICE.tokenBalance();
+        uint256 aliceDAIPreBalance = ALICE.stableBalance();
+
+        uint256 maxAmount = 100e18;
+        uint256 amountToClaim = 10e18;
+
+        // Claim tokens
+        ALICE.claim(
+            address(ALICE),
+            amountToClaim,
+            maxAmount,
+            DAI,
+            aliceProof
+        );
+
+        // Collect Alice balance of tokens after claim
+        uint256 alicePostBalance = ALICE.tokenBalance();
+
+        // Assert Alice balance before + 100 tokens = after balance
+        // assertEq(alicePostBalance, alicePreBalance + amountToClaim);
+        require(
+            alicePostBalance == alicePreBalance + amountToClaim,
+            "TOKEN_BALANCE_ERROR"
+        );
+        require(
+            ALICE.stableBalance() == aliceDAIPreBalance - amountToClaim*ratio,
+            "USER_DAI_BALANCE_ERROR"
+        );
+        require(
+            IERC20(DAI).balanceOf(_treasury) == amountToClaim*ratio,
+            "TOKEN_DAI_BALANCE_ERROR"
+        );
+
+        uint256 amountToClaim2 = 90e18;
+
+        // claim next amount
+        ALICE.claim(
+            address(ALICE),
+            amountToClaim2,
+            maxAmount,
+            DAI,
+            aliceProof
+        );
+
+        // Collect Alice balance of tokens after claim
+        uint256 alicePostBalance = ALICE.tokenBalance();
+
+        // Assert Alice balance before + 100 tokens = after balance
+        // assertEq(alicePostBalance, alicePreBalance + amountToClaim);
+        require(
+            alicePostBalance == alicePreBalance + amountToClaim + amountToClaim2,
+            "TOKEN_BALANCE_ERROR"
+        );
+        require(
+            ALICE.stableBalance() == aliceDAIPreBalance - amountToClaim*ratio - amountToClaim2*ratio,
+            "USER_DAI_BALANCE_ERROR"
+        );
+        require(
+            IERC20(DAI).balanceOf(_treasury) == amountToClaim*ratio+amountToClaim2*ratio,
             "TOKEN_DAI_BALANCE_ERROR"
         );
     }
