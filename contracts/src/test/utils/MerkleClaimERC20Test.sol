@@ -7,6 +7,10 @@ import { DSTest } from "ds-test/test.sol"; // DSTest
 import { MerkleClaimERC20 } from "../../MerkleClaimERC20.sol"; // MerkleClaimERC20
 import { MerkleClaimERC20User } from "./MerkleClaimERC20User.sol"; // MerkleClaimERC20 user
 import { ERC20 } from "@solmate/tokens/ERC20.sol"; // Solmate: ERC20
+import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
+
+import "./VM.sol";
+
 
 /// @title MerkleClaimERC20Test
 /// @notice Scaffolding for MerkleClaimERC20 tests
@@ -20,6 +24,11 @@ contract MerkleClaimERC20Test is DSTest {
   address constant _FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
   address constant _DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address constant _treasury = 0x0877497b4A2674e818234a691bc4d2Dffcf76e73; // pkey: 0x305a3443329fec7e58ca427987dbca937df0404813b4f268d19f65d9ee634fb4
+
+  address constant DAI_WHALE = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
+  address constant FRAX_WHALE = 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B;
+
+  Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
   /// =================================
 
 
@@ -48,5 +57,11 @@ contract MerkleClaimERC20Test is DSTest {
     // Setup airdrop users
     ALICE = new MerkleClaimERC20User(TOKEN); // 0x109f93893af4c4b0afc7a9e97b59991260f98313
     BOB = new MerkleClaimERC20User(TOKEN); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
+
+    vm.startPrank(DAI_WHALE);
+    IERC20(_DAI).transfer(address(ALICE),1*10**18);
+    vm.stopPrank();
+    vm.startPrank(FRAX_WHALE);
+    IERC20(_FRAX).transfer(address(BOB),1*10**18);
   }
 }
