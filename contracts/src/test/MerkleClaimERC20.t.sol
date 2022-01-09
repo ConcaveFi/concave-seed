@@ -57,6 +57,33 @@ contract Tests is MerkleClaimERC20Test {
         );
     }
 
+    /// @notice Allow Alice to claim maxAmount tokens
+    function test_prevent_claim_if_not_enough_balance() public {
+        // Setup correct proof for Alice
+        bytes32[] memory aliceProof = new bytes32[](1);
+        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
+
+        // Collect Alice balance of tokens before claim
+        uint256 alicePreBalance = ALICE.tokenBalance();
+        uint256 aliceDAIPreBalance = ALICE.stableBalance();
+
+        uint256 maxAmount = 100e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 amountToClaim = maxAmount;
+        vm.startPrank(address(ALICE));
+        IERC20(DAI).transfer(address(0),IERC20(DAI).balanceOf(address(ALICE)));
+        vm.stopPrank();
+        // Claim tokens
+        vm.expectRevert("Dai/insufficient-balance");
+        ALICE.claim(
+            address(ALICE),
+            amountToClaim,
+            maxAmount,
+            DAI,
+            aliceProof
+        );
+    }
+
     /// @notice Allow Alice to claim maxAmount in multiple claims
     function test_alice_claim_max_amount_in_two_calls() public {
         // Setup correct proof for Alice
