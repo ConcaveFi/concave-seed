@@ -18,16 +18,16 @@ contract MerkleClaimERC20 is ERC20 {
   /// ============ Immutable storage ============
 
 
-  /// @notice FRAX & DAI are only valid tokens
+  /// @notice FRAX token address
   address public immutable FRAX;
+  /// @notice DAI token address
   address public immutable DAI;
-
-  /// @notice ratio of deposits to claimed tokens (i.e: to claim 1 token, must deposit 3*1 of approvedDeposits)
-  uint256 public constant ratio = 3;
-  /// @notice treasury address to which deposited tokens are sent
+  /// @notice treasury address to which deposited FRAX or DAI are sent
   address public immutable treasury;
   /// @notice ERC20-claimee inclusion root
   bytes32 public immutable merkleRoot;
+  /// @notice ratio of deposits to claimed tokens (i.e: to claim 1 token, must deposit 3*1 of approvedDeposits)
+  uint256 public constant ratio = 3;
 
   /// ============ Mutable storage ============
 
@@ -42,8 +42,8 @@ contract MerkleClaimERC20 is ERC20 {
   /// @param _symbol of token
   /// @param _decimals of token
   /// @param _merkleRoot of claimees
-  /// @param _FRAX address of FRAX to set as approvedDeposit
-  /// @param _DAI address of DAI to set as approvedDeposit
+  /// @param _FRAX address of FRAX
+  /// @param _DAI address of DAI
   /// @param _treasury address
   constructor(
     string memory _name,
@@ -94,7 +94,7 @@ contract MerkleClaimERC20 is ERC20 {
         ),
         "NOT_IN_MERKLE"
     );
-
+    // add amountToClaim to total claimedAmount for `to`
     claimedAmount[to] += amountToClaim;
     // Verify amount claimed by user does not surpass maxAmount
     require(claimedAmount[to] <= maxAmount, "EXCEEDS_AMOUNT");
