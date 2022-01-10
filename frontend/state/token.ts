@@ -5,6 +5,8 @@ import keccak256 from "keccak256"; // Keccak256 hashing
 import MerkleTree from "merkletreejs"; // MerkleTree.js
 import { useEffect, useState } from "react"; // React
 import { createContainer } from "unstated-next"; // State management
+const { signERC2612Permit } = require("eth-permit");
+
 
 function generateLeaf(address: string, value: string): Buffer {
   return Buffer.from(
@@ -61,10 +63,11 @@ function useToken() {
     return 0;
   };
 
-  const claimAirdrop = async (): Promise<void> => {
+  const claimAirdrop = async (value: number): Promise<void> => {
     if (!address) {
       throw new Error("Not Authenticated");
     }
+    const amountBeingPurchased = value;
     const formattedAddress: string = ethers.utils.getAddress(address);
     const indexOfTokens = config.airdrop[formattedAddress];
     const leafData = config.airdrop[formattedAddress];

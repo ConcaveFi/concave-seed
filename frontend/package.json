@@ -11,6 +11,7 @@
   "dependencies": {
     "bnc-onboard": "^1.37.0",
     "bytes32": "^0.0.3",
+    "eth-permit": "^0.2.1",
     "ethers": "^5.5.2",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
