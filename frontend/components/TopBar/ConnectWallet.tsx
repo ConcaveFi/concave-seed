@@ -31,7 +31,6 @@ const ConnectButton = ({ onError }: { onError: (e: Error) => void }) => {
           bgGradient={colors.gradients.green}
           size="large"
           borderWidth={2}
-          w={200}
         >
           Connect wallet
         </MenuButton>
