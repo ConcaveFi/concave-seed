@@ -1,8 +1,10 @@
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import {
   Button,
+  chakra,
   Flex,
   Input,
+  InputProps,
   Menu,
   MenuButton,
   MenuItem,
@@ -10,22 +12,21 @@ import {
   MenuList,
   Stack,
   Text,
-  useStyles,
 } from '@chakra-ui/react'
 import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import colors from 'theme/colors'
-import { fonts } from 'theme/foundations'
-import { gradientStroke } from 'theme/utils/gradientStroke'
+import NumberFormat, { NumberFormatProps } from 'react-number-format'
 
-const BaseInput = (props) => (
+const BaseInput = (props: InputProps & NumberFormatProps) => (
   <Input
+    as={NumberFormat}
+    thousandSeparator
     variant="unstyled"
     placeholder="0.0"
     fontFamily="heading"
     fontWeight={700}
     fontSize={24}
-    type="number"
     _placeholder={{ color: 'text.1' }}
     {...props}
   />
@@ -47,7 +48,7 @@ const InputContainer = (props) => (
 
 const selectItemStyles = {
   borderRadius: 'full',
-  py: 1,
+  py: 2,
   px: 3,
   height: 'auto',
   fontWeight: 600,
@@ -88,7 +89,7 @@ const Select = ({
       </MenuButton>
       <MenuList bg="green.500" borderRadius="2xl" minW="min" px={1}>
         {bringToBeginning(tokens, selected).map((name) => (
-          <SelectItem name={name} onClick={() => onSelect(name)} />
+          <SelectItem key={name} name={name} onClick={() => onSelect(name)} />
         ))}
       </MenuList>
     </Menu>
@@ -96,36 +97,50 @@ const Select = ({
 }
 
 const MaxAllowed = ({ max, onClick }) => (
-  <Flex
-    align="center"
+  <Button
     borderRadius="full"
     py={1}
     px={3}
     bgColor="whiteAlpha.50"
     gap={1}
     fontSize={12}
+    fontWeight={500}
+    height="auto"
     textColor="grey.700"
     whiteSpace="nowrap"
     onClick={onClick}
   >
     Max Whitelisted: {max}
     <Text textColor={'text.highlight'}>Max</Text>
-  </Flex>
+  </Button>
 )
 
-const inputTokenOptions = ['dai', 'frax']
-export function AmountInput() {
-  const [inputToken, setInputToken] = useState(inputTokenOptions[0])
+export function AmountInput({
+  maxAmount,
+  value,
+  onChangeValue,
+  tokenOptions,
+  selectedToken,
+  onSelectToken,
+}: {
+  maxAmount: number
+  value: string
+  onChangeValue: (value: string) => void
+  tokenOptions: string[]
+  selectedToken: typeof tokenOptions[number]
+  onSelectToken: (token: typeof selectedToken) => void
+}) {
   return (
     <Flex direction="column" gap={1} px={5}>
-      {/* <Text textColor="text.3" fontWeight={700}>
-        Get with
-      </Text> */}
       <InputContainer shadow="down">
-        <BaseInput />
+        <BaseInput
+          value={value}
+          onChange={(e) => onChangeValue(e.target.value)}
+          isAllowed={({ floatValue }) => floatValue <= maxAmount}
+        />
         <Stack align="end">
-          <Select tokens={inputTokenOptions} onSelect={setInputToken} selected={inputToken} />
-          <MaxAllowed max="500,000" onClick={() => null} />
+          <Select tokens={tokenOptions} onSelect={onSelectToken} selected={selectedToken} />
+          <MaxAllowed max={maxAmount} onClick={() => onChangeValue(maxAmount.toString())} />
         </Stack>
       </InputContainer>
     </Flex>
