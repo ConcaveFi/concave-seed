@@ -11,7 +11,7 @@ import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
 
 interface ICNV {
-    function mint(address to, uint256 amount) external view returns (uint256);
+    function mint(address to, uint256 amount) external returns (uint256);
 
     function totalSupply() external view returns (uint256);
 }
@@ -53,8 +53,11 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 totalDebt;  // total amount of debt issued so far in round
         uint256 rate;       // amount of DAI/FRAX WL user must send per pCNV
         uint256 deadline;   // latest that whitelisted user can participate
-        mapping(address => uint256) claimedAmount;
     }
+
+    mapping(uint256 => mapping(address => uint256)) public claimedAmounts;
+
+    mapping(bytes32 => uint256) public rootToRoundId;
 
     InvestorRound[] public rounds;
 
@@ -104,7 +107,7 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /* -------------------------------------------------------------------------- */
 
     modifier onlyConcave() {
-        require(msg.sender == treasury, "f0rk off");
+        require(msg.sender == treasury, "!CONCAVE");
         _;
     }
 
@@ -138,13 +141,23 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 deadline
     ) external onlyConcave {
         // Interface storage for round
-        InvestorRound storage round = rounds[rounds.length];
+        // InvestorRound storage round = rounds[rounds.length];
 
-        // update relevant storage
-        round.merkleRoot = merkleRoot;
-        round.maxDebt = maxDebt;
-        round.rate = rate;
-        round.deadline = deadline;
+        // // update relevant storage
+        // round.merkleRoot = merkleRoot;
+        // round.maxDebt = maxDebt;
+        // round.rate = rate;
+        // round.deadline = deadline;
+
+        rounds.push(InvestorRound(
+            merkleRoot,
+            maxDebt,
+            0,
+            rate,
+            deadline
+        ));
+        
+        rootToRoundId[merkleRoot] = rounds.length - 1;
 
         // Emit the event
         emit NewRound(maxDebt, rate);
@@ -229,10 +242,10 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // burn users pCNV
         _burn(msg.sender, amount);
 
-        // calculate amount of CNV to mint based on vesting
+        // // calculate amount of CNV to mint based on vesting
         amountOut = redeemAmountOut(amount);
 
-        // mint users CNV
+        // // mint users CNV
         CNV.mint(msg.sender, amountOut);
     }
 
@@ -275,6 +288,8 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                               INTERNAL LOGIC                               */
     /* -------------------------------------------------------------------------- */
 
+    
+
     /// @notice Allows claiming tokens if address+amount is part of merkle tree
     /// @param sender address sending transaction
     /// @param to whitelisted address purchased pCNV will be sent to
@@ -292,31 +307,34 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         bytes32[] calldata proof
     ) internal returns (uint256 amountOut) {
         // Make sure payment tokenIn is either DAI or FRAX
-        require(ERC20(tokenIn) == DAI || ERC20(tokenIn) == FRAX, "!tokenIn");
+        require(ERC20(tokenIn) == DAI || ERC20(tokenIn) == FRAX, "!TOKEN_IN");
 
         // Interface storage for round
         InvestorRound storage round = rounds[roundId];
+
+        // Make sure roundId is equal rootToRoundId to make sure user only interacts with intended round
+        require(roundId == rootToRoundId[round.merkleRoot], "!ROUND_ID");
 
         // Make sure "round.deadline" hasn't been exceeded
         require(block.timestamp <= round.deadline, "!DEADLINE");
 
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
-        bytes32 node = keccak256(abi.encodePacked(to, roundId, maxAmount));
+        bytes32 node = keccak256(abi.encodePacked(to, maxAmount));
         require(MerkleProof.verify(proof, round.merkleRoot, node), "!PROOF");
 
+        // Calculate rate of CNV that should be returned for "amountIn"
+        amountOut = amountIn * 1e18 / round.rate;
+
         // Make sure totalDebt does not exceed maxdebt (ie make sure we don't mint more than intended)
-        round.totalDebt += amountIn;
+        round.totalDebt += amountOut;
         require(round.totalDebt <= round.maxDebt, "!LIQUIDITY");
 
         // Verify amount claimed by user does not surpass maxAmount
-        round.claimedAmount[to] += amountIn;
-        require(round.claimedAmount[to] <= maxAmount, "!AMOUNT_IN");
+        claimedAmounts[roundId][to] += amountIn;
+        require(claimedAmounts[roundId][to] <= maxAmount, "!AMOUNT_IN");
 
         // Transfer amountIn*ratio of tokenIn to treasury address
         ERC20(tokenIn).safeTransferFrom(sender, treasury, amountIn);
-
-        // Calculate rate of CNV that should be returned for "amountIn"
-        amountOut = amountIn * round.rate / 1e18;
 
         // Increase cummulative amount minted
         totalMinted += amountOut;

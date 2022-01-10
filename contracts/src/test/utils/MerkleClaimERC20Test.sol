@@ -73,14 +73,14 @@ contract MerkleClaimERC20Test is DSTest {
 
     vm.startPrank(_treasury);
     uint256 maxDebt = 200e18;
-    uint256 rate = 3;
+    uint256 rate = 3e18;
     uint256 deadline = block.timestamp+1000;
-    // TOKEN.newRound(
-    //     0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
-    //     maxDebt,
-    //     rate,
-    //     deadline
-    // );
+    TOKEN.newRound(
+        0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
+        maxDebt,
+        rate,
+        deadline
+    );
     vm.stopPrank();
     // emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
   }

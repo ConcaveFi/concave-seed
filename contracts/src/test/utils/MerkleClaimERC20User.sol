@@ -39,6 +39,12 @@ contract MerkleClaimERC20User {
 
   /// ============ Inherited functionality ============
 
+  function redeem(
+    uint256 amount
+  ) public {
+    TOKEN.redeem(amount);
+  }
+
   function mint(
       address to,
       address tokenIn,
