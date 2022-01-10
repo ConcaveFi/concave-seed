@@ -90,6 +90,7 @@ function useToken() {
       // Switch for production
       const spender: string = 'ptoken contract';
       if (ticker === 'DAI') {
+        //dai address and abi 
         const token: ethers.Contract = getContract("Address", [ticker]);
         const result = await signDaiPermit(provider, ticker, formattedAddress, spender);
         await token.methods.permit(formattedAddress, spender, result.nonce, result.expiry, true, result.v, result.r, result.s).send({
