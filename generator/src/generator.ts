@@ -60,7 +60,7 @@ export default class Generator {
     const merkleTree = new MerkleTree(
       // Generate leafs
       this.recipients.map(({ address, value }) => {
-        console.log(this.generateLeaf(address, value));
+        console.log(this.generateLeaf(address, value).toString('hex'));
         return this.generateLeaf(address, value);
       }),
       // Hashing function
