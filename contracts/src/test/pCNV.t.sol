@@ -407,19 +407,14 @@ contract Tests is pCNVTest {
         TOKEN.newRound(
             0xed22b1673d04a64fa29ed896e69fc972e29ca396c2cbf5d400544729c6eb0a20,
             1000e18,
-            3,
+            3e18,
             block.timestamp+100
         );
-        vm.stopPrank();
-        test_claim_player();
+        claim_player();
     }
 
-    function test_claim_player() public {
+    function claim_player() public {
         
-
-
-
-
         address player_address = 0x0132e6a13583DF322a170227a0Fb1E3a1adB284B;
         bytes32[] memory aliceProof = new bytes32[](2);
         aliceProof[0] = 0x9018731ca14af64a42701f3b89d7c0e4f4a9b9f3254ef9349bfda7dd21bb5410;

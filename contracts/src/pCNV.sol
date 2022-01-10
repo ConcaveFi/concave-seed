@@ -306,11 +306,11 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 amountIn,
         bytes32[] calldata proof
     ) internal returns (uint256 amountOut) {
-        // Make sure payment tokenIn is either DAI or FRAX
-        require(ERC20(tokenIn) == DAI || ERC20(tokenIn) == FRAX, "!TOKEN_IN");
-
         // Interface storage for round
         InvestorRound storage round = rounds[roundId];
+
+        // Make sure payment tokenIn is either DAI or FRAX
+        require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
 
         // Make sure roundId is equal rootToRoundId to make sure user only interacts with intended round
         require(roundId == rootToRoundId[round.merkleRoot], "!ROUND_ID");
@@ -319,8 +319,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         require(block.timestamp <= round.deadline, "!DEADLINE");
 
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
-        bytes32 node = keccak256(abi.encodePacked(to, maxAmount));
-        require(MerkleProof.verify(proof, round.merkleRoot, node), "!PROOF");
+        require(MerkleProof.verify(proof, round.merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
 
         // Calculate rate of CNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / round.rate;
