@@ -1,47 +1,44 @@
-import Head from "next/head"; // HTML Head
+import NextHead from 'next/head'
+import { useRouter } from 'next/router'
+import React from 'react'
 
-// Setup project details
-const url: string = process.env.NEXT_PUBLIC_URL ?? "https://concave.lol/";
-const tokenName: string = process.env.NEXT_PUBLIC_TOKEN_NAME ?? "pCNV";
-const description: string =
-  process.env.NEXT_PUBLIC_DESCRIPTION ?? "Spoon sale";
+export const HOST_URL = process.env.HOST_URL
+export const TWITTER = process.env.TWITTER
 
-export default function Meta() {
+export interface MetaProps {
+  description?: string
+  image?: string
+  title: string
+  type?: string
+}
+
+export const Head = ({ customMeta }: { customMeta?: MetaProps }): JSX.Element => {
+  const router = useRouter()
+  router.basePath
+  const meta: MetaProps = {
+    title: 'Concave',
+    description: '🥄 Spooonnn',
+    image: `${HOST_URL}/images/site-preview.png`,
+    type: 'website',
+    ...customMeta,
+  }
+
   return (
-    <Head>
-      {/* Fonts: Inter */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossOrigin="true"
-      />
-      <link
-        href={`https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap`}
-        rel="stylesheet"
-      />
-
-      {/* Primary Meta */}
-      <title>{tokenName}</title>
-      <meta name="title" content={tokenName} />
-      <meta name="description" content={description} />
-
-      {/* Open Graph + Facebook */}
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content={url} />
-      <meta property="og:title" content={tokenName} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={`${url}meta.png`} />
-
-      {/* Twitter */}
-      <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={url} />
-      <meta property="twitter:title" content={tokenName} />
-      <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={`${url}meta.png`} />
-
-      {/* Favicon */}
-      <link rel="shortcut icon" href="/favicon.ico" />
-    </Head>
-  );
+    <NextHead>
+      <title>{meta.title}</title>
+      <meta content={meta.description} name="description" />
+      <meta property="og:url" content={`${HOST_URL}${router.asPath}`} />
+      <link rel="canonical" href={`${HOST_URL}${router.asPath}`} />
+      <meta property="og:type" content={meta.type} />
+      <meta property="og:site_name" content="Concave" />
+      <meta property="og:description" content={meta.description} />
+      <meta property="og:title" content={meta.title} />
+      <meta property="og:image" content={meta.image} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content={TWITTER} />
+      <meta name="twitter:title" content={meta.title} />
+      <meta name="twitter:description" content={meta.description} />
+      <meta name="twitter:image" content={meta.image} />
+    </NextHead>
+  )
 }
