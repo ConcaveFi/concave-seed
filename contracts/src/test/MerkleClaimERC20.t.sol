@@ -371,9 +371,6 @@ contract Tests is MerkleClaimERC20Test {
         uint256 amountToClaim = 99e18;
         require(ALICE.tokenBalance() == amountToClaim * 1e18 / 3e18,"alice u naughty");
 
-
-
-
         MockCNV mCNV = new MockCNV(100e18);
         vm.startPrank(_treasury);
         TOKEN.setRedeemable(address(mCNV));
