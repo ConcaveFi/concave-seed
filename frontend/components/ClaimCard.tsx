@@ -3,12 +3,11 @@ import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-
-const inputTokenOptions = ['dai', 'frax']
+import { inputTokens } from 'lib/claim'
 
 export function ClaimCard({ maxAmount }) {
   const [amount, setAmount] = useState('0')
-  const [inputToken, setInputToken] = useState(inputTokenOptions[0])
+  const [inputToken, setInputToken] = useState(inputTokens[0])
 
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
@@ -16,7 +15,7 @@ export function ClaimCard({ maxAmount }) {
         maxAmount={maxAmount}
         value={amount}
         onChangeValue={setAmount}
-        tokenOptions={inputTokenOptions}
+        tokenOptions={inputTokens}
         selectedToken={inputToken}
         onSelectToken={setInputToken}
       />
