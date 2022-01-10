@@ -321,16 +321,16 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
         require(MerkleProof.verify(proof, round.merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
 
+        // Verify amount claimed by user does not surpass maxAmount
+        claimedAmounts[roundId][to] += amountIn;
+        require(claimedAmounts[roundId][to] <= maxAmount, "!AMOUNT_IN");
+
         // Calculate rate of CNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / round.rate;
 
         // Make sure totalDebt does not exceed maxdebt (ie make sure we don't mint more than intended)
         round.totalDebt += amountOut;
         require(round.totalDebt <= round.maxDebt, "!LIQUIDITY");
-
-        // Verify amount claimed by user does not surpass maxAmount
-        claimedAmounts[roundId][to] += amountIn;
-        require(claimedAmounts[roundId][to] <= maxAmount, "!AMOUNT_IN");
 
         // Transfer amountIn*ratio of tokenIn to treasury address
         ERC20(tokenIn).safeTransferFrom(sender, treasury, amountIn);

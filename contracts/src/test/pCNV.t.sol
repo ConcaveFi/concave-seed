@@ -411,6 +411,9 @@ contract Tests is pCNVTest {
             block.timestamp+100
         );
         claim_player();
+        claim_player_two();
+        claim_player_three();
+        claim_player_four();
     }
 
     function claim_player() public {
@@ -421,6 +424,88 @@ contract Tests is pCNVTest {
         aliceProof[1] = 0xaedf37d0aa7b74f119af05a775eed7eaaeb240df9421651c74449500713ea7a0;
 
         uint256 maxAmount = 10e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 DAI_AmountIn = maxAmount;
+
+        vm.startPrank(DAI_WHALE);
+        IERC20(DAI).transfer(player_address,1000e18);
+        vm.stopPrank();
+
+        vm.startPrank(player_address);
+        IERC20(DAI).approve(address(TOKEN),1000e18);
+        // Claim tokens
+        TOKEN.mint(
+            player_address,
+            DAI,
+            1,
+            maxAmount,
+            DAI_AmountIn,
+            aliceProof
+        );
+    }
+    function claim_player_two() public {
+        
+        address player_address = 0x08212DFFb0FAA20073511f87526547cAE00b7a64;
+        bytes32[] memory aliceProof = new bytes32[](2);
+        aliceProof[0] = 0x0fee1b61deaa50da332226f1328ba6340fbe217ea046adc832b80fee426fbfc9;
+        aliceProof[1] = 0xaedf37d0aa7b74f119af05a775eed7eaaeb240df9421651c74449500713ea7a0;
+
+        uint256 maxAmount = 20e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 DAI_AmountIn = maxAmount;
+
+        vm.startPrank(DAI_WHALE);
+        IERC20(DAI).transfer(player_address,1000e18);
+        vm.stopPrank();
+
+        vm.startPrank(player_address);
+        IERC20(DAI).approve(address(TOKEN),1000e18);
+        // Claim tokens
+        TOKEN.mint(
+            player_address,
+            DAI,
+            1,
+            maxAmount,
+            DAI_AmountIn,
+            aliceProof
+        );
+    }
+    function claim_player_three() public {
+        
+        address player_address = 0xB1DF8b1E93172235eEB8Bbb60D4356f046dff3AF;
+        bytes32[] memory aliceProof = new bytes32[](2);
+        aliceProof[0] = 0xd1d56c98137faf2f30507c1f006e7c6bc0ba4d0c94bf6c267944f1294ec62a16;
+        aliceProof[1] = 0xe826e58f53e8fdd8a73454629ce1e846e33eef5d929d5602334ce06e14298eb3;
+
+        uint256 maxAmount = 30e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 DAI_AmountIn = maxAmount;
+
+        vm.startPrank(DAI_WHALE);
+        IERC20(DAI).transfer(player_address,1000e18);
+        vm.stopPrank();
+
+        vm.startPrank(player_address);
+        IERC20(DAI).approve(address(TOKEN),1000e18);
+        // Claim tokens
+        TOKEN.mint(
+            player_address,
+            DAI,
+            1,
+            maxAmount,
+            DAI_AmountIn,
+            aliceProof
+        );
+    }
+    
+    function claim_player_four() public {
+        
+        address player_address = 0xf1A1e46463362C0751Af4Ff46037D1815d66bB4D;
+        bytes32[] memory aliceProof = new bytes32[](2);
+        aliceProof[0] = 0x3d875c16cd4a4cf82b46cea198ed9d18560bc6f12bec6376c1abb6036d7e80f5;
+        aliceProof[1] = 0xe826e58f53e8fdd8a73454629ce1e846e33eef5d929d5602334ce06e14298eb3;
+
+        uint256 maxAmount = 40e18;
         // uint256 amountToClaim = 10e18;
         uint256 DAI_AmountIn = maxAmount;
 
