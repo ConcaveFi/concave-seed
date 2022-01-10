@@ -39,20 +39,22 @@ contract MerkleClaimERC20User {
 
   /// ============ Inherited functionality ============
 
-  /// @notice Allows claiming tokens if address is part of merkle tree
-  /// @param to address of claimee
-  /// @param amountToClaim amount of tokens claimee wishes to claim
-  /// @param maxAmount max amount of tokens claimee can claim
-  /// @param token address of token user wishes to deposit
-  /// @param proof merkle proof to prove address and amount are in tree
-  function claim(
+  function mint(
       address to,
-      uint256 amountToClaim,
+      address tokenIn,
+      uint256 roundId,
       uint256 maxAmount,
-      address token,
+      uint256 amountIn,
       bytes32[] calldata proof
   ) public {
-    TOKEN.claim(to, amountToClaim, maxAmount, token, proof);
+    TOKEN.mint(
+        to,
+        tokenIn,
+        roundId,
+        maxAmount,
+        amountIn,
+        proof
+    );
   }
 
 }

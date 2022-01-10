@@ -44,13 +44,13 @@ contract MerkleClaimERC20Test is DSTest {
   function setUp() public virtual {
     // Create airdrop token
     TOKEN = new MerkleClaimERC20(
-      "My Token",
-      "MT",
-      18,
+      // "My Token",
+      // "MT",
+      // 18,
       // Merkle root containing ALICE with 100e18 tokens but no BOB
-      0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
-      _FRAX,
-      _DAI,
+      // 0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
+      ERC20(_FRAX),
+      ERC20(_DAI),
       _treasury
     );
 
@@ -69,6 +69,19 @@ contract MerkleClaimERC20Test is DSTest {
     vm.stopPrank();
     vm.startPrank(address(BOB));
     IERC20(_FRAX).approve(address(TOKEN),3000e18);
+    vm.stopPrank();
+
+    vm.startPrank(_treasury);
+    uint256 maxDebt = 200e18;
+    uint256 rate = 3;
+    uint256 deadline = block.timestamp+1000;
+    // TOKEN.newRound(
+    //     0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
+    //     maxDebt,
+    //     rate,
+    //     deadline
+    // );
+    vm.stopPrank();
     // emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
   }
 }

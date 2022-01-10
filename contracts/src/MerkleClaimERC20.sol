@@ -129,23 +129,23 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
     /// @notice Start new investor round, where we issue pTokens for $1
     /// @param merkleRoot root that stores list of users and claimable amounts
-    /// @param maxDebt maximum amount of pTokens to issue   
+    /// @param maxDebt maximum amount of pTokens to issue
     /// @param deadline time when whitelisted users can no longer participate in round
     function newRound(
-        bytes32 merkleRoot, 
+        bytes32 merkleRoot,
         uint256 maxDebt,
         uint256 rate,
         uint256 deadline
     ) external onlyConcave {
         // Interface storage for round
         InvestorRound storage round = rounds[rounds.length];
-        
+
         // update relevant storage
         round.merkleRoot = merkleRoot;
         round.maxDebt = maxDebt;
         round.rate = rate;
         round.deadline = deadline;
-    
+
         // Emit the event
         emit NewRound(maxDebt, rate);
     }
@@ -214,7 +214,7 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 maxAmount,
         uint256 amountIn,
         bytes32[] calldata proof
-    ) external returns (uint256 amountOut) {        
+    ) external returns (uint256 amountOut) {
         return _purchase(msg.sender, to, tokenIn, roundId, maxAmount, amountIn, proof);
     }
 
@@ -250,7 +250,7 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
         // If CNV has no supply return 0
         if (CNV.totalSupply() == 0) return 0;
-        
+
         // Make sure amount is less than or equal to max supply
         require(amount <= totalMinted, "amount");
 
@@ -290,7 +290,7 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 maxAmount,
         uint256 amountIn,
         bytes32[] calldata proof
-    ) internal returns (uint256 amountOut) {        
+    ) internal returns (uint256 amountOut) {
         // Make sure payment tokenIn is either DAI or FRAX
         require(ERC20(tokenIn) == DAI || ERC20(tokenIn) == FRAX, "!tokenIn");
 
@@ -303,11 +303,11 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
         bytes32 node = keccak256(abi.encodePacked(to, roundId, maxAmount));
         require(MerkleProof.verify(proof, round.merkleRoot, node), "!PROOF");
-        
+
         // Make sure totalDebt does not exceed maxdebt (ie make sure we don't mint more than intended)
         round.totalDebt += amountIn;
         require(round.totalDebt <= round.maxDebt, "!LIQUIDITY");
-        
+
         // Verify amount claimed by user does not surpass maxAmount
         round.claimedAmount[to] += amountIn;
         require(round.claimedAmount[to] <= maxAmount, "!AMOUNT_IN");
