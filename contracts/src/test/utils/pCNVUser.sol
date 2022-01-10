@@ -3,25 +3,25 @@ pragma solidity >=0.8.0;
 
 /// ============ Imports ============
 
-import { MerkleClaimERC20 } from "../../MerkleClaimERC20.sol"; // MerkleClaimERC20
+import { pCNV } from "../../pCNV.sol"; // pCNV
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 
-/// @title MerkleClaimERC20User
-/// @notice Mock MerkleClaimERC20 user
+/// @title pCNVUser
+/// @notice Mock pCNV user
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
-contract MerkleClaimERC20User {
+contract pCNVUser {
 
   /// ============ Immutable storage ============
 
-  /// @dev MerkleClaimERC20 contract
-  MerkleClaimERC20 immutable internal TOKEN;
+  /// @dev pCNV contract
+  pCNV immutable internal TOKEN;
   address immutable STABLE;
 
   /// ============ Constructor ============
 
-  /// @notice Creates a new MerkleClaimERC20User
-  /// @param _TOKEN MerkleClaimERC20 contract
-  constructor(MerkleClaimERC20 _TOKEN, address _STABLE) {
+  /// @notice Creates a new pCNVUser
+  /// @param _TOKEN pCNV contract
+  constructor(pCNV _TOKEN, address _STABLE) {
     TOKEN = _TOKEN;
     STABLE = _STABLE;
   }

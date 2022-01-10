@@ -3,15 +3,15 @@ pragma solidity >=0.8.0;
 
 /// ============ Imports ============
 
-import { MerkleClaimERC20Test } from "./utils/MerkleClaimERC20Test.sol"; // Test scaffolding
+import { pCNVTest } from "./utils/pCNVTest.sol"; // Test scaffolding
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
 
 
 /// @title Tests
-/// @notice MerkleClaimERC20 tests
+/// @notice pCNV tests
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
-contract Tests is MerkleClaimERC20Test {
+contract Tests is pCNVTest {
 
     address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -396,6 +396,50 @@ contract Tests is MerkleClaimERC20Test {
             address(ALICE),
             DAI,
             0,
+            maxAmount,
+            DAI_AmountIn,
+            aliceProof
+        );
+    }
+
+    function test_many_players() public {
+        vm.startPrank(_treasury);
+        TOKEN.newRound(
+            0xed22b1673d04a64fa29ed896e69fc972e29ca396c2cbf5d400544729c6eb0a20,
+            1000e18,
+            3,
+            block.timestamp+100
+        );
+        vm.stopPrank();
+        test_claim_player();
+    }
+
+    function test_claim_player() public {
+        
+
+
+
+
+        address player_address = 0x0132e6a13583DF322a170227a0Fb1E3a1adB284B;
+        bytes32[] memory aliceProof = new bytes32[](2);
+        aliceProof[0] = 0x9018731ca14af64a42701f3b89d7c0e4f4a9b9f3254ef9349bfda7dd21bb5410;
+        aliceProof[1] = 0xaedf37d0aa7b74f119af05a775eed7eaaeb240df9421651c74449500713ea7a0;
+
+        uint256 maxAmount = 10e18;
+        // uint256 amountToClaim = 10e18;
+        uint256 DAI_AmountIn = maxAmount;
+
+        vm.startPrank(DAI_WHALE);
+        IERC20(DAI).transfer(player_address,1000e18);
+        vm.stopPrank();
+
+        vm.startPrank(player_address);
+        IERC20(DAI).approve(address(TOKEN),1000e18);
+        // Claim tokens
+        TOKEN.mint(
+            player_address,
+            DAI,
+            1,
             maxAmount,
             DAI_AmountIn,
             aliceProof

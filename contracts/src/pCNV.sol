@@ -16,11 +16,11 @@ interface ICNV {
     function totalSupply() external view returns (uint256);
 }
 
-/// @title MerkleClaimERC20
+/// @title pCNV
 /// @notice ERC20 claimable by members of a merkle tree
 /// @author Concave
-/// @dev Inspired from MerkleClaimERC20 by Anish Agnihotri <contact@anishagnihotri.com>
-contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
+/// @dev Inspired from pCNV by Anish Agnihotri <contact@anishagnihotri.com>
+contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
     /* -------------------------------------------------------------------------- */
     /*                                DEPENDENCIES                                */
@@ -71,7 +71,7 @@ contract MerkleClaimERC20 is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                                 CONSTRUCTOR                                */
     /* -------------------------------------------------------------------------- */
 
-    /// @notice Creates a new MerkleClaimERC20 contract
+    /// @notice Creates a new pCNV contract
     /// @param _FRAX address of FRAX
     /// @param _DAI address of DAI
     /// @param _treasury address
