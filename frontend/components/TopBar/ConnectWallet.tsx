@@ -10,11 +10,13 @@ const DisconnectButton = () => {
   const [{ data, loading }, disconnect] = useAccount()
   return (
     <Menu placement="bottom-end">
-      <MenuButton as={Button} isLoading={loading}>
+      <MenuButton as={Button} isLoading={loading} borderRadius="xl">
         {data.ens || miniAddress(data.address)}
       </MenuButton>
-      <MenuList>
-        <MenuItem onClick={disconnect}>Disconnect</MenuItem>
+      <MenuList bg="green.500" borderRadius="xl" px={1}>
+        <MenuItem borderRadius="lg" onClick={disconnect}>
+          Disconnect
+        </MenuItem>
       </MenuList>
     </Menu>
   )
@@ -34,9 +36,10 @@ const ConnectButton = ({ onError }: { onError: (e: Error) => void }) => {
         >
           Connect wallet
         </MenuButton>
-        <MenuList bg="green.500">
+        <MenuList bg="green.500" borderRadius="xl" minW="min" px={1}>
           {data.connectors.map((connector) => (
             <MenuItem
+              borderRadius="xl"
               icon={<Image maxWidth="20px" src={`/connectors/${connector.name}.png`} alt="" />}
               key={connector.id}
               onClick={() => connect(connector)}
