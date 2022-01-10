@@ -17,88 +17,6 @@ contract Tests is pCNVTest {
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     uint256 constant ratio = 3;
 
-
-    function test_vesting() public {
-        require(ALICE.tokenBalance() == 0,"oh oh alice");
-        claim_alice();
-        uint256 amountToClaim = 99e18;
-        // alice has 33e18 tokens
-        require(ALICE.tokenBalance() == amountToClaim * 1e18 / 3e18,"alice u naughty");
-        //
-        MockCNV mCNV = new MockCNV(100e18);
-        vm.startPrank(_treasury);
-        TOKEN.setRedeemable(address(mCNV));
-        vm.stopPrank();
-        //
-        //
-        // vm.warp(block.timestamp + 365 days);
-        // emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance()));
-        //
-        // uint256 twoYears = 365 days * 2;
-        // vm.warp(block.timestamp + twoYears);
-        // emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance()));
-
-        uint256 startTime = block.timestamp;
-
-        for (uint256 i = 1; i < 25; i++) {
-            vm.warp(startTime + i*30 days);
-            emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance())/10e18);
-        }
-        //
-        // ALICE.redeem(ALICE.tokenBalance());
-        //
-        // require(mCNV.balanceOf(address(ALICE)) == 10e18, "INCORRECT CNV AMOUNT OUT");
-    }
-
-
-    // @TODO: v,r,s signature
-    // function test_claim_with_permit() public {
-    //
-    //     address player_address = 0x0132e6a13583DF322a170227a0Fb1E3a1adB284B;
-    //     bytes32[] memory aliceProof = new bytes32[](2);
-    //     aliceProof[0] = 0x9018731ca14af64a42701f3b89d7c0e4f4a9b9f3254ef9349bfda7dd21bb5410;
-    //     aliceProof[1] = 0xaedf37d0aa7b74f119af05a775eed7eaaeb240df9421651c74449500713ea7a0;
-    //
-    //     uint256 maxAmount = 10e18;
-    //     // uint256 amountToClaim = 10e18;
-    //     uint256 DAI_AmountIn = maxAmount;
-    //
-    //     vm.startPrank(DAI_WHALE);
-    //     IERC20(DAI).transfer(player_address,1000e18);
-    //     vm.stopPrank();
-    //
-    //     // vm.startPrank(player_address);
-    //     // IERC20(DAI).approve(address(TOKEN),1000e18);
-    //     // Claim tokens
-    //     TOKEN.claimWithPermit(
-    //         player_address,
-    //         DAI,
-    //         1,
-    //         maxAmount,
-    //         DAI_AmountIn,
-    //         aliceProof,
-    //         block.timestamp+1000,
-    //     );
-    // }
-
-    /*
-    function test_onlyConcave_modifier() public {
-        vm.expectRevert("!CONCAVE");
-        TOKEN.newRound(
-            0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
-            0,
-            3e18,
-            block.timestamp+1000000
-        );
-
-        vm.expectRevert("!CONCAVE");
-        TOKEN.reduceRoundDebt(0,0);
-
-        vm.expectRevert("!CONCAVE");
-        TOKEN.setRedeemable(address(0));
-
-    }
-
     /// @notice Allow Alice to claim maxAmount tokens
     function test_alice_claim_max_amount() public {
 
@@ -631,26 +549,86 @@ contract Tests is pCNVTest {
     //     );
     // }
 
-    */
-    function claim_alice() public {
-        bytes32[] memory aliceProof = new bytes32[](1);
-        aliceProof[0] = 0xceeae64152a2deaf8c661fccd5645458ba20261b16d2f6e090fe908b0ac9ca88;
-
-        uint256 maxAmount = 100e18;
-        // uint256 amountToClaim = 10e18;
-        uint256 DAI_AmountIn = 99e18;
-
-        // Claim tokens
-        ALICE.mint(
-            address(ALICE),
-            DAI,
+    function test_onlyConcave_modifier() public {
+        vm.expectRevert("!CONCAVE");
+        TOKEN.newRound(
+            0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
             0,
-            maxAmount,
-            DAI_AmountIn,
-            aliceProof
+            3e18,
+            block.timestamp+1000000
         );
+
+        vm.expectRevert("!CONCAVE");
+        TOKEN.reduceRoundDebt(0,0);
+
+        vm.expectRevert("!CONCAVE");
+        TOKEN.setRedeemable(address(0));
+
     }
 
+    // @TODO: v,r,s signature
+    // function test_vesting() public {
+    //     require(ALICE.tokenBalance() == 0,"oh oh alice");
+    //     claim_alice();
+    //     uint256 amountToClaim = 99e18;
+    //     // alice has 33e18 tokens
+    //     require(ALICE.tokenBalance() == amountToClaim * 1e18 / 3e18,"alice u naughty");
+    //     //
+    //     MockCNV mCNV = new MockCNV(100e18);
+    //     vm.startPrank(_treasury);
+    //     TOKEN.setRedeemable(address(mCNV));
+    //     vm.stopPrank();
+    //     //
+    //     //
+    //     // vm.warp(block.timestamp + 365 days);
+    //     // emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance()));
+    //     //
+    //     // uint256 twoYears = 365 days * 2;
+    //     // vm.warp(block.timestamp + twoYears);
+    //     // emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance()));
+    //
+    //     uint256 startTime = block.timestamp;
+    //
+    //     for (uint256 i = 1; i < 25; i++) {
+    //         vm.warp(startTime + i*30 days);
+    //         emit log_uint(TOKEN.redeemAmountOut(ALICE.tokenBalance())/10e18);
+    //     }
+    //     //
+    //     // ALICE.redeem(ALICE.tokenBalance());
+    //     //
+    //     // require(mCNV.balanceOf(address(ALICE)) == 10e18, "INCORRECT CNV AMOUNT OUT");
+    // }
+
+
+    // @TODO: v,r,s signature
+    // function test_claim_with_permit() public {
+    //
+    //     address player_address = 0x0132e6a13583DF322a170227a0Fb1E3a1adB284B;
+    //     bytes32[] memory aliceProof = new bytes32[](2);
+    //     aliceProof[0] = 0x9018731ca14af64a42701f3b89d7c0e4f4a9b9f3254ef9349bfda7dd21bb5410;
+    //     aliceProof[1] = 0xaedf37d0aa7b74f119af05a775eed7eaaeb240df9421651c74449500713ea7a0;
+    //
+    //     uint256 maxAmount = 10e18;
+    //     // uint256 amountToClaim = 10e18;
+    //     uint256 DAI_AmountIn = maxAmount;
+    //
+    //     vm.startPrank(DAI_WHALE);
+    //     IERC20(DAI).transfer(player_address,1000e18);
+    //     vm.stopPrank();
+    //
+    //     // vm.startPrank(player_address);
+    //     // IERC20(DAI).approve(address(TOKEN),1000e18);
+    //     // Claim tokens
+    //     TOKEN.claimWithPermit(
+    //         player_address,
+    //         DAI,
+    //         1,
+    //         maxAmount,
+    //         DAI_AmountIn,
+    //         aliceProof,
+    //         block.timestamp+1000,
+    //     );
+    // }
 
 }
 
