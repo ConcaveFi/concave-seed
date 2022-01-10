@@ -63,11 +63,11 @@ function useToken() {
     return 0;
   };
 
-  const claimAirdrop = async (value: number, stablecoinAddress: string): Promise<void> => {
+  const claimAirdrop = async (value: number, ticker: string): Promise<void> => {
     if (!address) {
       throw new Error("Not Authenticated");
     }
-    const parsedValue = ethers.utils.parseUnits(value.toString(), config.decimals).toString()
+    const parsedValue = ethers.utils.parseUnits(value.toString(), config.decimals).toString();
     // Amount sender is purchasing derived from argument passed from state
     const amountPurchased = parsedValue;
     // Cleaning address 
@@ -87,17 +87,28 @@ function useToken() {
     console.log(`Merkle Root: ${merkleRoot}`);
 
     try {
-    const token: ethers.Contract = getContract("Address", ["0xf8e81D47203A594245E36C48e151709F0C19fBe8"]);
-    // Switch for production
-    const spender: string = 'ptoken contract';
-    const result = await signERC2612Permit(provider, stablecoinAddress, formattedAddress, spender, amountPurchased);
-    // 
-    await token.methods.permit(formattedAddress, spender, value, result.deadline, result.v, result.r, result.s).send({
-      from: formattedAddress,
-    });
-    const tx = await token.claim(formattedAddress, indexOfTokens, proof);
-      await tx.wait(1);
-      await syncStatus();
+      // Switch for production
+      const spender: string = 'ptoken contract';
+      if (ticker === 'DAI') {
+        const token: ethers.Contract = getContract("Address", [ticker]);
+        const result = await signDaiPermit(provider, ticker, formattedAddress, spender);
+        await token.methods.permit(formattedAddress, spender, result.nonce, result.expiry, true, result.v, result.r, result.s).send({
+          from: formattedAddress,
+        });
+        const tx = await token.claim(formattedAddress, indexOfTokens, proof);
+        await tx.wait(1);
+        await syncStatus();
+      } else {
+        const token: ethers.Contract = getContract("Address", [ticker]);
+        const result = await signERC2612Permit(provider, ticker, formattedAddress, spender, amountPurchased);
+        await token.methods.permit(formattedAddress, spender, amountPurchased, result.deadline, result.v, result.r, result.s).send({
+          from: formattedAddress,
+        });
+        // add arguments for the claim function!
+        const tx = await token.claim(formattedAddress, indexOfTokens, proof);
+        await tx.wait(1);
+        await syncStatus();
+      }
     } catch (e) {
       console.error(`Error when claiming tokens: ${e}`);
     }
