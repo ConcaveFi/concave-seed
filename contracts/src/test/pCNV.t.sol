@@ -443,6 +443,12 @@ contract Tests is pCNVTest {
             aliceProof
         );
     }
+
+    // percent vested = 1e18 * elapsed / two years
+
+    // amountIn (pTOKENS) * percentVested (ether) / 1e18 (1 whole ether, denominator)
+
+
     function claim_player_two() public {
         
         address player_address = 0x08212DFFb0FAA20073511f87526547cAE00b7a64;
