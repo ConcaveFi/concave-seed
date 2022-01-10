@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import Image from 'next/image'
-import { Text, Button, HStack, Stack } from '@chakra-ui/react'
+import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
 
 const inputTokenOptions = ['dai', 'frax']
-export function ClaimCard({}) {
+
+export function ClaimCard() {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokenOptions[0])
 
