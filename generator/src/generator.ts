@@ -54,14 +54,14 @@ export default class Generator {
 
   async process(): Promise<void> {
     logger.info("Generating Merkle tree.");
-    let merkleLeaf : string[];
+    let merkleLeaf: string[];
     // Generate merkle tree
     const merkleTree = new MerkleTree(
       // Generate leafs
       this.recipients.map(({ address, value }) => {
-        console.log(this.generateLeaf(address,value))
-        this.generateLeaf(address, value)
-    }),
+        console.log(this.generateLeaf(address, value));
+        return this.generateLeaf(address, value);
+      }),
       // Hashing function
       keccak256,
       { sortPairs: true }
