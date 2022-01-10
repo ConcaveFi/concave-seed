@@ -6,14 +6,14 @@ import { AmountInput } from './Input'
 
 const inputTokenOptions = ['dai', 'frax']
 
-export function ClaimCard() {
+export function ClaimCard({ maxAmount }) {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokenOptions[0])
 
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
       <AmountInput
-        maxAmount={500000}
+        maxAmount={maxAmount}
         value={amount}
         onChangeValue={setAmount}
         tokenOptions={inputTokenOptions}

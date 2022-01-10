@@ -26,6 +26,8 @@ const resolveState = (network, account): AppState => {
   return 'claiming'
 }
 
+const pCNVSeedPrice = 3
+
 function CNVSeed() {
   const [{ data: network, loading: networkLoading }, switchNetwork] = useNetwork()
   const [{ data: account, loading: accountLoading }] = useAccount()
@@ -50,7 +52,9 @@ function CNVSeed() {
             {state === 'wrong_network' && <WrongNetworkCard switchNetwork={switchNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
-            {state === 'claiming' && <ClaimCard />}
+            {state === 'claiming' && (
+              <ClaimCard maxAmount={getClaimableAmount(account.address) * pCNVSeedPrice} />
+            )}
           </Flex>
         </Flex>
       </Container>
