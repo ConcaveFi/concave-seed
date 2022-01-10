@@ -7,7 +7,6 @@ pragma solidity >=0.8.0;
 
 import { ERC20 } from "@solmate/tokens/ERC20.sol";
 import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
-
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
 
 interface ICNV {
@@ -19,7 +18,6 @@ interface ICNV {
 /// @title pCNV
 /// @notice ERC20 claimable by members of a merkle tree
 /// @author Concave
-/// @dev Inspired from pCNV by Anish Agnihotri <contact@anishagnihotri.com>
 contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
     /* -------------------------------------------------------------------------- */
@@ -31,7 +29,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /* -------------------------------------------------------------------------- */
     /*                              IMMUTABLE STORAGE                             */
     /* -------------------------------------------------------------------------- */
-
+    /// @notice initial block timestamp
     uint256 public immutable GENESIS = block.timestamp;
 
     /// @notice FRAX tokenIn address
@@ -47,6 +45,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                               MUTABLE STORAGE                              */
     /* -------------------------------------------------------------------------- */
 
+    /// @notice details for each investor round
     struct InvestorRound {
         bytes32 merkleRoot;
         uint256 maxDebt;    // maximum amount of debt being issued in round
@@ -72,9 +71,9 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /* -------------------------------------------------------------------------- */
 
     /// @notice Creates a new pCNV contract
-    /// @param _FRAX address of FRAX
-    /// @param _DAI address of DAI
-    /// @param _treasury address
+    /// @param _FRAX        address of FRAX
+    /// @param _DAI         address of DAI
+    /// @param _treasury    address of treasury
     constructor(
         ERC20 _FRAX,
         ERC20 _DAI,
@@ -156,14 +155,14 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
             rate,
             deadline
         ));
-        
+
         rootToRoundId[merkleRoot] = rounds.length - 1;
 
         // Emit the event
         emit NewRound(maxDebt, rate);
     }
 
-    /// @notice Reduce the amount of issueable debt by "amount" for given investor round
+    /// @notice Reduce the amount of issuable debt by "amount" for given investor round
     /// @param amount that issuable debt will decrease by
     function reduceRoundDebt(
         uint256 roundId,
@@ -288,7 +287,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                               INTERNAL LOGIC                               */
     /* -------------------------------------------------------------------------- */
 
-    
+
 
     /// @notice Allows claiming tokens if address+amount is part of merkle tree
     /// @param sender address sending transaction
