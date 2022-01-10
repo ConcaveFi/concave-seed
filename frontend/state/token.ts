@@ -68,11 +68,11 @@ function useToken() {
       throw new Error("Not Authenticated");
     }
     const parsedValue = ethers.utils.parseUnits(value.toString(), config.decimals).toString();
-    // Amount sender is purchasing derived from argument passed from state
+    // msg.sender purchase amt derived state
     const amountPurchased = parsedValue;
-    // Cleaning address 
+    // Cleaned address of msg.sender 
     const formattedAddress: string = ethers.utils.getAddress(address);
-    // Max tokens that can be purchased by current whitelisted address
+    // Max tokens purchaseable by msg.sender
     const indexOfTokens = config.airdrop[formattedAddress];
     // Generating a leaf based on user address and tokens
     const leaf = generateLeaf(
