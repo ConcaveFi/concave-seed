@@ -5,7 +5,7 @@ import keccak256 from "keccak256"; // Keccak256 hashing
 import MerkleTree from "merkletreejs"; // MerkleTree.js
 import { useEffect, useState } from "react"; // React
 import { createContainer } from "unstated-next"; // State management
-const { signERC2612Permit } = require("eth-permit");
+import { signERC2612Permit, signDaiPermit } from "eth-permit";
 
 
 function generateLeaf(address: string, value: string): Buffer {
@@ -63,27 +63,38 @@ function useToken() {
     return 0;
   };
 
-  const claimAirdrop = async (value: number): Promise<void> => {
+  const claimAirdrop = async (value: number, stablecoinAddress: string): Promise<void> => {
     if (!address) {
       throw new Error("Not Authenticated");
     }
-    const amountBeingPurchased = value;
+    const parsedValue = ethers.utils.parseUnits(value.toString(), config.decimals).toString()
+    // Amount sender is purchasing derived from argument passed from state
+    const amountPurchased = parsedValue;
+    // Cleaning address 
     const formattedAddress: string = ethers.utils.getAddress(address);
+    // Max tokens that can be purchased by current whitelisted address
     const indexOfTokens = config.airdrop[formattedAddress];
-    const leafData = config.airdrop[formattedAddress];
+    // Generating a leaf based on user address and tokens
     const leaf = generateLeaf(
       ethers.utils.getAddress(address),
       ethers.utils.parseUnits(indexOfTokens.toString(), config.decimals).toString()
     )
-    const indexOfLeaf = merkleTree.getLeafIndex(leaf);
+
+    // MERKLE ROOT CREATION/DATA
     const merkleRoot: string = merkleTree.getHexRoot();
     const proof: string[] = merkleTree.getHexProof(leaf);
-    const getHexLeaf: Buffer = merkleTree.getHexLeaves();
-    const indexedHexLeaf: Buffer = getHexLeaf[indexOfLeaf];
     console.log(`Proof: ${proof}`);
     console.log(`Merkle Root: ${merkleRoot}`);
+
     try {
     const token: ethers.Contract = getContract("Address", ["0xf8e81D47203A594245E36C48e151709F0C19fBe8"]);
+    // Switch for production
+    const spender: string = 'ptoken contract';
+    const result = await signERC2612Permit(provider, stablecoinAddress, formattedAddress, spender, amountPurchased);
+    // 
+    await token.methods.permit(formattedAddress, spender, value, result.deadline, result.v, result.r, result.s).send({
+      from: formattedAddress,
+    });
     const tx = await token.claim(formattedAddress, indexOfTokens, proof);
       await tx.wait(1);
       await syncStatus();
@@ -128,3 +139,10 @@ function useToken() {
 }
 
 export const token = createContainer(useToken);
+
+
+// Merkel data if needed
+// const leafData = config.airdrop[formattedAddress];
+// const indexOfLeaf = merkleTree.getLeafIndex(leaf);
+// const getHexLeaf: Buffer = merkleTree.getHexLeaves();
+// const indexedHexLeaf: Buffer = getHexLeaf[indexOfLeaf];
