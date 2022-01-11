@@ -9,10 +9,12 @@ import 'public/fonts.css'
 
 const infuraId = process.env.INFURA_ID
 
+export const appNetwork = chain.ropsten
+
 const connectors = [
-  new InjectedConnector({ chains: [chain.mainnet] }),
+  new InjectedConnector({ chains: [appNetwork] }),
   new WalletConnectConnector({
-    chains: [chain.mainnet],
+    chains: [appNetwork],
     options: { infuraId, qrcode: true },
   }),
 ]

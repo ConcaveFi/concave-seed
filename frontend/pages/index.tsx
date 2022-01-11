@@ -1,14 +1,13 @@
 import { Box, Heading, Text, Flex, Container, Button, Image, Spinner } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { chain, useAccount, useConnect, useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { getClaimableAmount } from 'lib/merkletree'
-import colors from 'theme/colors'
-import { Card } from 'components/Card'
 import { WrongNetworkCard } from 'components/WrongNetwork'
 import { NotConnectedCard } from 'components/NotConnectedCard'
 import { ClaimCard } from 'components/ClaimCard'
 import { NotWhitelistedCard } from 'components/NotWhitelistedCard'
+import { appNetwork } from './_app'
 
 type AppState =
   | 'loading'
@@ -49,7 +48,7 @@ function CNVSeed() {
           </Box>
           <Flex gap={6} flexWrap="wrap" justify="center">
             {/* {state === 'loading' && <Spinner />} */}
-            {state === 'wrong_network' && <WrongNetworkCard switchNetwork={switchNetwork} />}
+            {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
             {state === 'claiming' && (

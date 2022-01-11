@@ -17,7 +17,13 @@ export function ClaimCard({ maxAmount }) {
   const claimPCNV = async () => {
     setIsLoading(true)
     const signer = await account.connector.getSigner()
-    await claim(account.address, signer, amount, inputToken)
+    try {
+      await claim(account.address, signer, amount, inputToken)
+    } catch (e) {
+      console.log(e)
+      // setError()
+      setIsLoading(false)
+    }
     setIsLoading(false)
   }
 
