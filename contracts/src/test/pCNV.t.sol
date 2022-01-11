@@ -52,6 +52,7 @@ contract Tests is pCNVTest, pCNVWhitelist {
 
     address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    uint256 constant initial_mCNV_supply = 333000e18;
 
     /// @notice Allow Alice to claim maxAmount tokens
     function test_alice_claim_max_amount() public {
@@ -418,6 +419,10 @@ contract Tests is pCNVTest, pCNVWhitelist {
         require(mCNV.balanceOf(address(ALICE)) == 10e18, "INCORRECT CNV AMOUNT OUT");
     }
 
+    function xtest_vesting() public {
+
+    }
+
 
     function claim_alice() public {
         bytes32[] memory aliceProof = new bytes32[](1);
@@ -609,11 +614,38 @@ contract Tests is pCNVTest, pCNVWhitelist {
             whitelist_rate,
             whitelist_deadline
         );
-        for (uint i; i < whitelist_addresses.length; i++) {
-            claim_player(i);
-        }
-        require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt);
-        // claim_player(0);
+        // for (uint i; i < whitelist_addresses.length; i++) {
+        //     claim_player(i);
+        // }
+        // require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt);
+        claim_player(0);
+        claim_player(1);
+    }
+
+    function test_reduceRoundDebt() public {
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+        claim_player(0);
+        // reduceRoundDebt(1,amounts[0]*1e18+1);
+        reduceRoundDebt(1,whitelist_maxDebt - ((amounts[0]*1e18 * 1e18 / whitelist_rate)));
+        claim_player(1);
+    }
+    function test_reduceRoundDebt_cannot_reduce_already_issued_debt() public {
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+        claim_player(0);
+        // reduceRoundDebt(1,amounts[0]*1e18+1);
+        vm.expectRevert("!MAX_DEBT");
+        reduceRoundDebt(1,whitelist_maxDebt);
+        // claim_player(1);
     }
 
     function newRound(
@@ -629,6 +661,12 @@ contract Tests is pCNVTest, pCNVWhitelist {
             rate,
             deadline
         );
+        vm.stopPrank();
+    }
+
+    function reduceRoundDebt(uint256 roundId, uint256 debt) public {
+        vm.startPrank(_treasury);
+        TOKEN.reduceRoundDebt(roundId,debt);
         vm.stopPrank();
     }
 
