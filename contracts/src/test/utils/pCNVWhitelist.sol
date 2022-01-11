@@ -4,8 +4,9 @@ pragma solidity >=0.8.0;
 contract pCNVWhitelist {
 
     bytes32 whitelist_merkleroot = 0xfb81565e4c9084b6b582aef7a3f8fdc5cedc4a3c28de4e510baefbfea40ebd88;
-    uint256 whitelist_maxDebt = 4508000e18;
+    uint256 whitelist_maxDebt_in_stables = 4508000e18;
     uint256 whitelist_rate = 3e18;
+    uint256 whitelist_maxDebt = whitelist_maxDebt_in_stables * 1e18 / whitelist_rate;
     uint256 whitelist_deadline = block.timestamp+1000;
 
     address[73] whitelist_addresses = [

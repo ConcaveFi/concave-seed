@@ -614,12 +614,12 @@ contract Tests is pCNVTest, pCNVWhitelist {
             whitelist_rate,
             whitelist_deadline
         );
-        // for (uint i; i < whitelist_addresses.length; i++) {
-        //     claim_player(i);
-        // }
-        // require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt);
-        claim_player(0);
-        claim_player(1);
+        for (uint i; i < whitelist_addresses.length; i++) {
+            claim_player(i);
+        }
+        require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt_in_stables);
+        // claim_player(0);
+        // claim_player(1);
     }
 
     function test_reduceRoundDebt() public {

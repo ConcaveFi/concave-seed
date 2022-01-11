@@ -337,9 +337,6 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Increase cummulative amount minted
         totalMinted += amountOut;
 
-        // Increase amount minted for round
-        round.totalDebt += amountOut;
-
         // Mint tokens to address after pulling
         _mint(to, amountOut);
     }
