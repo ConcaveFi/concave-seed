@@ -909,7 +909,7 @@ contract Random_pCNVTest is DSTest {
     // function setUp() public {
     //
     // }
-    function test_not() public {
+    function xtest_not() public {
         mCNV = new MockCNV(100e18);
         newRound(
             0xfb81565e4c9084b6b582aef7a3f8fdc5cedc4a3c28de4e510baefbfea40ebd88,
@@ -929,7 +929,7 @@ contract Random_pCNVTest is DSTest {
         redeem(0);
     }
 
-    function test_wip_plip() public {
+    function xtest_wip_plip() public {
         address addy = 0x09E6f1BCb006925B9390cf72c07544018145DC25;
         vm.startPrank(addy);
         uint256 maxAmount = 100e18;
