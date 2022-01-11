@@ -49,8 +49,16 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 deadline;   // latest that whitelisted user can participate
     }
 
+    /// @notice details for each investor in the round
+    struct Participant {
+        uint256 purchased;
+        uint256 redeemed;
+    }
+
+    mapping(address => Participant) public participants;
+
     /// @notice amount of DAI/FRAX user has claimed for a specific roundId
-    mapping(uint256 => mapping(address => uint256)) public claimedAmounts;
+    mapping(uint256 => mapping(address => uint256)) public spentAmounts;
 
     // mapping(bytes32 => uint256) public rootToRoundId;
 
@@ -240,23 +248,51 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /// @param amount amount of pCNV to burn for CNV
     function redeem(
         uint256 amount
-    ) external returns (uint256 amountOut) {
+    ) external {
+        // Interface participant storage
+        Participant storage participant = participants[msg.sender];
+
         // make sure pCNV is redeemable for CNV
         require(redeemable, "!REDEEMABLE");
+
+        // make sure sender is not trying to burn more than allowed
+        require(amount <= maxRedemption(msg.sender), "!AMOUNT");
+
+        // increase participant.redeemed to account for newly redeemed tokens
+        participant.redeemed += amount;
 
         // burn users pCNV
         _burn(msg.sender, amount);
 
-        // // calculate amount of CNV to mint based on vesting
-        amountOut = redeemAmountOut(amount);
+        // mint users CNV
+        CNV.mint(msg.sender, amount);
+    }
 
-        // // mint users CNV
-        CNV.mint(msg.sender, amountOut);
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
+        // update vesting storage for both users
+        _beforeTransfer(msg.sender, to, amount);
+        // default ERC20 transfer
+        return super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+        // update vesting storage for both users
+        _beforeTransfer(from, to, amount);
+        // default ERC20 transfer
+        return super.transferFrom(from, to, amount);
     }
 
     /* ---------------------------------------------------------------------- */
     /*                              VIEW METHODS                              */
     /* ---------------------------------------------------------------------- */
+
+    /// @notice maximum amount of pCNV a given user can redeem
+    function maxRedemption(address who) public view returns (uint256) {
+        // Interface participant storage
+        Participant memory participant = participants[who];
+        // return total amount user can redeem at this point - redeemed amount
+        return redeemAmountOut(participant.purchased) - participant.redeemed;
+    }
 
     /// @notice retuns the amount you will receive in CNV for specific `amount` of pCNV
     /// @param amount of pCNV being redeemed
@@ -264,13 +300,10 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         uint256 amount
     ) public view returns (uint256) {
         // If tokens are not redeemable return 0
-        if (!redeemable) return 0;
-
-        // If CNV has no supply return 0
-        if (CNV.totalSupply() == 0) return 0;
+        if (!redeemable || CNV.totalSupply() == 0) return 0;
 
         // Make sure amount is less than or equal to max supply
-        require(amount <= totalMinted, "amount");
+        require(amount <= totalMinted, "!AMOUNT");
 
         // Calculate total amount of CNV that "maxSupply" of pCNV are claimable for
         // X = (10% of current CNV supply * percent vested)
@@ -293,8 +326,6 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                             INTERNAL LOGIC                             */
     /* ---------------------------------------------------------------------- */
 
-
-
     /// @notice Deposits FRAX/DAI for pCNV if merkle proof exists in specified round
     /// @param sender         address sending transaction
     /// @param to             whitelisted address purchased pCNV will be sent to
@@ -315,6 +346,9 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Interface storage for round
         InvestorRound storage round = rounds[roundId];
 
+        // Interface storage for participant
+        Participants storage paricipant = participants[to];
+
         // Make sure payment tokenIn is either DAI or FRAX
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
 
@@ -328,11 +362,14 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         require(MerkleProof.verify(proof, round.merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
 
         // Verify amount claimed by user does not surpass maxAmount
-        claimedAmounts[roundId][to] += amountIn;
-        require(claimedAmounts[roundId][to] <= maxAmount, "!AMOUNT_IN");
+        spentAmounts[roundId][to] += amountIn;
+        require(spentAmounts[roundId][to] <= maxAmount, "!AMOUNT_IN");
 
         // Calculate rate of CNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / round.rate;
+
+        // Increase participant.purchased to account for newly purchased tokens
+        participant.purchased += amountOut;
 
         // Make sure totalDebt does not exceed maxdebt (ie make sure we don't mint more than intended)
         round.totalDebt += amountOut;
@@ -346,5 +383,85 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
         // Mint tokens to address after pulling
         _mint(to, amountOut);
+    }
+
+    function _beforeTransfer(address from, address to, uint256 amount) internal {
+
+        // Interface "from" participant storage
+        Participant storage fromParticipant = participants[from];
+
+        // reduce "from" redeemed by amount * "from" redeem purchase ratio
+        fromParticipant.redeemed -= amount * fromParticipant.redeemed / fromParticipant.purchased;
+
+        // reduce "from" purchased amount by the amount being sent
+        fromParticipant.purchase -= amount;
+
+        // Interface "to" participant storage
+        Participant storage toParticipant = participants[to];
+
+        // increase "to" redeemed by amount * "from" redeem purchase ratio
+        toParticipant.redeemed += amount * fromParticipant.redeemed / fromParticipant.purchased;
+
+        // increase "to" purchased by amount received
+        toParticipant.purchase += amount;
+
+        /*
+        // SCENARIO 1 ----------------------------------------------------------
+        currentVestingRatio = 20%
+        
+        Alice {
+            purchased:100
+            redeemed:10
+            // vestableAmount: 10
+        }
+
+        Bob {
+            purchased:0,
+            redeemed:0
+            // vestableAmount: 0
+        }
+
+        _beforeTransfer(Alice,Bob,50)
+
+        Alice {
+            purchased:50
+            redeemed: 50*10/100 = 5
+        }
+
+        Bob {
+            purchased: 50
+            redeemed: 50*10/100 = 5
+        }
+
+        // ---------------------------------------------------------------------
+        // SCENARIO 2 ----------------------------------------------------------
+        currentVestingRatio = 20%
+        
+        Alice {
+            purchased:100
+            redeemed:10 // 10%
+            // vestableAmount: 10
+        }
+
+        Bob {
+            purchased:100
+            redeemed:20 // 20%
+            // vestableAmount: 0
+        }
+
+        _beforeTransfer(Alice,Bob,50)
+
+        Alice {
+            purchased:50
+            redeemed: 50*10/100 = 5 // 10%
+        }
+
+        Bob {
+            purchased: 100+50= 150
+            redeemed: 20+50*10/100 = 25 // 16%
+        }
+        
+        */
+
     }
 }
