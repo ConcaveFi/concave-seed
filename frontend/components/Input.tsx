@@ -1,6 +1,7 @@
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import {
   Button,
+  ButtonProps,
   chakra,
   Flex,
   Input,
@@ -96,7 +97,7 @@ const Select = ({
   )
 }
 
-const MaxAllowed = ({ max, onClick }) => (
+const MaxAllowed = ({ max, ...props }: { max: number } & ButtonProps) => (
   <Button
     borderRadius="full"
     py={1}
@@ -108,9 +109,9 @@ const MaxAllowed = ({ max, onClick }) => (
     height="auto"
     textColor="grey.700"
     whiteSpace="nowrap"
-    onClick={onClick}
+    {...props}
   >
-    Max Whitelisted: {max}
+    Max claimable: {max}
     <Text textColor={'text.highlight'}>Max</Text>
   </Button>
 )
@@ -135,7 +136,7 @@ export function AmountInput({
       <InputContainer shadow="down">
         <BaseInput
           value={value}
-          onChange={(e) => onChangeValue(e.target.value)}
+          onValueChange={({ value }) => onChangeValue(value)}
           isAllowed={({ floatValue }) => floatValue <= maxAmount}
         />
         <Stack align="end">
