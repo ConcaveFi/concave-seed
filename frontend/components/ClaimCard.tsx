@@ -34,6 +34,7 @@ export function ClaimCard({ maxAmount }) {
       <Button
         onClick={claimPCNV}
         isLoading={isLoading}
+        isDisabled={Number(amount) < 1}
         variant="primary"
         size="large"
         fontSize={24}

@@ -37,7 +37,7 @@ const InputContainer = (props) => (
     mx={-5}
     px={5}
     py={3}
-    w={400}
+    maxW={400}
     h={90}
     borderRadius="2xl"
     bgGradient={colors.gradients.green}
