@@ -4,18 +4,54 @@ pragma solidity >=0.8.0;
 /// ============ Imports ============
 
 import { pCNVTest } from "./utils/pCNVTest.sol"; // Test scaffolding
+import { pCNVWhitelist } from "./utils/pCNVWhitelist.sol";
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
+
+
+interface IStable {
+
+
+    // --- Auth ---
+  function wards() external returns ( uint256 );
+
+  function rely(address guy) external;
+
+  function deny(address guy) external;
+
+    // --- Token ---
+  function transfer(address dst, uint wad) external returns (bool);
+
+  function transferFrom(address src, address dst, uint wad) external returns (bool);
+
+  function mint(address usr, uint wad) external;
+
+  function burn(address usr, uint wad) external;
+
+  function approve(address usr, uint wad) external returns (bool);
+
+    // --- Alias ---
+  function push(address usr, uint wad) external;
+
+  function pull(address usr, uint wad) external;
+
+  function move(address src, address dst, uint wad) external;
+
+    // --- Approve by signature ---
+  function permit(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s) external;
+
+
+  function balanceOf(address account) external view returns (uint256);
+}
 
 
 /// @title Tests
 /// @notice pCNV tests
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
-contract Tests is pCNVTest {
+contract Tests is pCNVTest, pCNVWhitelist {
 
     address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    uint256 constant ratio = 3;
 
     /// @notice Allow Alice to claim maxAmount tokens
     function test_alice_claim_max_amount() public {
@@ -564,6 +600,66 @@ contract Tests is pCNVTest {
         vm.expectRevert("!CONCAVE");
         TOKEN.setRedeemable(address(0));
 
+    }
+
+    function test_claim_all_users() public {
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+        claim_player(0);
+    }
+
+    function newRound(
+        bytes32 merkleRoot,
+        uint256 maxDebt,
+        uint256 rate,
+        uint256 deadline
+    ) public {
+        vm.startPrank(_treasury);
+        TOKEN.newRound(
+            merkleRoot,
+            maxDebt,
+            rate,
+            deadline
+        );
+        vm.stopPrank();
+    }
+
+    function claim_player(uint256 ix) public {
+        address addy = whitelist_addresses[ix];
+        uint256 maxAmount = amounts[ix]*1e18;
+        uint256 amountIn = maxAmount;
+
+        uint256 proofLength;
+        for (uint256 i; i < 7; i++) {
+            if (proofs[ix][i] != 0x0)  {
+                proofLength+=1;
+            }
+        }
+        bytes32[] memory aliceProof = new bytes32[](proofLength);
+        // aliceProof[0] = 0x4aa8314bb6a7011f02a48f7fb529a59401ef1cdb4bf593af93a44a8fbf477500;
+        for (uint256 i; i < proofLength; i++) {
+            aliceProof[i] = bytes32(proofs[ix][i]);
+        }
+        vm.startPrank(DAI_WHALE);
+        IERC20(_DAI).transfer(addy,maxAmount);
+        vm.stopPrank();
+
+        require(IStable(DAI).balanceOf(addy) == maxAmount,"DAIO");
+        vm.startPrank(addy);
+        IStable(DAI).approve(address(TOKEN),maxAmount);
+        TOKEN.mint(
+            addy,
+            DAI,
+            1,
+            maxAmount,
+            amountIn,
+            aliceProof
+        );
+        vm.stopPrank();
     }
 
     // @TODO: v,r,s signature
