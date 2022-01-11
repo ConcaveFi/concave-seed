@@ -7,7 +7,7 @@ const miniAddress = (address) =>
   `${address.substr(0, 6)}...${address.substr(address.length - 6, address.length)}`
 
 const DisconnectButton = () => {
-  const [{ data, loading }, disconnect] = useAccount()
+  const [{ data, loading }, disconnect] = useAccount({ fetchEns: true })
   return (
     <Menu placement="bottom-end">
       <MenuButton as={Button} isLoading={loading} borderRadius="xl">

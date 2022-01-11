@@ -46,12 +46,11 @@ const claimWithDai = async (
 }
 
 export const claim = async (
-  address: string,
   signer: Signer,
   amount: string,
   inputToken: typeof inputTokens[number],
 ): Promise<void> => {
-  if (!address) throw new Error('Not Authenticated')
+  const address = await signer.getAddress()
 
   const formattedToAddress = ethers.utils.getAddress(address)
   const maxAmount = ethers.utils.parseUnits(getClaimableAmount(address).toString(), 18)

@@ -18,7 +18,7 @@ export function ClaimCard({ maxAmount }) {
     setIsLoading(true)
     const signer = await account.connector.getSigner()
     try {
-      await claim(account.address, signer, amount, inputToken)
+      await claim(signer, amount, inputToken)
     } catch (e) {
       console.log(e)
       // setError()

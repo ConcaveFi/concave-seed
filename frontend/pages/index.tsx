@@ -28,7 +28,7 @@ const resolveState = (network, account): AppState => {
 const pCNVSeedPrice = 3
 
 function CNVSeed() {
-  const [{ data: network, loading: networkLoading }, switchNetwork] = useNetwork()
+  const [{ data: network, loading: networkLoading }] = useNetwork()
   const [{ data: account, loading: accountLoading }] = useAccount()
 
   const [state, setState] = useState<AppState>('loading')
