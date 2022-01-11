@@ -9,7 +9,7 @@ export default defineConfig({
     ropsten: {
       frax: '0xE7E9F348202f6EDfFF2607025820beE92F51cdAA',
       dai: '0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5',
-      pCNV: '0x0256eBDd5A71c0D3819A61DfA02130fA1cdAb1cF',
+      pCNV: '0xd496ca8cb080e00539219cdf601521b733ec5eab',
     },
   },
 })

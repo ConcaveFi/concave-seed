@@ -4,6 +4,8 @@ import { merkleTree, getClaimableAmount, leafOf } from './merkletree'
 import { getRopstenSdk } from '@dethcrypto/eth-sdk-client'
 import { Provider } from '@ethersproject/abstract-provider'
 import { Dai, Frax, PCNV } from '.dethcrypto/eth-sdk-client/esm/types'
+import { parseConfigFileTextToJson } from 'typescript'
+import { format } from 'prettier'
 
 export const inputTokens = ['dai', 'frax']
 
@@ -16,8 +18,11 @@ const claimWithFrax = async (
   amount,
   proof,
 ) => {
-  const fraxApprove = await frax.approve(userAddress, maxAmount, { from: userAddress })
-  await fraxApprove.wait(1)
+  // const fraxAllowance = await frax.allowance(userAddress, maxAmount, { from: userAddress })
+  // if(fraxAllowance < amount ) {
+  //   const fraxApprove = await frax.approve(userAddress, maxAmount, { from: userAddress })
+  //   await fraxApprove.wait(1);
+  // }
   return pCNV.mint(userAddress, frax.address, roundId, maxAmount, amount, proof)
 }
 
@@ -30,8 +35,19 @@ const claimWithDai = async (
   amount,
   proof,
 ) => {
-  const daiApprove = await dai.approve(userAddress, maxAmount, { from: userAddress })
-  await daiApprove.wait(1);
+  // const daiAllowance = await dai.allowance(userAddress, maxAmount, { from: userAddress })
+  // if(daiAllowance < amount ) {
+  // const daiApprove = await dai.approve(userAddress, maxAmount, { from: userAddress })
+  // await daiApprove.wait(1);
+  // }
+  console.log(JSON.stringify({
+    userAddress,
+    daiAddress: dai.address,
+    roundId,
+    maxAmount,
+    amount,
+    proof
+  }))
   return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof)
 
   // const permit = await signDaiPermit(dai.provider, dai.address, userAddress, pCNV.address)
@@ -55,18 +71,15 @@ export const claim = async (
   inputToken: typeof inputTokens[number],
 ): Promise<void> => {
   const address = await signer.getAddress()
-
   const formattedToAddress = ethers.utils.getAddress(address)
   const maxAmount = ethers.utils.parseUnits(getClaimableAmount(address).toString(), 18)
   const proof = merkleTree.getHexProof(leafOf(address))
   const merkleRoot: string = merkleTree.getHexRoot();
   console.log(merkleRoot)
-
-
-
+  console.log(proof)
   const { pCNV, frax, dai } = getRopstenSdk(signer)
   const tokenIn = { frax, dai }[inputToken]
-  const roundId = 0
+  const roundId = 1
 
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
@@ -78,6 +91,7 @@ export const claim = async (
     amount,
     proof,
   )
+  console.log(claimTx);
   await claimTx.wait(1) // ?
 
   // } catch (e) {
