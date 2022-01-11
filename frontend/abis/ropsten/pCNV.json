@@ -30,7 +30,6 @@
         "type": "address"
       }
     ],
-    "constant": false,
     "stateMutability": "view"
   },
   {
@@ -44,7 +43,6 @@
         "type": "address"
       }
     ],
-    "constant": false,
     "stateMutability": "view"
   },
   {
@@ -58,7 +56,6 @@
         "type": "bytes32"
       }
     ],
-    "constant": false,
     "stateMutability": "view"
   },
   {
@@ -72,7 +69,6 @@
         "type": "address"
       }
     ],
-    "constant": false,
     "stateMutability": "view"
   },
   {
@@ -86,7 +82,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -100,7 +96,7 @@
         "type": "bytes32"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -125,7 +121,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -150,7 +146,7 @@
         "type": "bool"
       }
     ],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -170,7 +166,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -229,7 +225,7 @@
       }
     ],
     "outputs": [],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -254,7 +250,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -268,7 +264,7 @@
         "type": "uint8"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -313,7 +309,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -327,7 +323,7 @@
         "type": "string"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -356,7 +352,7 @@
       }
     ],
     "outputs": [],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -376,7 +372,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -390,7 +386,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -434,7 +430,7 @@
       }
     ],
     "outputs": [],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -454,7 +450,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -474,7 +470,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -488,7 +484,7 @@
         "type": "bool"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -507,7 +503,7 @@
       }
     ],
     "outputs": [],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -527,7 +523,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -567,7 +563,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -581,7 +577,7 @@
       }
     ],
     "outputs": [],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -595,7 +591,7 @@
         "type": "string"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -609,7 +605,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -623,7 +619,7 @@
         "type": "uint256"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
@@ -648,7 +644,7 @@
         "type": "bool"
       }
     ],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -678,7 +674,7 @@
         "type": "bool"
       }
     ],
-    "constant": false,
+
     "stateMutability": "nonpayable"
   },
   {
@@ -692,7 +688,7 @@
         "type": "address"
       }
     ],
-    "constant": false,
+
     "stateMutability": "view"
   },
   {
