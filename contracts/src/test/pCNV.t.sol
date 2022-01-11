@@ -632,7 +632,8 @@ contract Tests is pCNVTest, pCNVWhitelist {
         claim_player(0);
         // reduceRoundDebt(1,amounts[0]*1e18+1);
         reduceRoundDebt(1,whitelist_maxDebt - ((amounts[0]*1e18 * 1e18 / whitelist_rate)));
-        claim_player(1);
+        // vm.expectRevert("!LIQUIDITY");
+        claim_player_revert(1);
     }
     function test_reduceRoundDebt_cannot_reduce_already_issued_debt() public {
         newRound(
@@ -693,6 +694,41 @@ contract Tests is pCNVTest, pCNVWhitelist {
         // require(IStable(DAI).balanceOf(addy) == maxAmount,"DAIO");
         vm.startPrank(addy);
         IStable(DAI).approve(address(TOKEN),maxAmount);
+        TOKEN.mint(
+            addy,
+            DAI,
+            1,
+            maxAmount,
+            amountIn,
+            aliceProof
+        );
+        vm.stopPrank();
+    }
+
+    function claim_player_revert(uint256 ix) public {
+        address addy = whitelist_addresses[ix];
+        uint256 maxAmount = amounts[ix]*1e18;
+        uint256 amountIn = maxAmount;
+
+        uint256 proofLength;
+        for (uint256 i; i < 7; i++) {
+            if (proofs[ix][i] != 0x0)  {
+                proofLength+=1;
+            }
+        }
+        bytes32[] memory aliceProof = new bytes32[](proofLength);
+        // aliceProof[0] = 0x4aa8314bb6a7011f02a48f7fb529a59401ef1cdb4bf593af93a44a8fbf477500;
+        for (uint256 i; i < proofLength; i++) {
+            aliceProof[i] = bytes32(proofs[ix][i]);
+        }
+        vm.startPrank(DAI_WHALE);
+        IERC20(_DAI).transfer(addy,maxAmount);
+        vm.stopPrank();
+
+        // require(IStable(DAI).balanceOf(addy) == maxAmount,"DAIO");
+        vm.startPrank(addy);
+        IStable(DAI).approve(address(TOKEN),maxAmount);
+        vm.expectRevert("!LIQUIDITY");
         TOKEN.mint(
             addy,
             DAI,
