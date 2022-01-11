@@ -7,7 +7,9 @@ const token = {
 }
 
 export const addressClaimableQuantity = {
+  "0xFb882cF1f72a2887d7E1a60207e3dE592c08ce10": 1000,
   "0x09E6f1BCb006925B9390cf72c07544018145DC25": 100,
+  "0x02686B88B2a234Df3cEAAf9Cc27D7e969C6CFE38": 250000,
   "0xcF10B967a9e422753812004Cd59990f62E360760": 100000,
   "0x7287C2833d51b49Af4EBCceEc51c0635F14c72A7": 50000,
   "0xF10a439c132fEfd08B45E24D6838B1E1dC31Fdf0": 200000,
@@ -92,7 +94,7 @@ export const getClaimableAmount = (address: string): number =>
 
 export const leafOf = (address: string) => {
   const claimableQuantiy = getClaimableAmount(address)
-  console.log(address,claimableQuantiy)
+  // console.log(address,claimableQuantiy)
   return Buffer.from(
     ethers.utils
       .solidityKeccak256(
