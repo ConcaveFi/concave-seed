@@ -30,19 +30,23 @@ const claimWithDai = async (
   amount,
   proof,
 ) => {
-  const permit = await signDaiPermit(dai.provider, dai.address, userAddress, pCNV.address)
-  return pCNV.claimWithPermit(
-    userAddress,
-    dai.address,
-    roundId,
-    maxAmount,
-    amount,
-    proof,
-    permit.expiry,
-    permit.v,
-    permit.r,
-    permit.s,
-  )
+  const daiApprove = await dai.approve(userAddress, maxAmount, { from: userAddress })
+  await daiApprove.wait(1);
+  return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof)
+
+  // const permit = await signDaiPermit(dai.provider, dai.address, userAddress, pCNV.address)
+  // return pCNV.claim(
+  //   userAddress,
+  //   dai.address,
+  //   roundId,
+  //   maxAmount,
+  //   amount,
+  //   proof,
+  //   permit.expiry,
+  //   permit.v,
+  //   permit.r,
+  //   permit.s,
+  // )
 }
 
 export const claim = async (
@@ -55,10 +59,14 @@ export const claim = async (
   const formattedToAddress = ethers.utils.getAddress(address)
   const maxAmount = ethers.utils.parseUnits(getClaimableAmount(address).toString(), 18)
   const proof = merkleTree.getHexProof(leafOf(address))
+  const merkleRoot: string = merkleTree.getHexRoot();
+  console.log(merkleRoot)
+
+
 
   const { pCNV, frax, dai } = getRopstenSdk(signer)
   const tokenIn = { frax, dai }[inputToken]
-  const roundId = 1
+  const roundId = 0
 
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
