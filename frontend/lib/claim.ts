@@ -63,7 +63,7 @@ export const claim = async (
 
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
-    tokenIn,
+    tokenIn as any,
     pCNV,
     formattedToAddress,
     roundId,
