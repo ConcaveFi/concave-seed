@@ -7,7 +7,6 @@ const token = {
 }
 
 export const addressClaimableQuantity = {
-  "0x08212DFFb0FAA20073511f87526547cAE00b7a64": 100,
   "0x09E6f1BCb006925B9390cf72c07544018145DC25": 100,
   "0xcF10B967a9e422753812004Cd59990f62E360760": 100000,
   "0x7287C2833d51b49Af4EBCceEc51c0635F14c72A7": 50000,
@@ -31,7 +30,7 @@ export const addressClaimableQuantity = {
   "0xf3e9848D5accE2f83b8078ee21f458e59ec4289A": 100000,
   "0x268C3D74373E394470Ff89D49374b3a7E15b4fA4": 30000,
   "0x1b9AD98ADe24595d5b02BF994e030b0058494A73": 500000,
-  "0xc2ad4a403668a2f5a60f95ef6b6b94e684372139": 30000,
+  "0xC2aD4a403668a2f5A60f95ef6B6B94e684372139": 30000,
   "0xd5E09e5322A26A8159B67efbd8Eb462Ed9a297d8": 12000,
   "0xED39cc08B5bFaBA3E41F58187cF908034Fe14d86": 100000,
   "0xddd7477Ea9E1C5b2bc325097c1064d94595CE049": 100000,
@@ -48,8 +47,8 @@ export const addressClaimableQuantity = {
   "0x90F99593761048F38E1B05fFC9807C50260ff578": 10000,
   "0xbbE56bb006a28CdA016F7C599eFf4AAAdd07C21C": 10000,
   "0x5F7476ACa630A79d89b8A1b4D92fc91c65c01abF": 10000,
-  "0x2aa48f410007b7380d2846d03142febbbedeb3d3": 10000,
-  "0x9ead5e6e90440e69b5f28fef5942a5b273387c13": 10000,
+  "0x2aA48F410007b7380d2846D03142FebbBEDEb3d3": 10000,
+  "0x9ead5E6E90440e69B5F28fEF5942a5B273387c13": 10000,
   "0xD3A5211477e05F93b632F45817b85dF4676b4bD6": 10000,
   "0xCdD27fDF1B991E9DEB8647EE3D8Ac1bdB7D6b675": 10000,
   "0x048aD0A6D74baDE422AE4080F17fC311d3AaEc83": 10000,
@@ -84,11 +83,16 @@ export const addressClaimableQuantity = {
   "0x02f98c63E6352C06Fa8D5F14c004926F165CEe74": 50000
 }
 
+// 0xc2ad4a403668a2f5a60f95ef6b6b94e684372139
+// 0x2aa48f410007b7380d2846d03142febbbedeb3d3
+// 0x9ead5e6e90440e69b5f28fef5942a5b273387c13
+
 export const getClaimableAmount = (address: string): number =>
   addressClaimableQuantity[ethers.utils.getAddress(address)] || 0
 
 export const leafOf = (address: string) => {
   const claimableQuantiy = getClaimableAmount(address)
+  console.log(address,claimableQuantiy)
   return Buffer.from(
     ethers.utils
       .solidityKeccak256(
