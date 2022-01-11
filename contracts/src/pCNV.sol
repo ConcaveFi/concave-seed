@@ -8,27 +8,22 @@ pragma solidity >=0.8.0;
 import { ERC20 } from "@solmate/tokens/ERC20.sol";
 import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
+import { ICNV } from "./interfaces/ICNV.sol";
 
-interface ICNV {
-    function mint(address to, uint256 amount) external returns (uint256);
-
-    function totalSupply() external view returns (uint256);
-}
-
-/// @title pCNV
-/// @notice ERC20 claimable by members of a merkle tree
+/// @title  pCNV
+/// @notice Concave Presale Token, mints pCNV for users based on merkle tree
 /// @author Concave
 contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
-    /* -------------------------------------------------------------------------- */
-    /*                                DEPENDENCIES                                */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                              DEPENDENCIES                              */
+    /* ---------------------------------------------------------------------- */
 
     using SafeTransferLib for ERC20;
 
-    /* -------------------------------------------------------------------------- */
-    /*                              IMMUTABLE STORAGE                             */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                            IMMUTABLE STORAGE                           */
+    /* ---------------------------------------------------------------------- */
     /// @notice initial block timestamp
     uint256 public immutable GENESIS = block.timestamp;
 
@@ -41,34 +36,39 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /// @notice treasury address to which deposited FRAX or DAI are sent
     address public immutable treasury;
 
-    /* -------------------------------------------------------------------------- */
-    /*                               MUTABLE STORAGE                              */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                             MUTABLE STORAGE                            */
+    /* ---------------------------------------------------------------------- */
 
     /// @notice details for each investor round
     struct InvestorRound {
-        bytes32 merkleRoot;
-        uint256 maxDebt;    // maximum amount of debt being issued in round
-        uint256 totalDebt;  // total amount of debt issued so far in round
+        bytes32 merkleRoot; // merkle root from addresses and balances
+        uint256 maxDebt;    // maximum amount of debt being issued in round (in pCNV)
+        uint256 totalDebt;  // total amount of debt issued so far in round (in pCNV)
         uint256 rate;       // amount of DAI/FRAX WL user must send per pCNV
         uint256 deadline;   // latest that whitelisted user can participate
     }
 
+    /// @notice amount of DAI/FRAX user has claimed for a specific roundId
     mapping(uint256 => mapping(address => uint256)) public claimedAmounts;
 
-    mapping(bytes32 => uint256) public rootToRoundId;
+    // mapping(bytes32 => uint256) public rootToRoundId;
 
+    /// @notice array of investor rounds
     InvestorRound[] public rounds;
 
+    /// @notice CNV ERC20 token
     ICNV public CNV;
 
-    uint256 public totalMinted; // cummulatively
+    /// @notice total pCNV minted. Can differ from totalSupply due to burning of pCNV at redemption
+    uint256 public totalMinted;
 
+    /// @notice whether pCNV are redeemable for CNV
     bool public redeemable;
 
-    /* -------------------------------------------------------------------------- */
-    /*                                 CONSTRUCTOR                                */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                               CONSTRUCTOR                              */
+    /* ---------------------------------------------------------------------- */
 
     /// @notice Creates a new pCNV contract
     /// @param _FRAX        address of FRAX
@@ -81,41 +81,43 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     ) {
         FRAX = _FRAX;
         DAI = _DAI;
-        treasury = _treasury; // set treasury address
+        treasury = _treasury;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                   EVENTS                                   */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                                 EVENTS                                 */
+    /* ---------------------------------------------------------------------- */
 
-    /// @notice Emmited after a new round investor round is started
-    /// @param maxDebt amount of pCNV to be issued
-    /// @param rate amount of pCNV returned per input token
+    /// @notice Emitted after a new investor round is started
+    /// @param  maxDebt amount of pCNV to be issued in this round
+    /// @param  rate amount of DAI/FRAX needed per pCNV in this round
     event NewRound(uint256 maxDebt, uint256 rate);
 
-    /// @notice Emmitted after a rounds maximum debt is decreased by "amount"
-    /// @param roundId id of round that whose debt was reduced
-    /// @param amount of pCNV debt reduced
+    /// @notice Emitted after a rounds maximum debt is decreased by "amount"
+    /// @param  roundId id of round whose debt was reduced
+    /// @param  amount of pCNV debt reduced
     event RoundDebtReduced(uint256 roundId, uint256 amount);
 
     /// @notice Emitted when tokens are redeemable for CNV
+    /// @param  CNV address of CNV token to which pCNV will can be redeemed for
     event SetRedeemable(address CNV);
 
-    /* -------------------------------------------------------------------------- */
-    /*                                  MODIFIER                                  */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                                MODIFIER                                */
+    /* ---------------------------------------------------------------------- */
 
+    /// @notice only allows Concave treasury
     modifier onlyConcave() {
         require(msg.sender == treasury, "!CONCAVE");
         _;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                ONLY CONCAVE                                */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                              ONLY CONCAVE                              */
+    /* ---------------------------------------------------------------------- */
 
-    /// @notice allow pCNV to be redeemed for CNV
-    /// @param _CNV address of CNV tokenIn
+    /// @notice allow pCNV to be redeemed for CNV by setting redeemable as true and setting CNV address
+    /// @param  _CNV address of CNV
     function setRedeemable(
         address _CNV
     ) external onlyConcave {
@@ -130,9 +132,10 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     }
 
     /// @notice Start new investor round, where we issue pTokens for $1
-    /// @param merkleRoot root that stores list of users and claimable amounts
-    /// @param maxDebt maximum amount of pTokens to issue
-    /// @param deadline time when whitelisted users can no longer participate in round
+    /// @param  merkleRoot  merkle root of users and claimable amounts for this round
+    /// @param  maxDebt     maximum amount of pCNV to issue in this round
+    /// @param  rate        amount of DAI/FRAX WL user must send per pCNV for this round
+    /// @param  deadline    timestamp for when whitelisted users can no longer participate in round
     function newRound(
         bytes32 merkleRoot,
         uint256 maxDebt,
@@ -156,14 +159,15 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
             deadline
         ));
 
-        rootToRoundId[merkleRoot] = rounds.length - 1;
+        // rootToRoundId[merkleRoot] = rounds.length - 1;
 
         // Emit the event
         emit NewRound(maxDebt, rate);
     }
 
-    /// @notice Reduce the amount of issuable debt by "amount" for given investor round
-    /// @param amount that issuable debt will decrease by
+    /// @notice Reduce the amount of issuable debt by `amount` for given investor round
+    /// @param  roundId id of round of which to decrease debt
+    /// @param  amount  amount by which issuable debt will decrease by
     function reduceRoundDebt(
         uint256 roundId,
         uint256 amount
@@ -181,20 +185,21 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         emit RoundDebtReduced(roundId, amount);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                               PUBLIC METHODS                               */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                             PUBLIC METHODS                             */
+    /* ---------------------------------------------------------------------- */
 
-    /// @notice mint using EIP-2612 permit to save a transaction
-    /// @param to whitelisted address purchased pCNV will be sent to
-    /// @param amountIn amount of tokens sender wants to purchase on behalf of "to"
-    /// @param maxAmount max amount of tokens whitelistd user can mint
-    /// @param tokenIn address of tokenIn user wishes to deposit
-    /// @param proof merkle proof to prove address and amount are in tree
+    /// @notice mint pCNV for a specific round by giving merkle proof; uses EIP-2612 permit to save a transaction
+    /// @param to             whitelisted address purchased pCNV will be sent to
+    /// @param tokenIn        address of tokenIn user wishes to deposit
+    /// @param roundId        id of round from which to mint
+    /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
+    /// @param amountIn       amount of DAI/FRAX sender wishes to deposit for pCNV
+    /// @param proof          merkle proof to prove address and amount are in tree
     /// @param permitDeadline time when permit is no longer valid
-    /// @param v part of EIP-2612 signature
-    /// @param r part of EIP-2612 signature
-    /// @param s part of EIP-2612 signature
+    /// @param v              part of EIP-2612 signature
+    /// @param r              part of EIP-2612 signature
+    /// @param s              part of EIP-2612 signature
     function claimWithPermit(
         address to,
         address tokenIn,
@@ -213,12 +218,13 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         _purchase(msg.sender, to, tokenIn, roundId, maxAmount, amountIn, proof);
     }
 
-    /// @notice Allows claiming tokens if address+amount is part of merkle tree
-    /// @param to whitelisted address purchased pCNV will be sent to
-    /// @param amountIn amount of tokens sender wants to purchase on behalf of "to"
-    /// @param maxAmount max amount of tokens whitelistd user can mint
-    /// @param tokenIn address of tokenIn user wishes to deposit
-    /// @param proof merkle proof to prove address and amount are in tree
+    /// @notice mint pCNV for a specific round by giving merkle proof;
+    /// @param to             whitelisted address purchased pCNV will be sent to
+    /// @param tokenIn        address of tokenIn user wishes to deposit
+    /// @param roundId        id of round from which to mint
+    /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
+    /// @param amountIn       amount of DAI/FRAX sender wishes to deposit for pCNV
+    /// @param proof          merkle proof to prove address and amount are in tree
     function mint(
         address to,
         address tokenIn,
@@ -230,8 +236,8 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         return _purchase(msg.sender, to, tokenIn, roundId, maxAmount, amountIn, proof);
     }
 
-    /// @notice redeem pTokens for CNV, if redeemable
-    /// @param amount of pCNV to burn for CNV
+    /// @notice redeem pCNV for CNV, if redeemable
+    /// @param amount amount of pCNV to burn for CNV
     function redeem(
         uint256 amount
     ) external returns (uint256 amountOut) {
@@ -248,12 +254,12 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         CNV.mint(msg.sender, amountOut);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                VIEW METHODS                                */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                              VIEW METHODS                              */
+    /* ---------------------------------------------------------------------- */
 
-    /// @notice retuns the amount you will receive in CNV for redeeming "amount" of pTokens
-    /// @param amount of pCNV supply being redeemed
+    /// @notice retuns the amount you will receive in CNV for specific `amount` of pCNV
+    /// @param amount of pCNV being redeemed
     function redeemAmountOut(
         uint256 amount
     ) public view returns (uint256) {
@@ -283,19 +289,20 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         return 1e18 * elapsed / (365 days * 2);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                               INTERNAL LOGIC                               */
-    /* -------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                             INTERNAL LOGIC                             */
+    /* ---------------------------------------------------------------------- */
 
 
 
-    /// @notice Allows claiming tokens if address+amount is part of merkle tree
-    /// @param sender address sending transaction
-    /// @param to whitelisted address purchased pCNV will be sent to
-    /// @param amountIn amount of tokens sender wants to purchase on behalf of "to"
-    /// @param maxAmount max amount of tokens whitelistd user can mint
-    /// @param tokenIn address of tokenIn user wishes to deposit
-    /// @param proof merkle proof to prove address and amount are in tree
+    /// @notice Deposits FRAX/DAI for pCNV if merkle proof exists in specified round
+    /// @param sender         address sending transaction
+    /// @param to             whitelisted address purchased pCNV will be sent to
+    /// @param tokenIn        address of tokenIn user wishes to deposit
+    /// @param roundId        id of round from which to mint
+    /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
+    /// @param amountIn       amount of DAI/FRAX sender wishes to deposit for pCNV
+    /// @param proof          merkle proof to prove address and amount are in tree
     function _purchase(
         address sender,
         address to,
@@ -312,7 +319,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
 
         // Make sure roundId is equal rootToRoundId to make sure user only interacts with intended round
-        require(roundId == rootToRoundId[round.merkleRoot], "!ROUND_ID");
+        // require(roundId == rootToRoundId[round.merkleRoot], "!ROUND_ID");
 
         // Make sure "round.deadline" hasn't been exceeded
         require(block.timestamp <= round.deadline, "!DEADLINE");
