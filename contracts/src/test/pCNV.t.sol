@@ -609,7 +609,11 @@ contract Tests is pCNVTest, pCNVWhitelist {
             whitelist_rate,
             whitelist_deadline
         );
-        claim_player(0);
+        for (uint i; i < whitelist_addresses.length; i++) {
+            claim_player(i);
+        }
+        require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt);
+        // claim_player(0);
     }
 
     function newRound(
@@ -648,7 +652,7 @@ contract Tests is pCNVTest, pCNVWhitelist {
         IERC20(_DAI).transfer(addy,maxAmount);
         vm.stopPrank();
 
-        require(IStable(DAI).balanceOf(addy) == maxAmount,"DAIO");
+        // require(IStable(DAI).balanceOf(addy) == maxAmount,"DAIO");
         vm.startPrank(addy);
         IStable(DAI).approve(address(TOKEN),maxAmount);
         TOKEN.mint(
