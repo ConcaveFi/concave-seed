@@ -7,9 +7,9 @@ export default defineConfig({
       dai: '0x6b175474e89094c44da98b954eedeac495271d0f',
     },
     ropsten: {
-      frax: '0x3C0a7EC8c962A85bfB1e4FcfD4bB71C8128dE6f7',
-      dai: '0x448C56C5eA442908238072eFb7f5Ce58E22C161C',
-      pCNV: '0xb6308694bfc72a558cd349c8878877524915e652',
+      frax: '0xE7E9F348202f6EDfFF2607025820beE92F51cdAA',
+      dai: '0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5',
+      pCNV: '0x0256eBDd5A71c0D3819A61DfA02130fA1cdAb1cF',
     },
   },
 })
