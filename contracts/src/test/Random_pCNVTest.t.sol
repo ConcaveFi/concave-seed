@@ -53,10 +53,14 @@ contract Random_pCNVTest is DSTest {
     address TREASURY = 0xB1DF8b1E93172235eEB8Bbb60D4356f046dff3AF;
     // pCNV pcnv = pCNV(0xb6308694BfC72a558cD349c8878877524915E652);
     // pCNV pcnv = pCNV(0x0256eBDd5A71c0D3819A61DfA02130fA1cdAb1cF);
-    pCNV pcnv = pCNV(0xD496cA8CB080E00539219cDf601521b733EC5EAb);
+    // pCNV pcnv = pCNV(0xD496cA8CB080E00539219cDf601521b733EC5EAb);
+    pCNV pcnv = pCNV(0xa0Fed11F114Ae39Bd7872D8Dc9267a67A2D79eCD);
     MockCNV mCNV;
 
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+
+    // address b =  0x9ead5e6e90440e69b5f28fef5942a5b273387c13;
+    // 0x9ead5E6E90440e69B5F28fEF5942a5B273387c13
 
     address[73] whitelist_addresses = [
         0xcF10B967a9e422753812004Cd59990f62E360760,
@@ -928,20 +932,23 @@ contract Random_pCNVTest is DSTest {
     function test_wip_plip() public {
         address addy = 0x09E6f1BCb006925B9390cf72c07544018145DC25;
         vm.startPrank(addy);
-        uint256 maxAmount = 300e18;
+        uint256 maxAmount = 100e18;
         uint256 amountIn = 13;
         bytes32[] memory aliceProof = new bytes32[](7);
         aliceProof[0] = 0x4aa8314bb6a7011f02a48f7fb529a59401ef1cdb4bf593af93a44a8fbf477500;
         aliceProof[1] = 0xe0648584684d8dd67f64cd12e08bc9862d8dbc0b473bfbf4f66b9739bf496127;
         aliceProof[2] = 0xf0f48ce406d65ca5c358c8ae2146e87bac50e01cf00890ef10c2155e010a1ce7;
         aliceProof[3] = 0x644169e6ac4ad422a2bbd9577b8e3a044b085f3e34ddea91612555299d25e81d;
-        aliceProof[4] = 0xeff360d819f03ceb84f6df42c5325b4fe3bbbae80e9a12671079d0086610012f;
-        aliceProof[5] = 0x2e5286f217df2a0254d4f29396c9707f6255dde028e6c21202fa0b99615febda;
+        aliceProof[4] = 0x065ddbcc35de4f7652611b78133ab48071d7de6152b6c745375b9f4e68287303;
+        aliceProof[5] = 0x2a4ae9d74cef1d918a171b05af3600d82ef2a0ebe62406aecd63d0bc31c9ef31;
         aliceProof[6] = 0x5529e35de6ce490ccb3d0dfd41b79ada951dfb19d3d8ce80366d6c9702c014ca;
+        emit log_uint(block.timestamp);
+        IStable(DAI).approve(address(pcnv),maxAmount);
+
         pcnv.mint(
             addy,
             DAI,
-            2,
+            0,
             maxAmount,
             amountIn,
             aliceProof
