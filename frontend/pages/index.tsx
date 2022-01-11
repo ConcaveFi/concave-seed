@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Flex, Container } from '@chakra-ui/react'
+import { Box, Heading, Text, Flex, Container, Spinner } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useAccount, useNetwork } from 'wagmi'
@@ -12,6 +12,7 @@ import { getUserClaimablePCNVAmount } from 'lib/claim'
 import { useSigner } from 'hooks/useSigner'
 import { BigNumber } from 'ethers'
 import { useUserClaimableAmount } from 'hooks/useUserClaimableAmount'
+import { AlreadyClaimedCard } from 'components/AlreadyClaimedCard'
 
 type AppState =
   | 'loading'
@@ -21,31 +22,24 @@ type AppState =
   | 'already_claimed'
   | 'claiming'
 
-const resolveState = async (
-  isConnectedNetworkSupported,
-  userAddress,
-  userClaimableAmount: BigNumber,
-): Promise<AppState> => {
-  if (isConnectedNetworkSupported) return 'wrong_network'
-  if (!userAddress) return 'not_connected'
-  if (!isWhitelisted(userAddress)) return 'not_whitelisted'
-  if (userClaimableAmount.eq(0)) return 'already_claimed'
-  return 'claiming'
-}
-
 function CNVSeed() {
-  const [{ data: network, loading: networkLoading }] = useNetwork()
-  const [{ data: account, loading: accountLoading }] = useAccount()
+  const [{ data: network }] = useNetwork()
+  const [{ data: account }] = useAccount()
+  const [{ data: signer }] = useSigner()
 
   const [state, setState] = useState<AppState>('loading')
-  const [{ data: userClaimableAmount, loading: userClaimableAmountLoading }] =
-    useUserClaimableAmount()
 
   useEffect(() => {
     setState('loading')
-    if (accountLoading || networkLoading || userClaimableAmountLoading) return
-    resolveState(network.chain.unsupported, account.address, userClaimableAmount).then(setState)
-  }, [network?.chain?.unsupported, account?.address, userClaimableAmount])
+    if (!account || !network || !signer) return
+    ;(async () => {
+      if (network?.chain?.unsupported) return 'wrong_network'
+      if (!account?.address) return 'not_connected'
+      if (!isWhitelisted(account.address)) return 'not_whitelisted'
+      if ((await getUserClaimablePCNVAmount(signer)).eq(0)) return 'already_claimed'
+      return 'claiming'
+    })().then(setState)
+  }, [account, network, signer])
 
   return (
     <Layout>
@@ -56,7 +50,7 @@ function CNVSeed() {
             <Text maxW={520}>Speak softly but carry a big spoon</Text>
           </Box>
           <Flex gap={6} flexWrap="wrap" justify="center">
-            {/* {state === 'loading' && <Spinner />} */}
+            {state === 'loading' && <Spinner />}
             {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}

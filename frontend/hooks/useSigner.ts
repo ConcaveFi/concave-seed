@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { Signer } from 'ethers'
 
-import { useAccount } from 'wagmi'
-import { useCacheBuster } from 'wagmi/dist/declarations/src/hooks'
+import { useAccount, useContext } from 'wagmi'
 
 type State = {
   data?: Signer
@@ -19,7 +18,7 @@ const initialState: State = {
 export const useSigner = () => {
   const [{ data: account }] = useAccount()
   const [state, setState] = React.useState<State>(initialState)
-  const cacheBuster = useCacheBuster()
+  const wagmi = useContext()
 
   const getSigner = React.useCallback(async () => {
     try {
@@ -36,7 +35,7 @@ export const useSigner = () => {
 
   React.useEffect(() => {
     getSigner()
-  }, [cacheBuster, getSigner])
+  }, [wagmi.state.cacheBuster, getSigner])
 
   return [state, getSigner] as const
 }

@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, useQuery } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-import { claim, inputTokens } from 'lib/claim'
+import { claim, getUserClaimablePCNVAmount, inputTokens } from 'lib/claim'
 import { useAccount, useContractRead } from 'wagmi'
-import { useUserClaimableAmount } from 'hooks/useUserClaimableAmount'
+import { useSigner } from 'hooks/useSigner'
 
 export function ClaimCard() {
   const [amount, setAmount] = useState('0')
@@ -14,7 +14,13 @@ export function ClaimCard() {
   const [isLoading, setIsLoading] = useState(false)
 
   const [{ data: account }] = useAccount()
-  const [{ data: maxAmount }] = useUserClaimableAmount()
+
+  const [{ data: signer }] = useSigner()
+  const [claimableAmount, setClaimableAmount] = useState(null)
+
+  useEffect(() => {
+    if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
+  }, [signer])
 
   const onClaim = async () => {
     setIsLoading(true)
@@ -26,7 +32,7 @@ export function ClaimCard() {
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
       <AmountInput
-        maxAmount={maxAmount}
+        maxAmount={claimableAmount}
         value={amount}
         onChangeValue={setAmount}
         tokenOptions={inputTokens}
