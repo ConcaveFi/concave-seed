@@ -65,10 +65,10 @@ interface IFRAX {
 
 
 contract FRAX is LibNote {
-  
+
   event Approval(address indexed src, address indexed guy, uint wad);
   event Transfer(address indexed src, address indexed dst, uint wad);
-  
+
     // --- Auth ---
     mapping (address => uint) public wards;
 
@@ -121,7 +121,8 @@ contract FRAX is LibNote {
             chainId_,
             address(this)
         ));
-        dailyFraxLimit = 10000000000000000000000;
+        // dailyFraxLimit = 10000000000000000000000;
+        dailyFraxLimit = 10000000e18;
     }
 
     function allowance( address account_, address sender_ ) external view returns ( uint ) {
@@ -129,7 +130,7 @@ contract FRAX is LibNote {
     }
 
     function _allowance( address account_, address sender_ ) internal view returns ( uint ) {
-      
+
       return allowances[account_][sender_];
     }
 
@@ -139,8 +140,8 @@ contract FRAX is LibNote {
     }
 
     function transferFrom(address src, address dst, uint wad) public returns (bool) {
-      
-      
+
+
       require(balanceOf[src] >= wad, "Frax/insufficient-balance");
         if (src != msg.sender && _allowance( src, msg.sender ) != uint(-1)) {
             require(_allowance( src, msg.sender ) >= wad, "Frax/insufficient-allowance");
@@ -171,12 +172,12 @@ contract FRAX is LibNote {
             fraxMintedToday[msg.sender] = add(fraxMintedToday[msg.sender], wad);
         }
       }
-      
+
       balanceOf[usr] = add(balanceOf[usr], wad);
-      
+
       totalSupply    = add(totalSupply, wad);
-      
-      
+
+
       emit Transfer(address(0), usr, wad);
     }
 
@@ -192,15 +193,15 @@ contract FRAX is LibNote {
     }
 
     function _approve(address usr, uint wad) internal returns (bool) {
-      
+
       allowances[msg.sender][usr] = wad;
-      
+
       emit Approval(msg.sender, usr, wad);
       return true;
     }
 
     function approve(address usr_, uint wad_ ) external returns (bool) {
-      
+
       return _approve( usr_, wad_ ) ;
     }
 
