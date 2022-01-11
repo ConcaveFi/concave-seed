@@ -268,14 +268,14 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         CNV.mint(msg.sender, amount);
     }
 
-    function transfer(address to, uint256 amount) external virtual override returns (bool) {
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
         // update vesting storage for both users
         _beforeTransfer(msg.sender, to, amount);
         // default ERC20 transfer
         return super.transfer(to, amount);
     }
 
-    function transferFrom(address from, address to, uint256 amount) external virtual override returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
         // update vesting storage for both users
         _beforeTransfer(from, to, amount);
         // default ERC20 transfer
@@ -347,7 +347,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         InvestorRound storage round = rounds[roundId];
 
         // Interface storage for participant
-        Participants storage paricipant = participants[to];
+        Participant storage participant = participants[to];
 
         // Make sure payment tokenIn is either DAI or FRAX
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
@@ -394,7 +394,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         fromParticipant.redeemed -= amount * fromParticipant.redeemed / fromParticipant.purchased;
 
         // reduce "from" purchased amount by the amount being sent
-        fromParticipant.purchase -= amount;
+        fromParticipant.purchased -= amount;
 
         // Interface "to" participant storage
         Participant storage toParticipant = participants[to];
@@ -403,12 +403,12 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         toParticipant.redeemed += amount * fromParticipant.redeemed / fromParticipant.purchased;
 
         // increase "to" purchased by amount received
-        toParticipant.purchase += amount;
+        toParticipant.purchased += amount;
 
         /*
         // SCENARIO 1 ----------------------------------------------------------
         currentVestingRatio = 20%
-        
+
         Alice {
             purchased:100
             redeemed:10
@@ -436,7 +436,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // ---------------------------------------------------------------------
         // SCENARIO 2 ----------------------------------------------------------
         currentVestingRatio = 20%
-        
+
         Alice {
             purchased:100
             redeemed:10 // 10%
@@ -460,7 +460,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
             purchased: 100+50= 150
             redeemed: 20+50*10/100 = 25 // 16%
         }
-        
+
         */
 
     }
