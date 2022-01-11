@@ -6,6 +6,7 @@ import { DSTest } from "ds-test/test.sol"; // DSTest
 // import { DAI } from "../mocks/DAI.sol";
 // import { FRAX } from "../mocks/FRAX.sol";
 import { pCNV } from "../pCNV.sol";
+import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
 import "./utils/VM.sol";
 
 interface IStable {
@@ -51,8 +52,9 @@ contract Random_pCNVTest is DSTest {
     address DAI = 0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5;
     address TREASURY = 0xB1DF8b1E93172235eEB8Bbb60D4356f046dff3AF;
     // pCNV pcnv = pCNV(0xb6308694BfC72a558cD349c8878877524915E652);
-    pCNV pcnv = pCNV(0x0256eBDd5A71c0D3819A61DfA02130fA1cdAb1cF);
-
+    // pCNV pcnv = pCNV(0x0256eBDd5A71c0D3819A61DfA02130fA1cdAb1cF);
+    pCNV pcnv = pCNV(0xD496cA8CB080E00539219cDf601521b733EC5EAb);
+    MockCNV mCNV;
 
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
@@ -903,7 +905,8 @@ contract Random_pCNVTest is DSTest {
     // function setUp() public {
     //
     // }
-    function test_wip() public {
+    function test_not() public {
+        mCNV = new MockCNV(100e18);
         newRound(
             0xfb81565e4c9084b6b582aef7a3f8fdc5cedc4a3c28de4e510baefbfea40ebd88,
             4508000e18,
@@ -911,6 +914,40 @@ contract Random_pCNVTest is DSTest {
             block.timestamp+1000
         );
         claim_player(0);
+        emit log_uint(block.timestamp);
+        // for (uint i; i < whitelist_addresses.length; i++) {
+        //     claim_player(i);
+        // }
+        // require(IStable(DAI).balanceOf(TREASURY) == 4508000e18);
+
+        setRedeemable();
+
+        redeem(0);
+    }
+
+    function test_wip_plip() public {
+        address addy = 0x09E6f1BCb006925B9390cf72c07544018145DC25;
+        vm.startPrank(addy);
+        uint256 maxAmount = 300e18;
+        uint256 amountIn = 13;
+        bytes32[] memory aliceProof = new bytes32[](7);
+        aliceProof[0] = 0x4aa8314bb6a7011f02a48f7fb529a59401ef1cdb4bf593af93a44a8fbf477500;
+        aliceProof[1] = 0xe0648584684d8dd67f64cd12e08bc9862d8dbc0b473bfbf4f66b9739bf496127;
+        aliceProof[2] = 0xf0f48ce406d65ca5c358c8ae2146e87bac50e01cf00890ef10c2155e010a1ce7;
+        aliceProof[3] = 0x644169e6ac4ad422a2bbd9577b8e3a044b085f3e34ddea91612555299d25e81d;
+        aliceProof[4] = 0xeff360d819f03ceb84f6df42c5325b4fe3bbbae80e9a12671079d0086610012f;
+        aliceProof[5] = 0x2e5286f217df2a0254d4f29396c9707f6255dde028e6c21202fa0b99615febda;
+        aliceProof[6] = 0x5529e35de6ce490ccb3d0dfd41b79ada951dfb19d3d8ce80366d6c9702c014ca;
+        pcnv.mint(
+            addy,
+            DAI,
+            2,
+            maxAmount,
+            amountIn,
+            aliceProof
+        );
+        vm.stopPrank();
+
     }
 
     function claim_player(uint256 ix) public {
@@ -945,6 +982,12 @@ contract Random_pCNVTest is DSTest {
 
     }
 
+    function redeem(uint256 ix) public {
+        address addy = whitelist_addresses[ix];
+        vm.startPrank(addy);
+        // pcnv.redeem();
+        vm.stopPrank();
+    }
     function newRound(
         bytes32 merkleRoot,
         uint256 maxDebt,
@@ -958,6 +1001,12 @@ contract Random_pCNVTest is DSTest {
             rate,
             deadline
         );
+        vm.stopPrank();
+    }
+
+    function setRedeemable() public {
+        vm.startPrank(TREASURY);
+        pcnv.setRedeemable(address(mCNV));
         vm.stopPrank();
     }
 
