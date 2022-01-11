@@ -1,15 +1,52 @@
 import { ethers, Signer } from 'ethers'
-import { signERC2612Permit, signDaiPermit } from 'eth-permit'
+import { signDaiPermit } from 'eth-permit'
 import { merkleTree, getClaimableAmount, leafOf } from './merkletree'
-import { getRopstenSdk, RopstenSdk } from '@dethcrypto/eth-sdk-client'
+import { getRopstenSdk } from '@dethcrypto/eth-sdk-client'
 import { Provider } from '@ethersproject/abstract-provider'
-import { Dai } from '.dethcrypto/eth-sdk-client/esm/types'
+import { Dai, Frax, PCNV } from '.dethcrypto/eth-sdk-client/esm/types'
 
 export const inputTokens = ['dai', 'frax']
 
+const claimWithFrax = async (
+  frax: Frax,
+  pCNV: PCNV,
+  userAddress,
+  roundId,
+  maxAmount,
+  amount,
+  proof,
+) => {
+  const fraxApprove = await frax.approve(userAddress, maxAmount, { from: userAddress })
+  await fraxApprove.wait(1)
+  return pCNV.mint(userAddress, frax.address, roundId, maxAmount, amount, proof)
+}
+
+const claimWithDai = async (
+  dai: Dai,
+  pCNV: PCNV,
+  userAddress,
+  roundId,
+  maxAmount,
+  amount,
+  proof,
+) => {
+  const permit = await signDaiPermit(dai.provider, dai.address, userAddress, pCNV.address)
+  return pCNV.claimWithPermit(
+    userAddress,
+    dai.address,
+    roundId,
+    maxAmount,
+    amount,
+    proof,
+    permit.expiry,
+    permit.v,
+    permit.r,
+    permit.s,
+  )
+}
+
 export const claim = async (
   address: string,
-  provider: Provider,
   signer: Signer,
   amount: string,
   inputToken: typeof inputTokens[number],
@@ -23,52 +60,20 @@ export const claim = async (
   const { pCNV, frax, dai } = getRopstenSdk(signer)
   const tokenIn = { frax, dai }[inputToken]
   const roundId = 1
-  if (inputToken === 'dai') {
-    const permit = await signDaiPermit(provider, dai.address, formattedToAddress, pCNV.address)
-    const daiPermit = await dai.permit(
-      formattedToAddress,
-      permit.spender,
-      permit.nonce,
-      permit.expiry,
-      true,
-      permit.v,
-      permit.r,
-      permit.s,
-      { from: formattedToAddress },
-    )
-    daiPermit.wait(1) // do we need to wait for confirmations on this ?
-    await pCNV.claimWithPermit(
-      formattedToAddress,
-      tokenIn.address,
-      roundId,
-      maxAmount,
-      amount,
-      proof,
-      permit.expiry,
-      permit.v,
-      permit.r,
-      permit.s,
-    )
-  } else {
-    await frax.approve(formattedToAddress, maxAmount, { from: formattedToAddress })
-  }
 
-  try {
-    const tx = await pCNV.claimWithPermit(
-      formattedToAddress,
-      tokenIn.address,
-      roundId,
-      maxAmount,
-      amount,
-      proof,
-      permit.deadline,
-      permit.v,
-      permit.r,
-      permit.s,
-    )
-    await tx.wait(1)
-    // await syncStatus()
-  } catch (e) {
-    console.error(`Error when claiming tokens: ${e}`)
-  }
+  const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
+  const claimTx = await claimFunc(
+    tokenIn,
+    pCNV,
+    formattedToAddress,
+    roundId,
+    maxAmount,
+    amount,
+    proof,
+  )
+  await claimTx.wait(1) // ?
+
+  // } catch (e) {
+  //   console.error(`Error when claiming tokens: ${e}`)
+  // }
 }
