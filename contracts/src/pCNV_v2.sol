@@ -301,7 +301,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /// @notice redeem a specific amount of pCNV for CNV
     /// @param amount amount of pCNV to be redeemed
-    function redeeem(uint256 amount) external {
+    function redeem(uint256 amount) external {
         // store amountIn and amountOut before mutating state
         uint256 amountIn = redeemAmountIn(msg.sender);
         uint256 amountOut = redeemAmountOut(msg.sender);
