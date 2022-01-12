@@ -55,8 +55,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     address immutable DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address immutable treasury = 0x0877497b4A2674e818234a691bc4d2Dffcf76e73;
 
-    bytes32 immutable merkleRoot = 0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00;
-    uint256 immutable rate = 1e18;
+    bytes32 immutable merkleRoot = whitelist_merkleroot;
+	
+    uint256 immutable rate = whitelist_rate;
 
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
@@ -120,10 +121,148 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     }
 
+	/// TODO: finish this test
+	function xtest_manage() public {
+		address target = address(0);
+		uint256 amount = 0;
+
+		vm.expectRevert("!CONCAVE");
+        PCNV.manage(target,amount);
+
+
+	}
+
+
+	/* ---------------------------------------------------------------------- */
+    /*                              PUBLIC LOGIC                              */
+    /* ---------------------------------------------------------------------- */
+
+	/// TODO: write this test
+	function xtest_mint_should_fail_with_amount() public {
+		vm.expectRevert("!AMOUNT");
+	}
+
+	/// TODO: write this test
+	function xtest_mint_should_fail_with_tokenIn() public {
+		vm.expectRevert("!TOKEN_IN");
+	}
+
+	/// TODO: write this test
+	function xtest_mint_should_fail_with_proof_on_wrong_proof() public {
+		vm.expectRevert("!PROOF");
+	}
+
+	/// TODO: write this test
+	function xtest_mint_should_fail_with_proof_on_wrong_to() public {
+		vm.expectRevert("!PROOF");
+	}
+
+	/// @notice 
+	function test_mint_should_fail_with_proof_on_wrong_amount() public {
+		setRound(merkleRoot,rate);
+
+		uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+		
+		uint256 amountIn = userMaxAmount*333000e18;
+
+        vm.startPrank(userAddress);
+		vm.expectRevert("!AMOUNT");
+        PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+		
+	}
+
+	/// TODO: write this test
+	function test_mint_should_fal_with_amountin() public { 
+        setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount+1;
+        
+         // Verify amount claimed by user does not surpass maxAmount
+		
+        vm.startPrank(userAddress);
+		vm.expectRevert("!AMOUNT_IN");
+		PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+
+	}
+
+	/// TODO: write this test
+	function xtest_mint_totalMinted_is_increased_and_totalSupply_is_increased() public {
+		uint256 mintedAmount = 0;
+		require(PCNV.totalMinted() == mintedAmount);
+
+		require(PCNV.totalSupply() == mintedAmount);
+	}
+
+
+
 
     /* ---------------------------------------------------------------------- */
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
+
+
+
+	/// @notice treasury sets round
+	function setRound(
+		bytes32 _merkleRoot,
+        uint256 _rate
+	) public {
+		vm.startPrank(treasury);
+		PCNV.setRound(
+			merkleRoot,
+			rate
+		);
+		vm.stopPrank();
+	}
+
+
+
+
+	function getUserAddress(uint256 ix) public returns(address) {
+		return whitelist_addresses[ix];
+	}
+
+	function getUserMaxAmount(uint256 ix) public returns(uint256) {
+		return amounts[ix]*1e18;
+	}
+
+	function getUserProof(uint256 ix) public returns(bytes32[] memory proof) {
+		uint256 proofLength;
+        for (uint256 i; i < 7; i++) {
+            if (proofs[ix][i] != 0x0)  {
+                proofLength+=1;
+            }
+        }
+        bytes32[] memory userProof = new bytes32[](proofLength);
+        // userProof[0] = 0x4aa8314bb6a7011f02a48f7fb529a59401ef1cdb4bf593af93a44a8fbf477500;
+        for (uint256 i; i < proofLength; i++) {
+            userProof[i] = bytes32(proofs[ix][i]);
+        }
+		return userProof;
+	}
+
 
     /// @notice transfer `amount` of DAI to `to`
     function deposit_DAI(address to, uint256 amount) public {
@@ -131,6 +270,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.startPrank(DAI_WHALE);
         IERC20(DAI).transfer(to,amount);
         vm.stopPrank();
+		require(IStable(DAI).balanceOf(to) >= amount,"DAIO");
     }
 
     /// @notice transfer `amount` of FRAX to `to`
@@ -139,6 +279,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.startPrank(FRAX_WHALE);
         IERC20(FRAX).transfer(to,amount);
         vm.stopPrank();
+		require(IStable(FRAX).balanceOf(to) >= amount,"DAIO");
     }
 
 }
