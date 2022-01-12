@@ -57,7 +57,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public rate;
 
     /// @notice Returns the max supply that is allowed to be minted (in total)
-    uint256 public maxSupply = 333000e18;
+    uint256 public maxSupply;
+    // uint256 public maxSupply = 333000e18;
 
     /// @notice Returns the total amount of pCNV that has cummulativly been minted
     uint256 public totalMinted;
