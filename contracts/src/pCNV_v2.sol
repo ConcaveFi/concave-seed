@@ -136,9 +136,30 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         merkleRoot = _merkleRoot;
         // update rate
         rate = _rate;
+
     }
 
-    /// @notice Reduce an "amonut" of available supply or mint it to "target"
+    // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
+    function setRound_ALT(
+        bytes32 _merkleRoot,
+        uint256 _rate,
+        uint256 _roundSupply
+    ) external onlyConcave {
+        // push new root to array of all roots - for viewing
+        roots.push(_merkleRoot);
+        // update merkle root
+        merkleRoot = _merkleRoot;
+        // update rate
+        rate = _rate;
+
+        // if the maxSupply from the previous round has not been satisfied,
+        // reset maxSupply to totalMinted
+        maxSupply = totalMinted;
+        // update max supply with the amount that should be minted in this round
+        maxSupply += _roundSupply;
+    }
+
+    /// @notice Reduce an "amount" of available supply or mint it to "target"
     /// @param amount to reduce from max supply or mint to "target"
     function manage(
         address target,
@@ -300,9 +321,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         return CNV.totalSupply() * supplyVested() / 1e18;
     }
 
-    /* ----------------------------------------------------------------------- */
-    /*                             INTERNAL LOGIC                              */
-    /* ----------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    /*                             INTERNAL LOGIC                             */
+    /* ---------------------------------------------------------------------- */
 
     /// @notice Deposits FRAX/DAI for pCNV if merkle proof exists in specified round
     /// @param sender         address sending transaction

@@ -79,7 +79,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.startPrank(treasury);
         PCNV.setTreasury(address(0));
         vm.stopPrank();
-
+        
         require(PCNV.treasury() == address(0));
 
         vm.expectRevert("!CONCAVE");
@@ -135,7 +135,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 
 	/* ---------------------------------------------------------------------- */
-    /*                              PUBLIC LOGIC                              */
+    /*                          PUBLIC LOGIC: mint()                          */
     /* ---------------------------------------------------------------------- */
 
 	/// @notice fails with "!AMOUNT" when minting more than maxSupply
@@ -556,6 +556,51 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
         vm.stopPrank();
 	}
+
+	/// @notice mint all users
+	function test_mint_all_users_wip() public {
+		setRound(merkleRoot,rate);
+		uint256 treasuryBalance = IERC20(FRAX).balanceOf(treasury);
+		uint256 totalSupply;
+		uint256 totalMinted;
+		for (uint256 i; i < whitelist_addresses.length; i++) {
+			uint256 userIndex = i;
+			address userAddress = getUserAddress(userIndex);
+			uint256 userMaxAmount = getUserMaxAmount(userIndex);
+			bytes32[] memory proof = getUserProof(userIndex);
+
+			uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+
+			uint256 amountIn = userMaxAmount;
+			deposit_FRAX(userAddress,amountIn);
+			vm.startPrank(userAddress);
+			IERC20(FRAX).approve(address(PCNV),amountIn);
+			PCNV.mint(
+				userAddress,
+				FRAX,
+				userMaxAmount,
+				amountIn,
+				proof
+			);
+			vm.stopPrank();
+			uint256 amountOut = amountIn * 1e18 / rate;
+			totalSupply+=amountOut;
+			treasuryBalance+=amountIn;
+			// require(PCNV.totalSupply() == totalSupply,"TESTFAIL:1");
+			// require(PCNV.totalMinted() == totalSupply,"TESTFAIL:2");
+			// require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+			// require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+			// require(IERC20(FRAX).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
+		}
+		// require(IERC20(FRAX).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
+		// require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
+		// require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
+	}
+            
+
+	/* ---------------------------------------------------------------------- */
+    /*                         PUBLIC LOGIC: redeem()                         */
+    /* ---------------------------------------------------------------------- */
 
 
 
