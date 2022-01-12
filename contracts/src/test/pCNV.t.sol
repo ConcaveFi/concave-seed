@@ -328,6 +328,66 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
+
+	/// WIP WIP WIPWIP
+
+	// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
+	function test_mint_should_fail_if_DAI_not_approved() public {
+		setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_DAI(userAddress,amountIn);
+
+		require(IERC20(DAI).balanceOf(userAddress) >= amountIn);
+		
+        vm.startPrank(userAddress);
+		vm.expectRevert("Dai/insufficient-allowance");
+		PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+	}
+
+	// @notice fails with "ERC20: transfer amount exceeds allowance" if user has not approved enough FRAX
+	function test_mint_should_fail_if_FRAX_not_approved() public {
+		setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_FRAX(userAddress,amountIn);
+
+		require(IERC20(FRAX).balanceOf(userAddress) >= amountIn);
+		
+        vm.startPrank(userAddress);
+		vm.expectRevert("ERC20: transfer amount exceeds allowance");
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+	}
+
+
+
+
 	// TODO: write this test
 	function test_second_mint_should_fail_if_amount_in_would_exceed_maxamount() public {
 		
