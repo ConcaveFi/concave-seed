@@ -254,7 +254,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		
 	}
 
-	/// @notice fails when minting more than assigned to sender
+	/// @notice fails with "!AMOUNT_IN" when `amountIn` is larger than `maxAmount`
 	function test_mint_should_fal_with_amountin() public { 
         setRound(merkleRoot,rate);
 
@@ -276,6 +276,61 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         );
         vm.stopPrank();
 
+	}
+
+	// @notice fails with "Dai/insufficient-balance" if user does not have enough DAI
+	function test_mint_should_fail_if_insufficient_DAI() public {
+		setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		require(IERC20(DAI).balanceOf(userAddress) < amountIn);
+		
+        vm.startPrank(userAddress);
+		vm.expectRevert("Dai/insufficient-balance");
+		PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+	}
+
+	// @notice fails with "ERC20: transfer amount exceeds balance" if user does not have enough FRAX
+	function test_mint_should_fail_if_insufficient_FRAX() public {
+		setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		require(IERC20(FRAX).balanceOf(userAddress) < amountIn);
+		
+        vm.startPrank(userAddress);
+		vm.expectRevert("ERC20: transfer amount exceeds balance");
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+	}
+
+	// TODO: write this test
+	function test_second_mint_should_fail_if_amount_in_would_exceed_maxamount() public {
+		
 	}
 
 	/// TODO: write this test
