@@ -96,6 +96,11 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         _;
     }
 
+    // @dev Only using constructor for tests - to set initial treasury address
+    constructor(address _treasury) {
+        treasury = _treasury;
+    }
+
     /* ---------------------------------------------------------------------- */
     /*                              ONLY CONCAVE                              */
     /* ---------------------------------------------------------------------- */

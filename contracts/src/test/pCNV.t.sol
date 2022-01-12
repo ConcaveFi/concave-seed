@@ -55,13 +55,69 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     address immutable DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address immutable treasury = 0x0877497b4A2674e818234a691bc4d2Dffcf76e73;
 
+    bytes32 immutable merkleRoot = 0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00;
+    uint256 immutable rate = 1e18;
+
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
 
-    pCNV pcnv;
+    pCNV PCNV;
+    MockCNV CNV;
 
     function setUp() public virtual {
-        pcnv = new pCNV();
+        PCNV = new pCNV(treasury);
+        CNV = new MockCNV(333000e18);
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /*                              ONLY CONCAVE                              */
+    /* ---------------------------------------------------------------------- */
+
+    /// @notice onlyConcave may set treasury, else fails with "!CONCAVE". Verifies if value is set correctly.
+    function test_setTreasury() public {
+        vm.startPrank(treasury);
+        PCNV.setTreasury(address(0));
+        vm.stopPrank();
+
+        require(PCNV.treasury() == address(0));
+
+        vm.expectRevert("!CONCAVE");
+        PCNV.setTreasury(treasury);
+
+        require(PCNV.treasury() == address(0));
+    }
+
+    /// @notice onlyConcave may setRedeemable, else fails with "!CONCAVE". Verifies if value is set correctly.
+    function test_setRedeemable() public {
+        vm.expectRevert("!CONCAVE");
+        PCNV.setRedeemable(address(CNV));
+
+        require(address(PCNV.CNV()) == address(0));
+        require(PCNV.redeemable() == false);
+
+        vm.startPrank(treasury);
+        PCNV.setRedeemable(address(CNV));
+        vm.stopPrank();
+
+        require(address(PCNV.CNV()) == address(CNV));
+        require(PCNV.redeemable() == true);
+
+    }
+
+    function test_setRound() public {
+        vm.expectRevert("!CONCAVE");
+        PCNV.setRound(merkleRoot,rate);
+
+        require(PCNV.merkleRoot() == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        require(PCNV.rate() == 0);
+
+		vm.startPrank(treasury);
+        PCNV.setRound(merkleRoot,rate);
+        vm.stopPrank();
+
+		require(PCNV.merkleRoot() == merkleRoot);
+        require(PCNV.rate() == rate);
+
     }
 
 
