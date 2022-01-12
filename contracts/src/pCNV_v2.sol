@@ -124,24 +124,27 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         CNV = ICNV(_CNV);
     }
 
+    // /// @notice Update
+    // /// @param _merkleRoot  root of merkle tree
+    // /// @param _rate        rate ...
+    // function setRound(
+    //     bytes32 _merkleRoot,
+    //     uint256 _rate
+    // ) external onlyConcave {
+    //     // push new root to array of all roots - for viewing
+    //     roots.push(_merkleRoot);
+    //     // update merkle root
+    //     merkleRoot = _merkleRoot;
+    //     // update rate
+    //     rate = _rate;
+
+    // }
+
+    // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
     /// @notice Update
     /// @param _merkleRoot  root of merkle tree
     /// @param _rate        rate ...
     function setRound(
-        bytes32 _merkleRoot,
-        uint256 _rate
-    ) external onlyConcave {
-        // push new root to array of all roots - for viewing
-        roots.push(_merkleRoot);
-        // update merkle root
-        merkleRoot = _merkleRoot;
-        // update rate
-        rate = _rate;
-
-    }
-
-    // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
-    function setRound_ALT(
         bytes32 _merkleRoot,
         uint256 _rate,
         uint256 _roundSupply

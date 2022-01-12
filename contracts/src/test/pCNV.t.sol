@@ -108,13 +108,13 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	// @notice onlyConcave may setRound, else fails with "!CONCAVE". Verifies if value is set correctly.
     function test_setRound() public {
         vm.expectRevert("!CONCAVE");
-        PCNV.setRound(merkleRoot,rate);
+        PCNV.setRound(merkleRoot,rate,whitelist_maxDebt);
 
         require(PCNV.merkleRoot() == 0x0000000000000000000000000000000000000000000000000000000000000000);
         require(PCNV.rate() == 0);
 
 		vm.startPrank(treasury);
-        PCNV.setRound(merkleRoot,rate);
+        PCNV.setRound(merkleRoot,rate,whitelist_maxDebt);
         vm.stopPrank();
 
 		require(PCNV.merkleRoot() == merkleRoot);
@@ -619,7 +619,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.startPrank(treasury);
 		PCNV.setRound(
 			merkleRoot,
-			rate
+			rate,
+			whitelist_maxDebt
 		);
 		vm.stopPrank();
 	}
