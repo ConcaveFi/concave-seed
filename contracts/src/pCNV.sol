@@ -13,7 +13,7 @@ import { ICNV } from "./interfaces/ICNV.sol";
 /// @title  pCNV
 /// @notice Concave Presale Token, mints pCNV for users based on merkle tree
 /// @author Concave
-contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
+contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /* ---------------------------------------------------------------------- */
     /*                              DEPENDENCIES                              */
@@ -35,6 +35,8 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
     /// @notice treasury address to which deposited FRAX or DAI are sent
     address public immutable treasury;
+
+    uint256 public constant maxSupply = 333000e18;
 
     /* ---------------------------------------------------------------------- */
     /*                             MUTABLE STORAGE                            */
@@ -67,9 +69,6 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
 
     /// @notice CNV ERC20 token
     ICNV public CNV;
-
-    /// @notice total pCNV minted. Can differ from totalSupply due to burning of pCNV at redemption
-    uint256 public totalMinted;
 
     /// @notice whether pCNV are redeemable for CNV
     bool public redeemable;
@@ -268,6 +267,18 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         CNV.mint(msg.sender, amount);
     }
 
+
+    // function redeem() {
+    //     uint256 balance_of_user; // 100
+    //     uint256 available_to_redeem  = vesting1(balance_of_user); // 50
+
+    //     uint256 amount_in_cnv = vesting2(available_to_redeem); 50
+
+    //     _burn(msg.sender,available_to_redeem);
+    //     CNV.mint(msg.sender,amount_in_cnv);
+        
+    // }
+
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
         // update vesting storage for both users
         _beforeTransfer(msg.sender, to, amount);
@@ -286,10 +297,26 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
     /*                              VIEW METHODS                              */
     /* ---------------------------------------------------------------------- */
 
+    
+
+    function maxAvailableToRedeemTESTING(address who) public view returns (uint256) {
+        uint256 user_balance = balanceOf[who];
+        // user 100
+
+        // Calculate total amount of CNV that "maxSupply" of pCNV are claimable for
+        // X = (10% of current CNV supply * percent vested)
+        uint256 totalClaimable = CNV.totalSupply() / 10 * percentVested() / 1e18; 
+        // 100,000
+
+
+        return totalClaimable * user_balance / maxSupply;
+    }
+
     /// @notice maximum amount of pCNV a given user can redeem
     function maxRedemption(address who) public view returns (uint256) {
         // Interface participant storage
         Participant memory participant = participants[who];
+
         // return total amount user can redeem at this point - redeemed amount
         return redeemAmountOut(participant.purchased) - participant.redeemed;
     }
@@ -303,14 +330,14 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         if (!redeemable || CNV.totalSupply() == 0) return 0;
 
         // Make sure amount is less than or equal to max supply
-        require(amount <= totalMinted, "!AMOUNT");
+        require(amount <= maxSupply, "!AMOUNT");
 
         // Calculate total amount of CNV that "maxSupply" of pCNV are claimable for
         // X = (10% of current CNV supply * percent vested)
-        uint256 totalClaimable = CNV.totalSupply() / 10 * percentVested() / 1e18;
+        uint256 totalClaimable = CNV.totalSupply() / 10 * percentVested() / 1e18 * 10;
 
         // return "totalClaimable" / pecentage of pCNV supply being redeemed
-        return totalClaimable * amount / totalMinted;
+        return totalClaimable * amount / maxSupply;
     }
 
     /// @notice returns percent vested denominated in ether (18 decimals)
@@ -318,7 +345,9 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Calculate amount of time that has passed since the contract was created
         uint256 elapsed = block.timestamp - GENESIS;
 
-        // Return precentage of two years that has elapsed denominated in ether
+        // Return perc of two years that has elapsed denominated in ether
+        // elapsed > 365 days * 2 ? return 1e18 : return 1e18 * elapsed / (365 days * 2);
+        if (elapsed > (365 days * 2)) return 1e18;
         return 1e18 * elapsed / (365 days * 2);
     }
 
@@ -378,32 +407,32 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         // Transfer amountIn*ratio of tokenIn to treasury address
         ERC20(tokenIn).safeTransferFrom(sender, treasury, amountIn);
 
-        // Increase cummulative amount minted
-        totalMinted += amountOut;
-
         // Mint tokens to address after pulling
         _mint(to, amountOut);
     }
 
     function _beforeTransfer(address from, address to, uint256 amount) internal {
 
-        // Interface "from" participant storage
-        Participant storage fromParticipant = participants[from];
-
-        // reduce "from" redeemed by amount * "from" redeem purchase ratio
-        fromParticipant.redeemed -= amount * fromParticipant.redeemed / fromParticipant.purchased;
-
-        // reduce "from" purchased amount by the amount being sent
-        fromParticipant.purchased -= amount;
-
         // Interface "to" participant storage
         Participant storage toParticipant = participants[to];
 
+        // Interface "from" participant storage
+        Participant storage fromParticipant = participants[from];
+
+        // calculate amount to adjust redeem amounts by
+        uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
+
         // increase "to" redeemed by amount * "from" redeem purchase ratio
-        toParticipant.redeemed += amount * fromParticipant.redeemed / fromParticipant.purchased;
+        toParticipant.redeemed += adjustedAmount;
 
         // increase "to" purchased by amount received
         toParticipant.purchased += amount;
+
+        // reduce "from" redeemed by amount * "from" redeem purchase ratio
+        fromParticipant.redeemed -= adjustedAmount;
+
+        // reduce "from" purchased amount by the amount being sent
+        fromParticipant.purchased -= amount;
 
         /*
         // SCENARIO 1 ----------------------------------------------------------
@@ -459,6 +488,7 @@ contract pCNV is ERC20("Concave Presale tokenIn", "pCNV", 18) {
         Bob {
             purchased: 100+50= 150
             redeemed: 20+50*10/100 = 25 // 16%
+            // vestableAmout: 6
         }
 
         */

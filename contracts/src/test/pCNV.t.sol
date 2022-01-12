@@ -52,6 +52,7 @@ contract Tests is pCNVTest, pCNVWhitelist {
 
     address constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    
     uint256 constant initial_mCNV_supply = 333000e18;
 
     /// @notice Allow Alice to claim maxAmount tokens
@@ -402,22 +403,7 @@ contract Tests is pCNVTest, pCNVWhitelist {
 
     // check that percent vested = time elapsed / 2 years
 
-    function test_vesting() public {
-        require(ALICE.tokenBalance() == 0,"oh oh alice");
-        claim_alice();
-        uint256 amountToClaim = 99e18;
-        require(ALICE.tokenBalance() == amountToClaim * 1e18 / 3e18,"alice u naughty");
-
-        MockCNV mCNV = new MockCNV(100e18);
-        vm.startPrank(_treasury);
-        TOKEN.setRedeemable(address(mCNV));
-        vm.stopPrank();
-        uint256 twoYears = 365 days * 2;
-        vm.warp(block.timestamp + twoYears);
-        ALICE.redeem(ALICE.tokenBalance());
-
-        require(mCNV.balanceOf(address(ALICE)) == 10e18, "INCORRECT CNV AMOUNT OUT");
-    }
+    
 
     function xtest_vesting() public {
 
@@ -606,6 +592,7 @@ contract Tests is pCNVTest, pCNVWhitelist {
         TOKEN.setRedeemable(address(0));
 
     }
+    
 
     function test_claim_all_users() public {
         newRound(
@@ -739,6 +726,220 @@ contract Tests is pCNVTest, pCNVWhitelist {
         );
         vm.stopPrank();
     }
+
+    function test_wip_transferTO() public {
+        // maxRedemption
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+        // for (uint i; i < whitelist_addresses.length; i++) {
+        //     claim_player(i);
+        // }
+        // require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt_in_stables);
+        claim_player(0);
+        claim_player(1);
+        uint256 twoYears = 365 days * 2;
+        vm.warp(block.timestamp + twoYears);
+
+        MockCNV mCNV = new MockCNV(333000e18);
+        vm.startPrank(_treasury);
+        TOKEN.setRedeemable(address(mCNV));
+        vm.stopPrank();
+
+
+        emit log_uint(TOKEN.maxRedemption(whitelist_addresses[0]));
+        emit log_uint(TOKEN.maxRedemption(whitelist_addresses[1]));
+    }
+
+    function test_vesting() public {
+        require(ALICE.tokenBalance() == 0,"oh oh alice");
+        claim_alice();
+        uint256 amountToClaim = 99e18;
+        require(ALICE.tokenBalance() == amountToClaim * 1e18 / 3e18,"alice u naughty");
+
+        MockCNV mCNV = new MockCNV(100e18);
+        vm.startPrank(_treasury);
+        TOKEN.setRedeemable(address(mCNV));
+        vm.stopPrank();
+        uint256 twoYears = 365 days * 2;
+        vm.warp(block.timestamp + twoYears);
+        ALICE.redeem(ALICE.tokenBalance());
+
+        require(mCNV.balanceOf(address(ALICE)) == 10e18, "INCORRECT CNV AMOUNT OUT");
+    }
+
+    function test_wipi() public {
+        emit log("---");
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+
+        claim_player(0);
+        // claim_player(1);
+        uint256 vestingTime = 365 days * 1;
+        vm.warp(block.timestamp + vestingTime);
+
+        MockCNV mCNV = new MockCNV(333000e18);
+        vm.startPrank(_treasury);
+        TOKEN.setRedeemable(address(mCNV));
+        vm.stopPrank();
+
+        // Calculate percentage of two years that has elapsed since contract deployment
+        uint256 purchaseVested = elapsed > TWO_YEARS ? 1e18 : 1e18 * elapsed / TWO_YEARS;
+        emit log("purchase vested");
+        emit log_uint(purchaseVested());
+        emit log("pTokensIn");
+        emit log_uint("");
+
+        // Calculate totalAmount of pCNV that can be burned minus previous redemptions
+        uint256 pTokensIn = participant.purchased * purchaseVested / 1e18 - participant.redeemed;
+
+        // Calculate percentage of supply vested
+        uint256 supplyVested = elapsed > TWO_YEARS ? 1e17 : 1e17 * elapsed / TWO_YEARS;
+
+        // Calculate supplyVested percentage of total CNV supply
+        uint256 amountVested = CNV.totalSupply * supplyVested / 1e18;
+
+        // Calculate percentage of pCNV that sender is redeeming
+        uint256 percentToRedeem = 1e18 * pTokensIn / maxSupply;
+
+        // Calculate the pCNV/CNV redemption rate        
+        uint256 cnvOut = amountVested * percentToRedeem / 1e18;
+
+        // Increase redeemed amount to account for newly redeemed tokens
+        participant.reedeemed += pTokensIn;
+
+
+
+    }
+
+    uint256 GENESIS = block.timestamp;
+    function percentVested() public view returns (uint256) {
+        // Calculate amount of time that has passed since the contract was created
+        uint256 elapsed = block.timestamp - GENESIS;
+
+        // Return perc of two years that has elapsed denominated in ether
+        // elapsed > 365 days * 2 ? return 1e18 : return 1e18 * elapsed / (365 days * 2);
+        if (elapsed > (365 days * 2)) return 1e18;
+        return 1e18 * elapsed / (365 days * 2);
+    }
+
+    function test_transfers_vesting() public {
+        // newRound(
+        //     whitelist_merkleroot,
+        //     whitelist_maxDebt,
+        //     whitelist_rate,
+        //     whitelist_deadline
+        // );
+
+        // claim_player(0);
+        // claim_player(1);
+
+        // address p1 = whitelist_addresses[0];
+        // address p2 = whitelist_addresses[1];
+
+        // uint256 a_starting_purchased = TOKEN.balanceOf(p1);
+        // uint256 b_starting_purchased = TOKEN.balanceOf(p2);
+
+
+        // vm.warp(current_block_timestap + 30 days * 12);
+
+
+
+
+    }
+
+    function test_transfers() public {
+        // maxRedemption
+        newRound(
+            whitelist_merkleroot,
+            whitelist_maxDebt,
+            whitelist_rate,
+            whitelist_deadline
+        );
+        // for (uint i; i < whitelist_addresses.length; i++) {
+        //     claim_player(i);
+        // }
+        // require(IStable(DAI).balanceOf(_treasury) == whitelist_maxDebt_in_stables);
+
+        claim_player(0);
+        claim_player(1);
+
+        // uint256 twoYears = 365 days * 2;
+        // uint256 twoYears = 30 days;
+        // vm.warp(block.timestamp + twoYears);
+        uint256 current_block_timestap = block.timestamp;
+
+        MockCNV mCNV = new MockCNV(333000e18);
+        vm.startPrank(_treasury);
+        TOKEN.setRedeemable(address(mCNV));
+        vm.stopPrank();
+
+        address p1 = whitelist_addresses[0];
+        address p2 = whitelist_addresses[1];
+
+        uint256 player_1_balance = TOKEN.balanceOf(p1);
+        uint256 player_2_balance = TOKEN.balanceOf(p2);
+
+        emit log_uint(player_1_balance/1e18); // 100,000 pCNV balance
+        // emit log_uint(player_2_balance/1e18); //  5,000
+
+        emit log("----");
+
+        for (uint256 i; i < 30; i++) {
+            vm.warp(current_block_timestap + 30 days * i);
+            mCNV.mint(address(this),10000000e18);
+            emit log_uint(TOKEN.maxRedemption(whitelist_addresses[0])/1e18); 
+        }
+
+        
+
+        
+        // emit log_uint(TOKEN.maxRedemption(whitelist_addresses[0])/1e18); // 912
+        // emit log_uint(TOKEN.maxRedemption(whitelist_addresses[1])/1e18); // 456
+        // emit log("----");
+        // emit log_uint(TOKEN.maxAvailableToRedeem(whitelist_addresses[0])/1e18); // 912
+        // emit log_uint(TOKEN.maxAvailableToRedeem(whitelist_addresses[1])/1e18); // 456
+        // emit log("----");
+        // emit log("----");
+        // emit log("----");
+
+    }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // @TODO: v,r,s signature
     // function test_vesting() public {
