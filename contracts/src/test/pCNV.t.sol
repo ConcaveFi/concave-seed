@@ -603,7 +603,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     /*                         PUBLIC LOGIC: redeem()                         */
     /* ---------------------------------------------------------------------- */
 
-	function test_sanity_check_wip() public {
+	function test_sanity_check() public {
 		setRound(merkleRoot,rate);
 		        
 		setRedeemable();
@@ -654,7 +654,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			emit log_uint(PCNV.amountVested()/1e18);
 			// emit log_uint(CNV.totalSupply());
 		}
-		// 333000 initial CNV totalSupply
+		// 333,000 initial CNV totalSupply
 		// amount of CNV supply claimable by pCNV holders in the next 24 months
 		// 0
 		// 1368
@@ -688,11 +688,96 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// 33300
 	}
 
+	/// @notice when a user redeems an amount - their availablee amount to redeem should decrease
+	function test_redeem_redeemable_amount_reduces_after_redemption_wip() public {
+		// setup
+		setRound(merkleRoot,rate);
+		setRedeemable();
+		claim_user(0);
+		address userAddress = getUserAddress(0);
+		uint256 initialTimestamp = block.timestamp;
+
+
+		// we warp to future `time1`
+		uint256 time = 30 days * 12;
+		vm.warp(initialTimestamp+time);
+
+		// check the redeemable amount
+		uint redeemableAmount = PCNV.redeemAmountIn(userAddress);
+
+		// redeemable amount must be larger than 0
+		require(redeemableAmount > 0,"ERR:1");
+
+		// user redeems full amount
+		redeemMax(0);
+
+		// redeemable amount should now be 0
+		require(PCNV.redeemAmountIn(userAddress) == 0,"ERR:2");
+
+	}
+
+	function test_redeem_redeemable_values_2() public {
+		// Round is Set
+		// setRound(merkleRoot,rate);
+		// // CONCAVE sets redeemable
+		// setRedeemable();
+		// // User #0 claims their pCNV
+		// claim_user(0);
+
+		// address userAddress = getUserAddress(0);
+
+		// // we get current pCNV balance (10,000)
+		// uint pcnvBalance = PCNV.balanceOf(userAddress);
+
+		// // at current time, 0 tokens should be vestable
+		// require(0 == PCNV.redeemAmountIn(userAddress));
+
+		// //
+		// for (uint256 i; i < 30; i++) {
+		// 	vm.warp(initialTimestamp+(30 days * i));
+		// 	// the amount vested should be equal to expect
+		// 	// require(
+		// 	// 	PCNV.redeemAmountIn(userAddress) == pcnvBalance * purchaseVested() / 1e18,
+		// 	// );
+
+			
+		// }
+		
+
+		// // uint256 initialTimestamp = block.timestamp;
+
+		// // vm.warp(initialTimestamp+(30 days * 25));
+		// // emit log_uint(PCNV.amountVested()/1e18);
+
+		
+
+
+
+		
+	}
+
+	/**
+	TEST STORIES
+	 - 
+	 // Contract should distribute proper amount to each holder after 2 years
+
+	 //
+	
+	*/
+
 
 
     /* ---------------------------------------------------------------------- */
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
+
+
+	function redeemMax(uint256 ix) public {
+		vm.startPrank(getUserAddress(ix));
+		PCNV.redeemMax();
+		vm.stopPrank();
+	}
+	
 
 	function claim_user(uint256 userIndex) public {
 		setRound(merkleRoot,rate);

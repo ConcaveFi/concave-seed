@@ -260,7 +260,22 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice Redeem vested pCNV for CNV
-    function redeem() external {
+    function redeem(uint256 amount) external {
+        // Access sender's participant storage
+        Participant storage participant = participants[msg.sender];
+
+        require(amount <= redeemAmountIn(msg.sender),"!VESTED");
+
+        // Increase redeemed amount to account for newly redeemed tokens
+        participant.redeemed += redeemAmountIn(msg.sender);
+        // Burn "redeemAmountIn(msg.sender)" from sender
+        _burn(msg.sender, redeemAmountIn(msg.sender));
+        // Mint sender "cnvOut" in CNV
+        CNV.mint(msg.sender, redeemAmountOut(msg.sender));
+    }
+
+    /// @notice Redeem vested pCNV for CNV
+    function redeemMax() external {
         // Access sender's participant storage
         Participant storage participant = participants[msg.sender];
         // Increase redeemed amount to account for newly redeemed tokens
