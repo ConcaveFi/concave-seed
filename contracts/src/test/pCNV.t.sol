@@ -688,7 +688,12 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// 33300
 	}
 
-	/// @notice when a user redeems an amount - their availablee amount to redeem should decrease
+	/// @notice when a user redeems an `amountIn` - the following should hold:
+	/// - redeemable amount should decrease by `amountIn`
+	/// - pCNV balance of user should decrease by `amountIn`
+	/// - pCNV totalSupply should decrease by `amountIn`
+	/// - CNV total supply should increase by `amountOut`
+	/// - CNV balance of user should increase by `amountOut`
 	function test_redeem_redeemable_amount_reduces_after_redemption_wip() public {
 		// setup
 		setRound(merkleRoot,rate);
@@ -697,23 +702,39 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		address userAddress = getUserAddress(0);
 		uint256 initialTimestamp = block.timestamp;
 
+		uint256 initialPCNVBalance = PCNV.balanceOf(userAddress);
+		uint256 initialPCNVSupply = PCNV.totalSupply();
+		uint256 initialCNVBalance = CNV.balanceOf(userAddress);
+		uint256 initialCNVSupply = CNV.totalSupply();
+
 
 		// we warp to future `time1`
 		uint256 time = 30 days * 12;
 		vm.warp(initialTimestamp+time);
 
 		// check the redeemable amount
-		uint redeemableAmount = PCNV.redeemAmountIn(userAddress);
+		uint256 amountIn = PCNV.redeemAmountIn(userAddress);
+		uint256 amountOut = PCNV.redeemAmountOut(userAddress);
 
 		// redeemable amount must be larger than 0
-		require(redeemableAmount > 0,"ERR:1");
+		require(amountIn > 0,"ERR:1");
 
 		// user redeems full amount
 		redeemMax(0);
 
-		// redeemable amount should now be 0
+		// - redeemable amount should decrease by `amountIn`
 		require(PCNV.redeemAmountIn(userAddress) == 0,"ERR:2");
-
+		// - pCNV balance of user should decrease by `amountIn`
+		emit log_uint(initialPCNVBalance);
+		emit log_uint(amountIn);
+		emit log_uint(PCNV.balanceOf(userAddress));
+		require(PCNV.balanceOf(userAddress) == initialPCNVBalance - amountIn,"ERR:3");
+		// - pCNV totalSupply should decrease by `amountIn`
+		require(PCNV.totalSupply() == initialPCNVSupply - amountIn,"ERR:4");
+		//  - CNV total supply should increase by `amountOut`
+		require(CNV.totalSupply() == initialCNVSupply + amountOut, "ERR:5");
+		// - CNV balance of user should increase by `amountOut`
+		require(CNV.balanceOf(userAddress) == initialCNVBalance + amountOut, "ERR:6");
 	}
 
 	function test_redeem_redeemable_values_2() public {
@@ -758,12 +779,24 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	/**
 	TEST STORIES
-	 - 
-	 // Contract should distribute proper amount to each holder after 2 years
-
-	 //
-	
+	 // Contract should distribute proper amount to each holder after 2 year
+	 // Sender+Receiver should have redemption ratio adjusted after transfer
 	*/
+		function test_transfer_redeem_ratio_calibration() public {
+		setRound(merkleRoot,rate);
+		setRedeemable();
+		claim_user(0);
+		address userAddress = getUserAddress(0);
+		uint256 initialTimestamp = block.timestamp;
+
+		uint256 initialPCNVBalance = PCNV.balanceOf(userAddress);
+		uint256 initialPCNVSupply = PCNV.totalSupply();
+		uint256 initialCNVBalance = CNV.balanceOf(userAddress);
+		uint256 initialCNVSupply = CNV.totalSupply();
+		}
+
+
+	
 
 
 
@@ -773,6 +806,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 
 	function redeemMax(uint256 ix) public {
+		
 		vm.startPrank(getUserAddress(ix));
 		PCNV.redeemMax();
 		vm.stopPrank();

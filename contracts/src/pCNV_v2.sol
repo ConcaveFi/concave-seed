@@ -259,31 +259,26 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         return super.transferFrom(from, to, amount);
     }
 
-    /// @notice Redeem vested pCNV for CNV
-    function redeem(uint256 amount) external {
-        // Access sender's participant storage
+    /// @notice redeem a specific amount of pCNV for CNV
+    /// @param amount amount of pCNV to be redeemed
+    function redeeem(uint256 amount) external {
+        // store amountIn and amountOut before mutating state
+        uint256 amountIn = redeemAmountIn(msg.sender);
+        uint256 amountOut = redeemAmountOut(msg.sender);
+        require(amount <= amountIn, "!VESTED");
         Participant storage participant = participants[msg.sender];
-
-        require(amount <= redeemAmountIn(msg.sender),"!VESTED");
-
-        // Increase redeemed amount to account for newly redeemed tokens
-        participant.redeemed += redeemAmountIn(msg.sender);
-        // Burn "redeemAmountIn(msg.sender)" from sender
-        _burn(msg.sender, redeemAmountIn(msg.sender));
-        // Mint sender "cnvOut" in CNV
-        CNV.mint(msg.sender, redeemAmountOut(msg.sender));
+        participant.redeemed += amount;
+        _redeem(msg.sender,amount, amountOut);
     }
 
-    /// @notice Redeem vested pCNV for CNV
+    /// @notice redeem maximum amount of redeemable pCNV for CNV
     function redeemMax() external {
-        // Access sender's participant storage
+        // store amountIn and amountOut before mutating state
+        uint256 amountIn = redeemAmountIn(msg.sender);
+        uint256 amountOut = redeemAmountOut(msg.sender);
         Participant storage participant = participants[msg.sender];
-        // Increase redeemed amount to account for newly redeemed tokens
-        participant.redeemed += redeemAmountIn(msg.sender);
-        // Burn "redeemAmountIn(msg.sender)" from sender
-        _burn(msg.sender, redeemAmountIn(msg.sender));
-        // Mint sender "cnvOut" in CNV
-        CNV.mint(msg.sender, redeemAmountOut(msg.sender));
+        participant.redeemed += amountIn;
+        _redeem(msg.sender,amountIn, amountOut);
     }
 
     /* ---------------------------------------------------------------------- */
@@ -420,5 +415,14 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
         // increase "to" purchased by amount received
         toParticipant.purchased += amount;
+    }
+
+    /// @notice burns `amountIn` of pCNV from `to`, and mints `amountOut` of CNV to `to`
+    /// @param to           address from which pCNV will be burned and CNV will be minted
+    /// @param amountIn     amount of pCNV to be burned
+    /// @param amountOut    amount of CNV to be minted
+    function _redeem(address to, uint256 amountIn, uint256 amountOut) internal {
+        _burn(to, amountIn);
+        CNV.mint(to, amountOut);
     }
 }
