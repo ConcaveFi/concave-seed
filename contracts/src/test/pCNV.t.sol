@@ -329,8 +329,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-	/// WIP WIP WIPWIP
-
 	// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
 	function test_mint_should_fail_if_DAI_not_approved() public {
 		setRound(merkleRoot,rate);
@@ -383,6 +381,46 @@ contract pCNVTest is DSTest, pCNVWhitelist {
             proof
         );
         vm.stopPrank();
+	}
+
+
+	// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user DAI balance, treasury DAI balance
+	function test_mint_maxAmount_passes() public {
+		setRound(merkleRoot,rate);
+
+		uint256 initialTreasuryStableBalance  = IERC20(DAI).balanceOf(treasury);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_DAI(userAddress,amountIn);
+		
+
+		uint256 initialUserStableBalance = IERC20(DAI).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn);
+		
+        vm.startPrank(userAddress);
+		IERC20(DAI).approve(address(PCNV),amountIn);
+		PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+
+		uint256 amountOut = amountIn * 1e18 / rate;
+
+		require(PCNV.totalSupply() == amountOut,"TESTFAIL:1");
+		require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
+		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+		require(IERC20(DAI).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+		require(IERC20(DAI).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
 
