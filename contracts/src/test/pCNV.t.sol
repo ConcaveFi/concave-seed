@@ -162,7 +162,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-	/// TODO: write this test
+	/// @notice fails with "!TOKEN_IN" when `tokenIn` is not FRAX or DAI
 	function test_mint_should_fail_with_tokenIn() public {
 		setRound(merkleRoot,rate);
 
@@ -183,19 +183,74 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         );
 	}
 
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_proof_on_wrong_proof() public {
+	/// @notice fails with "!PROOF" when `proof` is not correct user's proof
+	function test_mint_should_fail_with_proof_on_wrong_proof() public {
+		setRound(merkleRoot,rate);
+
+		uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		// get proof for incorrect user
+		bytes32[] memory proof = getUserProof(1);
+
+		uint256 amountIn = userMaxAmount;
+
+		vm.startPrank(userAddress);
 		vm.expectRevert("!PROOF");
+        PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+		vm.stopPrank();
 	}
 
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_proof_on_wrong_to() public {
+	/// @notice fails with "!PROOF" when `to` is not correct
+	function test_mint_should_fail_with_proof_on_wrong_to() public {
+		setRound(merkleRoot,rate);
+
+		uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		vm.startPrank(userAddress);
 		vm.expectRevert("!PROOF");
+        PCNV.mint(
+            address(0), // enter incorrect "to" address
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+		vm.stopPrank();
 	}
 
-	
+	/// @notice fails with "!PROOF" when `maxAmount` is not correct
 	function test_mint_should_fail_with_proof_on_wrong_amount() public {
+		setRound(merkleRoot,rate);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount+1;
 		
+        vm.startPrank(userAddress);
+		vm.expectRevert("!PROOF");
+		PCNV.mint(
+            userAddress,
+            DAI,
+            userMaxAmount+1, // send incorrect maxAmount
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
 		
 	}
 
