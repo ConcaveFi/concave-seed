@@ -7,7 +7,7 @@ const globalStyles: Styles = {
       color: mode('gray.800', 'whiteAlpha.900')(props),
       // bg: mode('white', '#121212')(props),
       lineHeight: 'base',
-      'color-scheme': mode('light', 'dark')(props),
+      colorScheme: mode('light', 'dark')(props),
     },
     body: {
       bgImage: 'url(/images/cave_bg.jpeg)',

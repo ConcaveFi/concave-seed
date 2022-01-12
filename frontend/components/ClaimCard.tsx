@@ -1,36 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-import { inputTokens, claim } from 'lib/claim'
-import { useAccount, useProvider } from 'wagmi'
+import { claim, getUserClaimablePCNVAmount, inputTokens, pCNVSeedPrice } from 'lib/claim'
+import { useAccount } from 'wagmi'
+import { useSigner } from 'hooks/useSigner'
 
-export function ClaimCard({ maxAmount }) {
+export function ClaimCard() {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
-  const [{ data: account }] = useAccount()
-
   const [isLoading, setIsLoading] = useState(false)
 
-  const claimPCNV = async () => {
+  const [{ data: account }] = useAccount()
+
+  const [{ data: signer }] = useSigner()
+  const [claimableAmount, setClaimableAmount] = useState(null)
+
+  useEffect(() => {
+    if (signer)
+      getUserClaimablePCNVAmount(signer)
+        .then((a) => setClaimableAmount(a.mul(pCNVSeedPrice).toNumber()))
+        .catch(console.log)
+  }, [signer])
+
+  const onClaim = async () => {
     setIsLoading(true)
-    const signer = await account.connector.getSigner()
-    try {
-      await claim(signer, amount, inputToken)
-    } catch (e) {
-      console.log(e)
-      // setError()
-      setIsLoading(false)
-    }
-    setIsLoading(false)
+    await claim(await account.connector.getSigner(), amount, inputToken).finally(() =>
+      setIsLoading(false),
+    )
   }
 
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
       <AmountInput
-        maxAmount={maxAmount}
+        maxAmount={claimableAmount}
         value={amount}
         onChangeValue={setAmount}
         tokenOptions={inputTokens}
@@ -38,7 +43,7 @@ export function ClaimCard({ maxAmount }) {
         onSelectToken={setInputToken}
       />
       <Button
-        onClick={claimPCNV}
+        onClick={onClaim}
         isLoading={isLoading}
         isDisabled={Number(amount) < 1}
         variant="primary"

@@ -26,7 +26,7 @@ const ConnectButton = ({ onError }: { onError: (e: Error) => void }) => {
   const [{ data, error }, connect] = useConnect()
   return (
     <>
-      <Menu placement="bottom-end">
+      <Menu placement="bottom-end" isLazy>
         <MenuButton
           as={Button}
           variant="primary.outline"
@@ -37,16 +37,20 @@ const ConnectButton = ({ onError }: { onError: (e: Error) => void }) => {
           Connect wallet
         </MenuButton>
         <MenuList bg="green.500" borderRadius="xl" minW="min" px={1}>
-          {data.connectors.map((connector) => (
-            <MenuItem
-              borderRadius="xl"
-              icon={<Image maxWidth="20px" src={`/connectors/${connector.name}.png`} alt="" />}
-              key={connector.id}
-              onClick={() => connect(connector)}
-            >
-              {connector.name}
-            </MenuItem>
-          ))}
+          {data.connectors.map((connector) => {
+            if (!connector.ready) return null
+            // change image from using connector id to something else, injected can be metamask, coinbase, brave etc
+            return (
+              <MenuItem
+                borderRadius="xl"
+                icon={<Image maxWidth="20px" src={`/connectors/${connector.id}.png`} alt="" />}
+                key={connector.id}
+                onClick={() => connect(connector)}
+              >
+                {connector.name}
+              </MenuItem>
+            )
+          })}
         </MenuList>
         {/* <UnsuportedNetworkModal
           isOpen={state === 'unsupportedNetwork'}
