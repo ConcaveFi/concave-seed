@@ -52,7 +52,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /// @notice Returns an array of all merkle roots used
     bytes32[] public roots;
-    
+
     /// @notice Returns the current pCNV price in DAI/FRAX
     uint256 public rate;
 
@@ -118,9 +118,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         CNV = ICNV(_CNV);
     }
 
-    /// @notice Update 
-    /// @param _merkleRoot
-    /// @param _rate
+    /// @notice Update
+    /// @param _merkleRoot  root of merkle tree
+    /// @param _rate        rate ...
     function setRound(
         bytes32 _merkleRoot,
         uint256 _rate
@@ -146,7 +146,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
             // Reduce max supply by "amount"
             maxSupply -= amount;
             // end the function
-            return;   
+            return;
         }
         // make sure total minted + amount is less than or equal to maximum supply
         require(totalMinted + amount <= maxSupply, "!AMOUNT");
@@ -173,7 +173,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     ) external returns (uint256 amountOut) {
         return _purchase(msg.sender, to, tokenIn, maxAmount, amountIn, proof);
     }
-    
+
     /// @notice mint pCNV for a specific round by giving merkle proof; uses EIP-2612 permit to save a transaction
     /// @param to             whitelisted address purchased pCNV will be sent to
     /// @param tokenIn        address of tokenIn user wishes to deposit
@@ -205,7 +205,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param to address tokens are being sent to
     /// @param amount number of tokens being transfered
     function transfer(
-        address to, 
+        address to,
         uint256 amount
     ) public virtual override returns (bool) {
         // update vesting storage for both users
@@ -219,8 +219,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param to address tokens are being sent to
     /// @param amount number of tokens being transfered
     function transferFrom(
-        address from, 
-        address to, 
+        address from,
+        address to,
         uint256 amount
     ) public virtual override returns (bool) {
         // update vesting storage for both users
@@ -234,8 +234,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         // Access sender's participant storage
         Participant storage participant = participants[msg.sender];
         // Increase redeemed amount to account for newly redeemed tokens
-        participant.reedeemed += redeemAmountIn(msg.sender);
-        // Burn "redeemAmountIn(msg.sender)" from sender        
+        participant.redeemed += redeemAmountIn(msg.sender);
+        // Burn "redeemAmountIn(msg.sender)" from sender
         _burn(msg.sender, redeemAmountIn(msg.sender));
         // Mint sender "cnvOut" in CNV
         CNV.mint(msg.sender, redeemAmountOut(msg.sender));
@@ -287,7 +287,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /// @notice Returns the percent of pCNV that is redeemable
     function purchaseVested() public view returns (uint256) {
-        return elapsed() > TWO_YEARS ? 1e18 : 1e18 * elapsed() / TWO_YEARS; 
+        return elapsed() > TWO_YEARS ? 1e18 : 1e18 * elapsed() / TWO_YEARS;
     }
 
     /// @notice Returns total amount of CNV supply that is vested
@@ -315,14 +315,14 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         bytes32[] calldata proof
     ) internal returns(uint256 amountOut) {
         // make sure total minted + amount is less than or equal to maximum supply
-        require(totalMinted + amount <= maxSupply, "!AMOUNT");
+        require(totalMinted + amountIn <= maxSupply, "!AMOUNT");
 
         // Make sure payment tokenIn is either DAI or FRAX
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
-        
+
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
         require(MerkleProof.verify(proof, merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
-        
+
         // Verify amount claimed by user does not surpass maxAmount
         spentAmounts[merkleRoot][to] += amountIn;
         require(spentAmounts[merkleRoot][to] <= maxAmount, "!AMOUNT_IN");
@@ -351,8 +351,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param to address tokens are being sent to
     /// @param amount number of tokens being transfered
     function _beforeTransfer(
-        address from, 
-        address to, 
+        address from,
+        address to,
         uint256 amount
     ) internal {
         // Interface "to" participant storage
