@@ -385,7 +385,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 
 	// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user DAI balance, treasury DAI balance
-	function test_mint_maxAmount_passes() public {
+	function test_mint_DAI_maxAmount_passes() public {
 		setRound(merkleRoot,rate);
 
 		uint256 initialTreasuryStableBalance  = IERC20(DAI).balanceOf(treasury);
@@ -421,6 +421,45 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
 		require(IERC20(DAI).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
 		require(IERC20(DAI).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
+	}
+
+	// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user FRAX balance, treasury FRAX balance
+	function test_mint_FRAX_maxAmount_passes() public {
+		setRound(merkleRoot,rate);
+
+		uint256 initialTreasuryStableBalance  = IERC20(FRAX).balanceOf(treasury);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_FRAX(userAddress,amountIn);
+		
+
+		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn);
+		
+        vm.startPrank(userAddress);
+		IERC20(FRAX).approve(address(PCNV),amountIn);
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+
+		uint256 amountOut = amountIn * 1e18 / rate;
+
+		require(PCNV.totalSupply() == amountOut,"TESTFAIL:1");
+		require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
+		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+		require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
 
