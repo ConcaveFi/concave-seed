@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Button, useQuery } from '@chakra-ui/react'
+import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-import { claim, getUserClaimablePCNVAmount, inputTokens } from 'lib/claim'
-import { useAccount, useContractRead } from 'wagmi'
+import { claim, getUserClaimablePCNVAmount, inputTokens, pCNVSeedPrice } from 'lib/claim'
+import { useAccount } from 'wagmi'
 import { useSigner } from 'hooks/useSigner'
 
 export function ClaimCard() {
@@ -19,7 +19,10 @@ export function ClaimCard() {
   const [claimableAmount, setClaimableAmount] = useState(null)
 
   useEffect(() => {
-    if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
+    if (signer)
+      getUserClaimablePCNVAmount(signer)
+        .then((a) => setClaimableAmount(a.mul(pCNVSeedPrice).toNumber()))
+        .catch(console.log)
   }, [signer])
 
   const onClaim = async () => {

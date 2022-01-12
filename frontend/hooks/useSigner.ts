@@ -16,7 +16,7 @@ const initialState: State = {
 }
 
 export const useSigner = () => {
-  const [{ data: account }] = useAccount()
+  const [{ data: account, loading: accountLoading }] = useAccount()
   const [state, setState] = React.useState<State>(initialState)
   const wagmi = useContext()
 
@@ -31,7 +31,7 @@ export const useSigner = () => {
       const error = <Error>error_
       setState((x) => ({ ...x, data: undefined, error, loading: false }))
     }
-  }, [account?.connector])
+  }, [accountLoading])
 
   React.useEffect(() => {
     getSigner()
