@@ -10,6 +10,8 @@ import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
 import { ICNV } from "./interfaces/ICNV.sol";
 
+/// @notice Concave Presale Token
+/// @author Convex & Dionysus (ConcaveFi)
 contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /* ---------------------------------------------------------------------- */
@@ -56,6 +58,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /// @notice Returns the max supply that is allowed to be minted (in total)
     uint256 public maxSupply = 333000e18;
+
+    /// @notice Returns the total amount of pCNV that has cummulativly been minted
+    uint256 public totalMinted;
 
     /// @notice Returns if pCNV are redeemable for CNV
     bool public redeemable;
@@ -109,12 +114,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     ) external onlyConcave {
         // Allow tokens to be redeemed for CNV
         redeemable = true;
-
         // Set CNV address so tokens can be minted
         CNV = ICNV(_CNV);
-
-        // Emit the event
-        emit SetRedeemable(_CNV);
     }
 
     /// @notice Update 
@@ -147,7 +148,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
             // end the function
             return;   
         }
-        // make sure total minted + amount iss less than or equal to maximum supply
+        // make sure total minted + amount is less than or equal to maximum supply
         require(totalMinted + amount <= maxSupply, "!AMOUNT");
         // mint target amount
         _mint(target, amount);
@@ -200,6 +201,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         _purchase(msg.sender, to, tokenIn, maxAmount, amountIn, proof);
     }
 
+    /// @notice transfer "amount" of tokens from msg.sender to "to"
+    /// @param to address tokens are being sent to
+    /// @param amount number of tokens being transfered
     function transfer(
         address to, 
         uint256 amount
@@ -210,6 +214,10 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         return super.transfer(to, amount);
     }
 
+    /// @notice transfer "amount" of tokens from "from" to "to"
+    /// @param from address tokens are being transfered from
+    /// @param to address tokens are being sent to
+    /// @param amount number of tokens being transfered
     function transferFrom(
         address from, 
         address to, 
@@ -306,6 +314,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         uint256 amountIn,
         bytes32[] calldata proof
     ) internal returns(uint256 amountOut) {
+        // make sure total minted + amount is less than or equal to maximum supply
+        require(totalMinted + amount <= maxSupply, "!AMOUNT");
+
         // Make sure payment tokenIn is either DAI or FRAX
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
         
@@ -324,6 +335,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
         // Increase participant.purchased to account for newly purchased tokens
         participant.purchased += amountOut;
+
+        // Increase totalMinted to account for newly minted supply
+        totalMinted += amountOut;
 
         // Transfer amountIn*ratio of tokenIn to treasury address
         ERC20(tokenIn).safeTransferFrom(sender, treasury, amountIn);
