@@ -108,13 +108,13 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	// @notice onlyConcave may setRound, else fails with "!CONCAVE". Verifies if value is set correctly.
     function test_setRound() public {
         vm.expectRevert("!CONCAVE");
-        PCNV.setRound(merkleRoot,rate,whitelist_maxDebt);
+        PCNV.setRound(merkleRoot,rate);
 
         require(PCNV.merkleRoot() == 0x0000000000000000000000000000000000000000000000000000000000000000);
         require(PCNV.rate() == 0);
 
 		vm.startPrank(treasury);
-        PCNV.setRound(merkleRoot,rate,whitelist_maxDebt);
+        PCNV.setRound(merkleRoot,rate);
         vm.stopPrank();
 
 		require(PCNV.merkleRoot() == merkleRoot);
@@ -725,9 +725,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// - redeemable amount should decrease by `amountIn`
 		require(PCNV.redeemAmountIn(userAddress) == 0,"ERR:2");
 		// - pCNV balance of user should decrease by `amountIn`
-		emit log_uint(initialPCNVBalance);
-		emit log_uint(amountIn);
-		emit log_uint(PCNV.balanceOf(userAddress));
 		require(PCNV.balanceOf(userAddress) == initialPCNVBalance - amountIn,"ERR:3");
 		// - pCNV totalSupply should decrease by `amountIn`
 		require(PCNV.totalSupply() == initialPCNVSupply - amountIn,"ERR:4");
@@ -777,22 +774,56 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		
 	}
 
+	function test_transfer_wip() public {
+		// setup
+		setRound(merkleRoot,rate);
+		setRedeemable();
+		// claim user 0 and 1
+		claim_user(0);
+		claim_user(1);
+
+		address userAddress = getUserAddress(0);
+	}
+
 	/**
 	TEST STORIES
 	 // Contract should distribute proper amount to each holder after 2 year
 	 // Sender+Receiver should have redemption ratio adjusted after transfer
 	*/
 		function test_transfer_redeem_ratio_calibration() public {
-		setRound(merkleRoot,rate);
-		setRedeemable();
-		claim_user(0);
-		address userAddress = getUserAddress(0);
-		uint256 initialTimestamp = block.timestamp;
+		// address from = getUserAddress(0);
+		// address to = getUserAddress(1);
 
-		uint256 initialPCNVBalance = PCNV.balanceOf(userAddress);
-		uint256 initialPCNVSupply = PCNV.totalSupply();
-		uint256 initialCNVBalance = CNV.balanceOf(userAddress);
-		uint256 initialCNVSupply = CNV.totalSupply();
+
+		// setRound(merkleRoot,rate);
+		// setRedeemable();
+		// uint256 time = 30 days;
+		// vm.warp(initialTimestamp+time);
+		// claim_user(userAddress);
+		// uint256 initialTimestamp = block.timestamp;
+
+    // function _beforeTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 amount
+    // ) internal {
+ 
+
+    //     // calculate amount to adjust redeem amounts by
+    //     uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
+
+    //     // reduce "from" redeemed by amount * "from" redeem purchase ratio
+    //     fromParticipant.redeemed -= adjustedAmount;
+
+    //     // reduce "from" purchased amount by the amount being sent
+    //     fromParticipant.purchased -= amount;
+
+    //     // increase "to" redeemed by amount * "from" redeem purchase ratio
+    //     toParticipant.redeemed += adjustedAmount;
+
+    //     // increase "to" purchased by amount received
+    //     toParticipant.purchased += amount;
+    // }
 		}
 
 
@@ -860,8 +891,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.startPrank(treasury);
 		PCNV.setRound(
 			merkleRoot,
-			rate,
-			whitelist_maxDebt
+			rate
 		);
 		vm.stopPrank();
 	}

@@ -1,6 +1,47 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
+
+/**
+    pCNV to CNV mechanics
+    ---------------------
+    The contract features two vesting schedules to redeem pCNV into CNV. Both
+    schedules are linear, and have a duration of 2 years.
+
+    The first vesting schedule determines how many pCNV a holder can redeem at
+    any point in time. At contract inception - 0% of a holder's pCNV can be 
+    redeemed. At the end of 2 years, 100% of a holder's pCNV can be redeemed.
+    It goes from 0% to 100% in a linear fashion.
+
+    The second vesting schedule determines the percent of CNV supply that pCNV
+    corresponds to. This vesting schedule also begins at 0% on day one, and
+    advances linearly to reach 10% at the end of year two.
+
+    The following is a breakdown of a pCNV to CNV redemption:
+
+    Assumptions:
+        - Alice holds 100 pCNV
+        - pCNV total supply is 200
+        - CNV total supply is 1000
+        - 1 year has passed and Alice has not made any previous redemptions
+    
+    Then:
+        - The first vesting schedule tells us that users may redeem 50% of their
+          holdings, so Alice may redeem 50 pCNV.
+        - The second vesting schedule tells us that pCNV total supply corresponds
+          to 5% of total CNV supply.
+        - Since total CNV supply is 1000, 5% of it is 50, so 50 CNV are what
+          correspond to the 200 pCNV supply.
+        - Alice has 50% of total pCNV supply
+        - Thus, Alice is entitled to 50% of the claimable CNV supply, i.e Alice
+          is entitled to 25 CNV
+
+    Conclusion:
+        - Alice burns 50 pCNV
+        - Alice mints 25 CNV
+        
+*/
+
 /* -------------------------------------------------------------------------- */
 /*                                   IMPORTS                                  */
 /* -------------------------------------------------------------------------- */
@@ -57,8 +98,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public rate;
 
     /// @notice Returns the max supply that is allowed to be minted (in total)
-    uint256 public maxSupply;
-    // uint256 public maxSupply = 333000e18;
+    uint256 public maxSupply = 33_000_000e18;
 
     /// @notice Returns the total amount of pCNV that has cummulativly been minted
     uint256 public totalMinted;
@@ -124,30 +164,12 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         CNV = ICNV(_CNV);
     }
 
-    // /// @notice Update
-    // /// @param _merkleRoot  root of merkle tree
-    // /// @param _rate        rate ...
-    // function setRound(
-    //     bytes32 _merkleRoot,
-    //     uint256 _rate
-    // ) external onlyConcave {
-    //     // push new root to array of all roots - for viewing
-    //     roots.push(_merkleRoot);
-    //     // update merkle root
-    //     merkleRoot = _merkleRoot;
-    //     // update rate
-    //     rate = _rate;
-
-    // }
-
-    // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
     /// @notice Update
     /// @param _merkleRoot  root of merkle tree
     /// @param _rate        rate ...
     function setRound(
         bytes32 _merkleRoot,
-        uint256 _rate,
-        uint256 _roundSupply
+        uint256 _rate
     ) external onlyConcave {
         // push new root to array of all roots - for viewing
         roots.push(_merkleRoot);
@@ -156,12 +178,30 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         // update rate
         rate = _rate;
 
-        // if the maxSupply from the previous round has not been satisfied,
-        // reset maxSupply to totalMinted
-        maxSupply = totalMinted;
-        // update max supply with the amount that should be minted in this round
-        maxSupply += _roundSupply;
     }
+
+    // // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
+    // /// @notice Update
+    // /// @param _merkleRoot  root of merkle tree
+    // /// @param _rate        rate ...
+    // function setRound(
+    //     bytes32 _merkleRoot,
+    //     uint256 _rate,
+    //     uint256 _roundSupply
+    // ) external onlyConcave {
+    //     // push new root to array of all roots - for viewing
+    //     roots.push(_merkleRoot);
+    //     // update merkle root
+    //     merkleRoot = _merkleRoot;
+    //     // update rate
+    //     rate = _rate;
+
+    //     // if the maxSupply from the previous round has not been satisfied,
+    //     // reset maxSupply to totalMinted
+    //     maxSupply = totalMinted;
+    //     // update max supply with the amount that should be minted in this round
+    //     maxSupply += _roundSupply;
+    // }
 
     /// @notice Reduce an "amount" of available supply or mint it to "target"
     /// @param amount to reduce from max supply or mint to "target"
@@ -427,42 +467,3 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 }
 
-/**
-    pCNV to CNV mechanics
-    ---------------------
-    The contract features two vesting schedules to redeem pCNV into CNV. Both
-    schedules are linear, and have a duration of 2 years.
-
-    The first vesting schedule determines how many pCNV a holder can redeem at
-    any point in time. At contract inception - 0% of a holder's pCNV can be 
-    redeemed. At the end of 2 years, 100% of a holder's pCNV can be redeemed.
-    It goes from 0% to 100% in a linear fashion.
-
-    The second vesting schedule determines the percent of CNV supply that pCNV
-    corresponds to. This vesting schedule also begins at 0% on day one, and
-    advances linearly to reach 10% at the end of year two.
-
-    The following is a breakdown of a pCNV to CNV redemption:
-
-    Assumptions:
-        - Alice holds 100 pCNV
-        - pCNV total supply is 200
-        - CNV total supply is 1000
-        - 1 year has passed and Alice has not made any previous redemptions
-    
-    Then:
-        - The first vesting schedule tells us that users may redeem 50% of their
-          holdings, so Alice may redeem 50 pCNV.
-        - The second vesting schedule tells us that pCNV total supply corresponds
-          to 5% of total CNV supply.
-        - Since total CNV supply is 1000, 5% of it is 50, so 50 CNV are what
-          correspond to the 200 pCNV supply.
-        - Alice has 50% of total pCNV supply
-        - Thus, Alice is entitled to 50% of the claimable CNV supply, i.e Alice
-          is entitled to 25 CNV
-
-    Conclusion:
-        - Alice burns 50 pCNV
-        - Alice mints 25 CNV
-        
-*/
