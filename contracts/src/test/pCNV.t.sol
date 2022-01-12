@@ -278,7 +278,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	}
 
-	// @notice fails with "Dai/insufficient-balance" if user does not have enough DAI
+	/// @notice fails with "Dai/insufficient-balance" if user does not have enough DAI
 	function test_mint_should_fail_if_insufficient_DAI() public {
 		setRound(merkleRoot,rate);
 
@@ -303,7 +303,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
-	// @notice fails with "ERC20: transfer amount exceeds balance" if user does not have enough FRAX
+	/// @notice fails with "ERC20: transfer amount exceeds balance" if user does not have enough FRAX
 	function test_mint_should_fail_if_insufficient_FRAX() public {
 		setRound(merkleRoot,rate);
 
@@ -329,7 +329,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-	// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
+	/// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
 	function test_mint_should_fail_if_DAI_not_approved() public {
 		setRound(merkleRoot,rate);
 
@@ -356,7 +356,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
-	// @notice fails with "ERC20: transfer amount exceeds allowance" if user has not approved enough FRAX
+	/// @notice fails with "ERC20: transfer amount exceeds allowance" if user has not approved enough FRAX
 	function test_mint_should_fail_if_FRAX_not_approved() public {
 		setRound(merkleRoot,rate);
 
@@ -384,7 +384,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-	// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user DAI balance, treasury DAI balance
+	/// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user DAI balance, treasury DAI balance
 	function test_mint_DAI_maxAmount_passes() public {
 		setRound(merkleRoot,rate);
 
@@ -423,7 +423,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(IERC20(DAI).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
-	// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user FRAX balance, treasury FRAX balance
+	/// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user FRAX balance, treasury FRAX balance
 	function test_mint_FRAX_maxAmount_passes() public {
 		setRound(merkleRoot,rate);
 
@@ -462,20 +462,99 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
+	/// @notice user may mint up to maxAmount in multiple mint calls
+	function test_mint_in_multiple_amounts() public {
+		setRound(merkleRoot,rate);
 
+		uint256 initialTreasuryStableBalance  = IERC20(FRAX).balanceOf(treasury);
 
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
 
-	// TODO: write this test
-	function test_second_mint_should_fail_if_amount_in_would_exceed_maxamount() public {
+		uint256 amountIn = userMaxAmount;
+
+		deposit_FRAX(userAddress,amountIn);
 		
+
+		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn);
+		
+        vm.startPrank(userAddress);
+		IERC20(FRAX).approve(address(PCNV),amountIn);
+
+
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn - 10e18,
+            proof
+        );
+
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            10e18,
+            proof
+        );
+
+        vm.stopPrank();
+
+		uint256 amountOut = amountIn * 1e18 / rate;
+
+		require(PCNV.totalSupply() == amountOut,"TESTFAIL:1");
+		require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
+		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+		require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
-	/// TODO: write this test
-	function xtest_mint_totalMinted_is_increased_and_totalSupply_is_increased() public {
-		uint256 mintedAmount = 0;
-		require(PCNV.totalMinted() == mintedAmount);
 
-		require(PCNV.totalSupply() == mintedAmount);
+
+
+	/// @notice if second mint exceeds `maxAmount`, call should revert with "!AMOUNT"
+	function test_second_mint_should_fail_if_amount_in_would_exceed_maxamount() public {
+		setRound(merkleRoot,rate);
+
+		uint256 initialTreasuryStableBalance  = IERC20(FRAX).balanceOf(treasury);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_FRAX(userAddress,amountIn);
+		
+
+		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn);
+		
+        vm.startPrank(userAddress);
+		IERC20(FRAX).approve(address(PCNV),amountIn);
+
+
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn - 10e18,
+            proof
+        );
+		vm.expectRevert("!AMOUNT_IN");
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            10e18+1,
+            proof
+        );
+
+        vm.stopPrank();
 	}
 
 
