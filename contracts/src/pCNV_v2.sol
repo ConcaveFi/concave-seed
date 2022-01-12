@@ -291,7 +291,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     function redeemAmountOut(
         address who
     ) public view returns (uint256) {
-        return amountVested() * percentToRedeem(msg.sender) / 1e18;
+        return amountVested() * percentToRedeem(who) / 1e18;
     }
 
     /// @notice Returns percentage (denominated in ether) of pCNV supply

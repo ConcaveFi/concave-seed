@@ -509,7 +509,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
 		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
 		require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
-		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
+		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:5");
 	}
 
 
@@ -558,7 +558,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 	/// @notice mint all users
-	function test_mint_all_users_wip() public {
+	function test_mint_all_users() public {
 		setRound(merkleRoot,rate);
 		uint256 treasuryBalance = IERC20(FRAX).balanceOf(treasury);
 		uint256 totalSupply;
@@ -602,12 +602,99 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     /*                         PUBLIC LOGIC: redeem()                         */
     /* ---------------------------------------------------------------------- */
 
+	function test_sanity_check_wip() public {
+		setRound(merkleRoot,rate);
+		        
+
+		setRedeemable();
+		claim_user(0);
+		
+
+		uint256 initialTimestamp = block.timestamp;
+		emit log_uint(PCNV.balanceOf(getUserAddress(0))/1e18);
+		for (uint256 i; i < 30; i++) {
+			vm.warp(initialTimestamp+(30 days * i));
+			emit log_uint(PCNV.redeemAmountIn(getUserAddress(0))/1e18);
+		}
+		// 100000 initial balance
+		// 0
+		// 4109
+		// 8219
+		// 12328
+		// 16438
+		// 20547
+		// 24657
+		// 28767
+		// 32876
+		// 36986
+		// 41095
+		// 45205
+		// 49315
+		// 53424
+		// 57534
+		// 61643
+		// 65753
+		// 69863
+		// 73972
+		// 78082
+		// 82191
+		// 86301
+		// 90410
+		// 94520
+		// 98630
+		// 100000
+		// 100000
+		// 100000
+		// 100000
+		// 100000
+		for (uint256 i; i < 30; i++) {
+			vm.warp(initialTimestamp+(30 days * i));
+			emit log_uint(PCNV.amountVested()/1e18);
+		}
+	}
 
 
 
     /* ---------------------------------------------------------------------- */
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
+
+	function claim_user(uint256 userIndex) public {
+		setRound(merkleRoot,rate);
+
+		uint256 initialTreasuryStableBalance  = IERC20(FRAX).balanceOf(treasury);
+
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_FRAX(userAddress,amountIn);
+		
+
+		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn,"TESTFAIL:6");
+		
+        vm.startPrank(userAddress);
+		IERC20(FRAX).approve(address(PCNV),amountIn);
+		PCNV.mint(
+            userAddress,
+            FRAX,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+
+		uint256 amountOut = amountIn * 1e18 / rate;
+
+		require(PCNV.totalSupply() == amountOut,"TESTFAIL:1");
+		require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
+		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+		require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+		require(IERC20(FRAX).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:5");
+	}
 
 
 
@@ -622,6 +709,12 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			rate,
 			whitelist_maxDebt
 		);
+		vm.stopPrank();
+	}
+
+	function setRedeemable() public {
+		vm.startPrank(treasury);
+		PCNV.setRedeemable(address(PCNV));
 		vm.stopPrank();
 	}
 
