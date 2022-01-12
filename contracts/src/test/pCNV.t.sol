@@ -564,6 +564,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 totalSupply;
 		uint256 totalMinted;
 		for (uint256 i; i < whitelist_addresses.length; i++) {
+			//Collect current users address, max donation for seed, and merkle proof
 			uint256 userIndex = i;
 			address userAddress = getUserAddress(userIndex);
 			uint256 userMaxAmount = getUserMaxAmount(userIndex);
@@ -605,7 +606,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	function test_sanity_check_wip() public {
 		setRound(merkleRoot,rate);
 		        
-
 		setRedeemable();
 		claim_user(0);
 		
@@ -617,6 +617,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			emit log_uint(PCNV.redeemAmountIn(getUserAddress(0))/1e18);
 		}
 		// 100000 initial balance
+		// amount of tokens available to redeem in the next 24 months
 		// 0
 		// 4109
 		// 8219
@@ -647,10 +648,44 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// 100000
 		// 100000
 		// 100000
+		emit log_uint(CNV.totalSupply()/1e18);
 		for (uint256 i; i < 30; i++) {
 			vm.warp(initialTimestamp+(30 days * i));
 			emit log_uint(PCNV.amountVested()/1e18);
+			// emit log_uint(CNV.totalSupply());
 		}
+		// 333000 initial CNV totalSupply
+		// amount of CNV supply claimable by pCNV holders in the next 24 months
+		// 0
+		// 1368
+		// 2736
+		// 4105
+		// 5473
+		// 6842
+		// 8210
+		// 9579
+		// 10947
+		// 12316
+		// 13684
+		// 15053
+		// 16421
+		// 17790
+		// 19158
+		// 20527
+		// 21895
+		// 23264
+		// 24632
+		// 26001
+		// 27369
+		// 28738
+		// 30106
+		// 31475
+		// 32843
+		// 33300
+		// 33300
+		// 33300
+		// 33300
+		// 33300
 	}
 
 
@@ -714,7 +749,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	function setRedeemable() public {
 		vm.startPrank(treasury);
-		PCNV.setRedeemable(address(PCNV));
+		PCNV.setRedeemable(address(CNV));
 		vm.stopPrank();
 	}
 
