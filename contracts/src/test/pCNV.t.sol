@@ -105,6 +105,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     }
 
+	// @notice onlyConcave may setRound, else fails with "!CONCAVE". Verifies if value is set correctly.
     function test_setRound() public {
         vm.expectRevert("!CONCAVE");
         PCNV.setRound(merkleRoot,rate);
@@ -137,35 +138,15 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     /*                              PUBLIC LOGIC                              */
     /* ---------------------------------------------------------------------- */
 
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_amount() public {
-		vm.expectRevert("!AMOUNT");
-	}
-
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_tokenIn() public {
-		vm.expectRevert("!TOKEN_IN");
-	}
-
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_proof_on_wrong_proof() public {
-		vm.expectRevert("!PROOF");
-	}
-
-	/// TODO: write this test
-	function xtest_mint_should_fail_with_proof_on_wrong_to() public {
-		vm.expectRevert("!PROOF");
-	}
-
-	/// @notice 
-	function test_mint_should_fail_with_proof_on_wrong_amount() public {
+	/// @notice fails with "!AMOUNT" when minting more than maxSupply
+	function test_mint_should_fail_with_amount() public {
 		setRound(merkleRoot,rate);
 
 		uint256 userIndex = 0;
 		address userAddress = getUserAddress(userIndex);
 		uint256 userMaxAmount = getUserMaxAmount(userIndex);
 		bytes32[] memory proof = getUserProof(userIndex);
-		
+
 		uint256 amountIn = userMaxAmount*333000e18;
 
         vm.startPrank(userAddress);
@@ -178,10 +159,47 @@ contract pCNVTest is DSTest, pCNVWhitelist {
             proof
         );
         vm.stopPrank();
-		
+	}
+
+
+	/// TODO: write this test
+	function test_mint_should_fail_with_tokenIn() public {
+		setRound(merkleRoot,rate);
+
+		uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		vm.expectRevert("!TOKEN_IN");
+        PCNV.mint(
+            userAddress,
+            address(0),
+            userMaxAmount,
+            amountIn,
+            proof
+        );
 	}
 
 	/// TODO: write this test
+	function xtest_mint_should_fail_with_proof_on_wrong_proof() public {
+		vm.expectRevert("!PROOF");
+	}
+
+	/// TODO: write this test
+	function xtest_mint_should_fail_with_proof_on_wrong_to() public {
+		vm.expectRevert("!PROOF");
+	}
+
+	
+	function test_mint_should_fail_with_proof_on_wrong_amount() public {
+		
+		
+	}
+
+	/// @notice fails when minting more than assigned to sender
 	function test_mint_should_fal_with_amountin() public { 
         setRound(merkleRoot,rate);
 
@@ -191,8 +209,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		bytes32[] memory proof = getUserProof(userIndex);
 
 		uint256 amountIn = userMaxAmount+1;
-        
-         // Verify amount claimed by user does not surpass maxAmount
 		
         vm.startPrank(userAddress);
 		vm.expectRevert("!AMOUNT_IN");
