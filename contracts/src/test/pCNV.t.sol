@@ -54,6 +54,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     address immutable FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
     address immutable DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address immutable treasury = 0x0877497b4A2674e818234a691bc4d2Dffcf76e73;
+	// address treasury = address(100);
+	uint256 immutable MAX_SUPPLY = 33_000_000 * 10 ** 18;
 
     bytes32 immutable merkleRoot = whitelist_merkleroot;
 	
@@ -67,6 +69,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     function setUp() public virtual {
         PCNV = new pCNV();
+		PCNV.setTreasury(treasury);
         CNV = new MockCNV(333000e18);
     }
 
@@ -122,16 +125,42 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     }
 
-	/// TODO: finish this test
-	function xtest_manage() public {
-		address target = address(0);
-		uint256 amount = 0;
+	/// @notice manage with address(0) should burn tokens
+	function test_manage_wip() public {
+		uint256 maxSupply = PCNV.maxSupply();
+
+		uint256 amount = 1e18;
 
 		vm.expectRevert("!CONCAVE");
-        PCNV.manage(target,amount);
+        PCNV.manage(address(0),amount);
+
+		require(PCNV.maxSupply() == maxSupply);
+
+		vm.startPrank(treasury);
+		PCNV.manage(address(0),amount);
+		vm.stopPrank();
+
+		require(PCNV.maxSupply() == maxSupply - amount);
+
+		// require(amount - amount*2 < 10,"BLAMO");
+		vm.startPrank(treasury);
+		vm.expectRevert("!SUPPLY");
+		PCNV.manage(address(0),MAX_SUPPLY+1);
+		vm.stopPrank();
+
+		require(PCNV.maxSupply() == maxSupply - amount);
+
+		// emit log("----");
+		// uint256 maxAmountOut = 55e18;
+		// uint256 ratio = 1e18 * 333e18 / 333e18;
+		// emit log_uint((maxAmountOut * ratio / 1e18));
+		// emit log_uint(maxAmountOut);
+
 
 
 	}
+
+	// function 
 
 
 	/* ---------------------------------------------------------------------- */
@@ -614,7 +643,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		emit log_uint(PCNV.balanceOf(getUserAddress(0))/1e18);
 		for (uint256 i; i < 30; i++) {
 			vm.warp(initialTimestamp+(30 days * i));
-			emit log_uint(PCNV.redeemAmountIn(getUserAddress(0))/1e18);
+			emit log_uint(PCNV.maxRedeemAmountIn(getUserAddress(0))/1e18);
 		}
 		// 100000 initial balance
 		// amount of tokens available to redeem in the next 24 months
@@ -713,8 +742,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.warp(initialTimestamp+time);
 
 		// check the redeemable amount
-		uint256 amountIn = PCNV.redeemAmountIn(userAddress);
-		uint256 amountOut = PCNV.redeemAmountOut(userAddress);
+		uint256 amountIn = PCNV.maxRedeemAmountIn(userAddress);
+		uint256 amountOut = PCNV.maxRedeemAmountOut(userAddress);
 
 		// redeemable amount must be larger than 0
 		require(amountIn > 0,"ERR:1");
@@ -723,11 +752,12 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		redeemMax(0);
 
 		// - redeemable amount should decrease by `amountIn`
-		require(PCNV.redeemAmountIn(userAddress) == 0,"ERR:2");
+		require(PCNV.maxRedeemAmountIn(userAddress) == 0,"ERR:2");
 		// - pCNV balance of user should decrease by `amountIn`
 		require(PCNV.balanceOf(userAddress) == initialPCNVBalance - amountIn,"ERR:3");
 		// - pCNV totalSupply should decrease by `amountIn`
 		require(PCNV.totalSupply() == initialPCNVSupply - amountIn,"ERR:4");
+
 		//  - CNV total supply should increase by `amountOut`
 		require(CNV.totalSupply() == initialCNVSupply + amountOut, "ERR:5");
 		// - CNV balance of user should increase by `amountOut`
@@ -791,8 +821,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		redeem(0,player1Redeemed);
 		redeem(1,player2Redeemed);
 
-		uint256 a_starting_redeemable = PCNV.redeemAmountIn(player1);
-		uint256 b_starting_redeemable = PCNV.redeemAmountIn(player2);
+		uint256 a_starting_redeemable = PCNV.maxRedeemAmountIn(player1);
+		uint256 b_starting_redeemable = PCNV.maxRedeemAmountIn(player2);
 
 		require(a_starting_redeemable/player1Balance == b_starting_redeemable/player2Balance, "ERR:3");
 
@@ -802,8 +832,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		PCNV.transfer(player2,transferAmount);
 		vm.stopPrank();
 
-		uint256 a_ending_redeemable = PCNV.redeemAmountIn(player1);
-		uint256 b_ending_redeemable = PCNV.redeemAmountIn(player2);
+		uint256 a_ending_redeemable = PCNV.maxRedeemAmountIn(player1);
+		uint256 b_ending_redeemable = PCNV.maxRedeemAmountIn(player2);
 
 		require(PCNV.balanceOf(player1) == player1Balance - player1Redeemed - transferAmount);
 		require(PCNV.balanceOf(player2) == player2Balance - player2Redeemed + transferAmount);
@@ -865,12 +895,18 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
 
+// 	we cannot mint more than pCNV supplyusre aaddress and amount must be in merkle root
+// 	user cannot mint  more than  they are allowed (no double minting)
+// only msg.sender can mint for their whitelist address (i.e no pranking)
+	
+	
 
 	function redeemMax(uint256 ix) public {
 		
 		vm.startPrank(getUserAddress(ix));
 		PCNV.redeem(
-			PCNV.redeemAmountIn(getUserAddress(ix))
+			getUserAddress(ix),
+			PCNV.maxRedeemAmountIn(getUserAddress(ix))
 		);
 		vm.stopPrank();
 	}
@@ -878,7 +914,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	function redeem(uint256 ix, uint256 amount) public {
 		
 		vm.startPrank(getUserAddress(ix));
-		PCNV.redeem(amount);
+		PCNV.redeem(getUserAddress(ix),amount);
 		vm.stopPrank();
 	}
 	

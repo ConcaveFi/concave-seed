@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-
-
 /**
     pCNV to CNV mechanics
     ---------------------
@@ -177,13 +175,15 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice Reduce an "amount" of available supply or mint it to "target"
-    /// @param amount to reduce from max supply or mint to "target"
+    /// @param amount          to reduce from max supply or mint to "target"
     function manage(
         address target,
         uint256 amount
     ) external onlyConcave {
         // if target is address 0, reduce supply
         if (target == address(0)) {
+            // avoid subtracting into negatives
+            require(amount <= maxSupply,"!SUPPLY");
             // Make sure there's enough unminted supply to allow for supply reduction
             require(maxSupply - amount >= totalMinted, "!AMOUNT");
             // Reduce max supply by "amount"
@@ -201,7 +201,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /*                              PUBLIC LOGIC                              */
     /* ---------------------------------------------------------------------- */
 
-    /// @notice mint pCNV for a specific round by giving merkle proof;
+    /// @notice Purchase pCNV assuming you're whitelisted for at least "amountIn"
     /// @param to             whitelisted address purchased pCNV will be sent to
     /// @param tokenIn        address of tokenIn user wishes to deposit
     /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
@@ -238,6 +238,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         bytes32 r,
         bytes32 s
     ) external {
+        // Make sure payment tokenIn is DA
+        require(tokenIn == address(DAI), "!DAI");
         // Approve tokens for spender - https://eips.ethereum.org/EIPS/eip-2612
         ERC20(tokenIn).permit(msg.sender, address(this), amountIn, permitDeadline, v, r, s);
         // allow sender to mint for "to"
@@ -245,8 +247,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice transfer "amount" of tokens from msg.sender to "to"
-    /// @param to address tokens are being sent to
-    /// @param amount number of tokens being transfered
+    /// @param to           address tokens are being sent to
+    /// @param amount       number of tokens being transfered
     function transfer(
         address to,
         uint256 amount
@@ -258,9 +260,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice transfer "amount" of tokens from "from" to "to"
-    /// @param from address tokens are being transfered from
-    /// @param to address tokens are being sent to
-    /// @param amount number of tokens being transfered
+    /// @param from         address tokens are being transfered from
+    /// @param to           address tokens are being sent to
+    /// @param amount       number of tokens being transfered
     function transferFrom(
         address from,
         address to,
@@ -272,62 +274,57 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         return super.transferFrom(from, to, amount);
     }
 
-    /// @notice redeem a specific amount of pCNV for CNV
-    /// @param amount amount of pCNV to be redeemed
-    function redeem(uint256 amount) external {
-
-        // Make sure tokens are redeemable first
+    /// @notice redeem pCNV for CNV
+    /// @param to address that will receive redeemed CNV
+    /// @param amountIn amount of pCNV to redeem
+    function redeem(
+        address to,
+        uint256 amountIn
+    ) external {
+        // Make sure pCNV is currently redeemable for CNV
         require(redeemable, "!REDEEMABLE");
 
-        // store amountIn and amountOut before mutating state
-        uint256 amountIn = redeemAmountIn(msg.sender);
-        
-        
-        uint256 amountOut = redeemAmountOut(msg.sender);
-        
-        require(amount <= amountIn, "!VESTED");
-        
-        Participant storage participant = participants[msg.sender];
-        
-        participant.redeemed += amount;
-        
-        _burn(msg.sender, amount);
-        
-        // Mint sender amountOut
-        CNV.mint(msg.sender, amountOut);
-    }
-
-    function redeem(uint256 amountIn) external {
+        // Access participant storage
         Participant storage participant = participants[msg.sender];
 
-        require(amountIn <= redeemAmountIn(msg.sender), "!AMOUNT");
-        
-        uint256 ratio = 1e18 * amountIn / redeemAmountIn(msg.sender);
+        // Calculate CNV owed to sender for redeeming "amountIn"
+        uint256 amountOut = redeemAmountOut(msg.sender, amountIn);
 
-        uint256 amountOut = redeemAmountOut * ratio / 1e18;
-
+        // Increase participant.redeemed by amount being redeemed
         participant.redeemed += amountIn;
 
+        // Burn users pCNV
         _burn(msg.sender, amountIn);
 
-        CNV.mint(msg.sender, amountOut);
+        // Mint user CNV
+        CNV.mint(to, amountOut);
     }
-
 
     /* ---------------------------------------------------------------------- */
     /*                               PUBLIC VIEW                              */
     /* ---------------------------------------------------------------------- */
+    
+    /// @notice Returns the amount of CNV a user will receive for redeeming "amountIn"
+    function redeemAmountOut(address who, uint256 amountIn) public view returns (uint256) {
+        // Make sure amountIn is less than participants maximum redeem amount in
+        require(amountIn <= maxRedeemAmountIn(who), "!AMOUNT");
+        
+        // Calculate percentage of maxRedeemAmountIn that participant is redeeming
+        uint256 ratio = 1e18 * amountIn / maxRedeemAmountIn(who);
 
-    /// @notice amount of pCNV that user can redeem
-    /// @param who address to check
-    function redeemAmountIn(
+        // Calculate portion of maxRedeemAmountOut to mint using above percentage
+        return maxRedeemAmountOut(who) * ratio / 1e18;
+    }
+
+    /// @notice Returns amount of pCNV that user can redeem * percentageVested / (eth normalized) - total already redeemed
+    /// @param who              address to check
+    function maxRedeemAmountIn(
         address who
     ) public view returns (uint256) {
-        
+        // Make sure pCNV is currently redeemable for CNV
         if (!redeemable) return 0;
-
+        // Make sure there's CNV supply
         if (CNV.totalSupply() == 0) return 0;
-
         // Access sender's participant memory
         Participant memory participant = participants[who];
         // return maximum amount of pCNV "who" can currently redeem
@@ -335,29 +332,20 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice Returns amount of CNV that an account can currently redeem for
-    /// @param who address to check
-    function redeemAmountOut(
+    /// @param who              address to check
+    function maxRedeemAmountOut(
         address who
     ) public view returns (uint256) {
         return amountVested() * percentToRedeem(who) / 1e18;
     }
 
-    /// @notice Returns amount of CNV that an account can currently redeem for
-    /// @param who address to check
-    function redeemAmountOutForAmountIn(
-        address who,
-        uint256 amountIn
-    ) public view returns (uint256) {
-        return amountVested() * (1e18 * amountIn / maxSupply) / 1e18;
-    }
-
-    /// @notice Returns percentage (denominated in ether) of pCNV supply
-    /// that a given account can currently redeem
-    /// @param who address to check
+    /// @notice Returns percentage (denominated in ether) of pCNV supply that
+    /// a given account can currently redeem
+    /// @param who              address to check
     function percentToRedeem(
         address who
     ) public view returns (uint256) {
-        return 1e18 * redeemAmountIn(who) / maxSupply;
+        return 1e18 * maxRedeemAmountIn(who) / maxSupply;
     }
 
     /// @notice Returns the amount of time (in seconds) that has passed
@@ -410,11 +398,12 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
         require(MerkleProof.verify(proof, merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
 
-        // Verify amount claimed by user does not surpass maxAmount
-        spentAmounts[merkleRoot][to] += amountIn;
-        require(spentAmounts[merkleRoot][to] <= maxAmount, "!AMOUNT_IN");
+        // Verify amount claimed by user does not surpass "maxAmount"
+        uint256 newAmount = spentAmounts[merkleRoot][to] + amountIn; // save gas
+        require(newAmount <= maxAmount, "!AMOUNT_IN");
+        spentAmounts[merkleRoot][to] = newAmount;
 
-        // Calculate rate of CNV that should be returned for "amountIn"
+        // Calculate rate of pCNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / rate;
 
         // Interface storage for participant
@@ -434,9 +423,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice Maintains total amount of redeemable tokens when pCNV is being transfered
-    /// @param from address tokens are being transfered from
-    /// @param to address tokens are being sent to
-    /// @param amount number of tokens being transfered
+    /// @param from             address tokens are being transfered from
+    /// @param to               address tokens are being sent to
+    /// @param amount           number of tokens being transfered
     function _beforeTransfer(
         address from,
         address to,
@@ -464,4 +453,3 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         toParticipant.purchased += amount;
     }
 }
-
