@@ -6,7 +6,7 @@ import { Dai, Frax, PCNV } from '.dethcrypto/eth-sdk-client/esm/types'
 import { chain } from 'wagmi'
 
 const ethSdk = process.env.NODE_ENV === 'production' ? getMainnetSdk : getRopstenSdk
-
+const merkleRoot = merkleTree.getHexRoot()
 export const inputTokens = ['dai', 'frax']
 
 const claimWithFrax = async (
@@ -88,8 +88,9 @@ export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
   console.log(userAddress)
   const { pCNV } = ethSdk(signer)
+  console.log(pCNV)
   const userAlreadyClaimedAmount = ethers.utils.parseUnits(
-    (await pCNV.claimedAmounts(roundId, userAddress)).toString(),
+    (await pCNV.spentAmounts.call(merkleRoot, userAddress)).toString(),
     18,
   )
   console.log(userAlreadyClaimedAmount)
