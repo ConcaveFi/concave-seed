@@ -74,7 +74,7 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
 export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
   const { pCNV } = ethSdk(signer)
-  const userAlreadyClaimedAmount = ethers.utils.formatUnits(
+  const userAlreadyClaimedAmount: any = ethers.utils.formatUnits(
     (await pCNV.spentAmounts(merkleRoot, userAddress)).toString(),
     18,
   )
@@ -95,16 +95,14 @@ export const claim = async (
 
   const tokenIn = { frax, dai }[inputToken]
   const tokenInDecimals = await tokenIn.decimals()
-
-  const userClaimablePCNVAmount = await getUserClaimablePCNVAmount(signer)
-  const maxStableClaimableAmount = userClaimablePCNVAmount
+  const userClaimablePCNVAmount = getClaimablePCNVAmount(address)
   const proof = merkleTree.getHexProof(leafOf(address))
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
     tokenIn as any,
     pCNV,
     userAddress,
-    ethers.utils.parseUnits(maxStableClaimableAmount.toString(), tokenInDecimals),
+    ethers.utils.parseUnits(userClaimablePCNVAmount.toString(), tokenInDecimals),
     ethers.utils.parseUnits(amount.toString(), tokenInDecimals),
     proof,
   )
