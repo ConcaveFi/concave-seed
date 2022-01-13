@@ -51,8 +51,8 @@ function CNVSeed() {
             {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
-            {state === 'claiming' && (
-              <ClaimCard maxAmount={getClaimableAmount(account.address) * pCNVSeedPrice} />
+            {state === 'claiming' && account && (
+              <ClaimCard maxAmount={getClaimableAmount(account.address)} />
             )}
           </Flex>
         </Flex>
