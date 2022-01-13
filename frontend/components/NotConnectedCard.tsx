@@ -8,7 +8,7 @@ export const NotConnectedCard = () => {
   const [{ data, error }, connect] = useConnect()
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
-      <Text>please connect your wallet</Text>
+      <Text>Please connect your wallet</Text>
       {data.connectors.map((connector) => {
         if (!connector.ready) return null
         // change image from using connector id to something else, injected can be metamask, coinbase, brave etc
