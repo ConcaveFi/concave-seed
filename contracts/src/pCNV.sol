@@ -129,6 +129,55 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     mapping(bytes32 => mapping(address => uint256)) public spentAmounts;
 
     /* ---------------------------------------------------------------------- */
+    /*                                  EVENTS                                */
+    /* ---------------------------------------------------------------------- */
+    
+    /// @notice Emitted when treasury changes treasury address
+    /// @param  treasury address of new treasury
+    event TreasurySet(address treasury);
+
+    /// @notice Emitted when redeemable is set to true and CNV address is set
+    /// @param  CNV address of CNV token
+    event RedeemableSet(address CNV);
+
+    /// @notice             Emitted when a new round is set by treasury
+    /// @param  merkleRoot  new merkle root
+    /// @param  rate        new price of pCNV in DAI/FRAX
+    event NewRound(bytes32 merkleRoot, uint256 rate);
+
+    /// @notice             Emitted when maxSupply of pCNV is burned or minted to target
+    /// @param  target      target to which to mint pCNV or burn if target = address(0)
+    /// @param  amount      amount of pCNV minted to target or burned
+    /// @param  maxSupply   new maxSupply
+    event Managed(address target, uint256 amount, uint256 maxSupply);
+
+    /// @notice                 Emitted when pCNV minted via "mint()" or "mintWithPermit"
+    /// @param  depositedFrom   address from which DAI/FRAX was deposited
+    /// @param  mintedTo        address to which pCNV were minted to
+    /// @param  amount          amount of pCNV minted
+    /// @param  deposited       amount of DAI/FRAX deposited
+    /// @param  totalMinted     total amount of pCNV minted so far
+    event Minted(
+        address indexed depositedFrom, 
+        address indexed mintedTo, 
+        uint256 amount, 
+        uint256 deposited, 
+        uint256 totalMinted
+    );
+
+    /// @notice             Emitted when pCNV redeemed for CNV by callign "redeem()"
+    /// @param  burnedFrom  address from which pCNV were burned
+    /// @param  mintedTo    address to which CNV were minted to
+    /// @param  burned      amount of pCNV burned
+    /// @param  minted      amount of CNV minted
+    event Redeemed(
+        address indexed burnedFrom, 
+        address indexed mintedTo, 
+        uint256 burned, 
+        uint256 minted
+    );
+
+    /* ---------------------------------------------------------------------- */
     /*                                MODIFIERS                               */
     /* ---------------------------------------------------------------------- */
 
@@ -147,6 +196,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         address _treasury
     ) external onlyConcave {
         treasury = _treasury;
+
+        emit TreasurySet(_treasury);
     }
 
     /// @notice         allow pCNV to be redeemed for CNV by setting redeemable as true and setting CNV address
@@ -158,6 +209,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         redeemable = true;
         // Set CNV address so tokens can be minted
         CNV = ICNV(_CNV);
+
+        emit RedeemableSet(_CNV);
     }
 
     /// @notice             Update merkle root and rate
@@ -174,6 +227,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         merkleRoot = _merkleRoot;
         // update rate
         rate = _rate;
+
+        emit NewRound(merkleRoot,rate);
     }
 
     /// @notice         Reduce an "amount" of available supply of pCNV or mint it to "target"
@@ -192,6 +247,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
             // Reduce max supply by "amount"
             maxSupply -= amount;
             // end the function
+
+            emit Managed(target, amount, maxSupply);
             return;
         }
         // declare new variable for totalMinted + amount (gas savings)
@@ -202,6 +259,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         totalMinted = newAmount;
         // mint target amount
         _mint(target, amount);
+
+        emit Managed(target, amount, maxSupply);
     }
 
     /* ---------------------------------------------------------------------- */
@@ -307,6 +366,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
         // Mint user CNV
         CNV.mint(to, amountOut);
+
+        emit Redeemed(msg.sender, to, amountIn, amountOut);
     }
 
     /* ---------------------------------------------------------------------- */
@@ -429,6 +490,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
         // Mint tokens to address after pulling
         _mint(to, amountOut);
+
+        emit Minted(sender, to, amountOut, amountIn, totalMinted);
     }
 
     /// @notice         Maintains total amount of redeemable tokens when pCNV is being transfered
