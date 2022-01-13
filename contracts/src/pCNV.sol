@@ -196,6 +196,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         }
         // make sure total minted + amount is less than or equal to maximum supply
         require(totalMinted + amount <= maxSupply, "!AMOUNT");
+        // increase totalMinted
+        totalMinted += amount;
         // mint target amount
         _mint(target, amount);
     }
