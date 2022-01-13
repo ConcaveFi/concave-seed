@@ -71,10 +71,12 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public immutable TWO_YEARS = 63072000; 
 
     /// @notice FRAX tokenIn address
-    ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
+    // ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
+    ERC20 public immutable FRAX = ERC20(0xE7E9F348202f6EDfFF2607025820beE92F51cdAA); // TESTNET
 
     /// @notice DAI tokenIn address
-    ERC20 public immutable DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    // ERC20 public immutable DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    ERC20 public immutable DAI = ERC20(0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5); // TESTNET
 
     /* ---------------------------------------------------------------------- */
     /*                              MUTABLE STATE                             */
