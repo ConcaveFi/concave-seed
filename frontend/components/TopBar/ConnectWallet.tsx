@@ -43,8 +43,8 @@ const ConnectButton = ({ onError }: { onError: (e: Error) => void }) => {
             return (
               <MenuItem
                 borderRadius="xl"
-                icon={<Image maxWidth="20px" src={`/connectors/${connector.name}.png`} alt="" />}
-                key={connector.name}
+                icon={<Image maxWidth="20px" src={`/connectors/${connector.id}.png`} alt="" />}
+                key={connector.id}
                 onClick={() => connect(connector)}
               >
                 {connector.name}
