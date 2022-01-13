@@ -43,9 +43,8 @@ function CNVSeed() {
     <Layout>
       <Container maxW="container.md">
         <Flex direction="column" gap={12}>
-          <Box mt={12}>
-            <Heading as="h1">Sacrificial Spoon Offering Receptacle</Heading>
-            <Text maxW={520}>Speak softly but carry a big spoon</Text>
+          <Box mt={12} flexWrap="wrap" justify="center">
+             
           </Box>
           <Flex gap={6} flexWrap="wrap" justify="center">
             {state === 'loading' && <Spinner />}
