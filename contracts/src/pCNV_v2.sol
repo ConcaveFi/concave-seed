@@ -276,15 +276,40 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param amount amount of pCNV to be redeemed
     function redeem(uint256 amount) external {
 
+        // Make sure tokens are redeemable first
         require(redeemable, "!REDEEMABLE");
 
         // store amountIn and amountOut before mutating state
         uint256 amountIn = redeemAmountIn(msg.sender);
+        
+        
         uint256 amountOut = redeemAmountOut(msg.sender);
+        
         require(amount <= amountIn, "!VESTED");
+        
         Participant storage participant = participants[msg.sender];
+        
         participant.redeemed += amount;
+        
+        _burn(msg.sender, amount);
+        
+        // Mint sender amountOut
+        CNV.mint(msg.sender, amountOut);
+    }
+
+    function redeem(uint256 amountIn) external {
+        Participant storage participant = participants[msg.sender];
+
+        require(amountIn <= redeemAmountIn(msg.sender), "!AMOUNT");
+        
+        uint256 ratio = 1e18 * amountIn / redeemAmountIn(msg.sender);
+
+        uint256 amountOut = redeemAmountOut * ratio / 1e18;
+
+        participant.redeemed += amountIn;
+
         _burn(msg.sender, amountIn);
+
         CNV.mint(msg.sender, amountOut);
     }
 
@@ -315,6 +340,15 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         address who
     ) public view returns (uint256) {
         return amountVested() * percentToRedeem(who) / 1e18;
+    }
+
+    /// @notice Returns amount of CNV that an account can currently redeem for
+    /// @param who address to check
+    function redeemAmountOutForAmountIn(
+        address who,
+        uint256 amountIn
+    ) public view returns (uint256) {
+        return amountVested() * (1e18 * amountIn / maxSupply) / 1e18;
     }
 
     /// @notice Returns percentage (denominated in ether) of pCNV supply
