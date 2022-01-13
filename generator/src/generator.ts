@@ -93,14 +93,21 @@ export default class Generator {
         //.map(d => [...d.map((d:any) => d.data)])
       );
     }
-    // for (let index = 0; index < pppp.length; index++) {
-    //   if (pppp[i].length < 7) {
-    //     for (let i = 0; i < pppp[i].length - 7; i++) {
-    //       pppp[i].push("0x0");
-    //     }
-    //   }
-    // }
+    for (let index = 0; index < pppp.length; index++) {
+      if (pppp[index].length < 7) {
+        for (let i = 0; i < pppp[i].length - 7; i++) {
+          pppp[i].push("0x0");
+        }
+      }
+    }
     console.log(pppp);
+
+    await fs.writeFileSync(
+      // Output to merkle.json
+      "proofs.json",
+      // Root + full tree
+      JSON.stringify(pppp)
+    );
 
     // Collect and log merkle root
     const merkleRoot: string = merkleTree.getHexRoot();

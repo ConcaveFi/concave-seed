@@ -674,10 +674,13 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			uint256 userMaxAmount = getUserMaxAmount(userIndex);
 			bytes32[] memory proof = getUserProof(userIndex);
 
-			uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+			
 
 			uint256 amountIn = userMaxAmount;
 			deposit_FRAX(userAddress,amountIn);
+
+			uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
+
 			vm.startPrank(userAddress);
 			IERC20(FRAX).approve(address(PCNV),amountIn);
 			PCNV.mint(
@@ -689,23 +692,140 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			);
 			vm.stopPrank();
 			uint256 amountOut = amountIn * 1e18 / rate;
+			// require(amountOut == amountIn,"PKL");
 			totalSupply+=amountOut;
 			treasuryBalance+=amountIn;
-			// require(PCNV.totalSupply() == totalSupply,"TESTFAIL:1");
-			// require(PCNV.totalMinted() == totalSupply,"TESTFAIL:2");
-			// require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
-			// require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
-			// require(IERC20(FRAX).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
+			require(PCNV.totalSupply() == totalSupply,"TESTFAIL:1");
+			require(PCNV.totalMinted() == totalSupply,"TESTFAIL:2");
+			require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+			require(IERC20(FRAX).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+			require(IERC20(FRAX).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
 		}
-		// require(IERC20(FRAX).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
-		// require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
-		// require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
+		require(IERC20(FRAX).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
+		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
+		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
+	}
+
+	/// @notice mint all users
+	function test_mint_all_users_random_stable(
+		bool isFrax
+	) public {
+		setRound(merkleRoot,rate);
+		uint256 treasuryBalance = IERC20(FRAX).balanceOf(treasury)  + IERC20(DAI).balanceOf(treasury);
+		uint256 totalSupply;
+		uint256 totalMinted;
+		for (uint256 i; i < whitelist_addresses.length; i++) {
+			//Collect current users address, max donation for seed, and merkle proof
+			uint256 userIndex = i;
+			address userAddress = getUserAddress(userIndex);
+			uint256 userMaxAmount = getUserMaxAmount(userIndex);
+			bytes32[] memory proof = getUserProof(userIndex);
+
+			
+			uint256 amountIn = userMaxAmount;
+			
+
+			address stable;
+			if (isFrax) {
+				stable = FRAX;
+				deposit_FRAX(userAddress,amountIn);
+			} else {
+				stable = DAI;
+				deposit_DAI(userAddress,amountIn);
+			}
+
+			
+			
+
+			uint256 initialUserStableBalance = IERC20(stable).balanceOf(userAddress);
+
+			vm.startPrank(userAddress);
+			IERC20(stable).approve(address(PCNV),amountIn);
+			PCNV.mint(
+				userAddress,
+				stable,
+				userMaxAmount,
+				amountIn,
+				proof
+			);
+			vm.stopPrank();
+			uint256 amountOut = amountIn * 1e18 / rate;
+			// require(amountOut == amountIn,"PKL");
+			totalSupply+=amountOut;
+			treasuryBalance+=amountIn;
+			require(PCNV.totalSupply() == totalSupply,"TESTFAIL:1");
+			require(PCNV.totalMinted() == totalSupply,"TESTFAIL:2");
+			require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+			require(IERC20(stable).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+			require(IERC20(FRAX).balanceOf(treasury) + IERC20(DAI).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
+		}
+		emit log_uint(IERC20(DAI).balanceOf(treasury));
+		emit log_uint(IERC20(FRAX).balanceOf(treasury));
+		require(IERC20(FRAX).balanceOf(treasury) + IERC20(DAI).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
+		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
+		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
 	}
             
 
 	/* ---------------------------------------------------------------------- */
     /*                         PUBLIC LOGIC: redeem()                         */
     /* ---------------------------------------------------------------------- */
+
+
+	function test_random_tranfsers_and_vesting_xxx() public {
+		setRound(merkleRoot,rate);
+		setRedeemable();
+
+		uint numberOfUsers = 10;
+		uint numberOfMonths = 10;
+
+		for (uint256 i; i < numberOfUsers; i++) {
+			claim_user(i);
+		}
+
+		uint256 initialTimestamp = block.timestamp;
+
+		for (uint256 ix; ix < numberOfMonths; ix++) {
+			vm.warp(initialTimestamp+(30 days * ix));
+
+			uint256 vestable;
+			for (uint256 i; i < numberOfUsers; i++) {
+				vestable += PCNV.maxRedeemAmountIn(getUserAddress(i));
+			}
+
+			
+			for (uint256 i; i < numberOfUsers; i++) {
+				address fromAddress = getUserAddress(i);
+				uint256 fromBalance = PCNV.balanceOf(fromAddress);
+				address toAddress;
+				if (i == numberOfUsers - 1) {
+					toAddress = getUserAddress(0);
+				} else {
+					toAddress = getUserAddress(i+1);
+				}
+				uint256 toBalance = PCNV.balanceOf(toAddress);
+				require(fromBalance > 0,"FFF");
+				uint256 amount = fromBalance/2;
+
+				vm.startPrank(fromAddress);
+				PCNV.transfer(toAddress,amount);
+				vm.stopPrank();
+				require(PCNV.balanceOf(fromAddress) ==  fromBalance - amount);
+				require(PCNV.balanceOf(toAddress) ==  toBalance + amount);
+			}
+
+			uint256 vestable2;
+			for (uint256 i; i < numberOfUsers; i++) {
+				vestable2 += PCNV.maxRedeemAmountIn(getUserAddress(i));
+			}
+			// emit log("---");
+			// emit log_uint(ix);
+			// emit log_uint(vestable);
+			// emit log_uint(vestable2);
+			require(vestable/1e16 == vestable2/1e16,"VVV");
+		}
+		
+	}
 
 	function test_sanity_check() public {
 		setRound(merkleRoot,rate);
