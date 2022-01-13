@@ -1,4 +1,4 @@
-# pTokenGui
+# Concave-Seed
 Simple interface to claim pTokens
 
     npm i
