@@ -16,12 +16,12 @@ export function ClaimCard() {
   const [{ data: account }] = useAccount()
 
   const [{ data: signer }] = useSigner()
-  const [claimableAmount, setClaimableAmount] = useState(null)
-
+  const [claimableAmount, setClaimableAmount] = useState(0)
   useEffect(() => {
     if (signer)
+    console.log('test')
       getUserClaimablePCNVAmount(signer)
-        .then((a) => setClaimableAmount(a.mul(pCNVSeedPrice).toNumber()))
+        .then((a) => setClaimableAmount(a.toNumber()))
         .catch(console.log)
   }, [signer])
 
