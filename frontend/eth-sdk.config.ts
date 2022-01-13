@@ -5,12 +5,12 @@ export default defineConfig({
     mainnet: {
       frax: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
       dai: '0x6b175474e89094c44da98b954eedeac495271d0f',
-      pCNV: '0xa0Fed11F114Ae39Bd7872D8Dc9267a67A2D79eCD',
+      pCNV: '0x9564c2118775016152b237d3fb2ff57b42ec5a4f',
     },
     ropsten: {
       frax: '0xE7E9F348202f6EDfFF2607025820beE92F51cdAA',
       dai: '0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5',
-      pCNV: '0xe4063fbfb8a1f27a118a9a0ee28443702ea46558',
+      pCNV: '0x9564c2118775016152b237d3fb2ff57b42ec5a4f',
     },
   },
 })

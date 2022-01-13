@@ -62,6 +62,8 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
     )
     await permitDaiTx.wait(1)
   }
+  console.log(merkleTree.getHexRoot());
+
   console.log('PERMIT')
 
   return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
@@ -72,13 +74,12 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
 export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
   const { pCNV } = ethSdk(signer)
-  const userAlreadyClaimedAmount = ethers.utils.parseUnits(
+  const userAlreadyClaimedAmount = ethers.utils.formatUnits(
     (await pCNV.spentAmounts(merkleRoot, userAddress)).toString(),
     18,
   )
-  const userStillClaimableAmount = BigNumber.from(getClaimablePCNVAmount(userAddress)).sub(
-    userAlreadyClaimedAmount,
-  )
+  const userStillClaimableAmount = getClaimablePCNVAmount(userAddress) - userAlreadyClaimedAmount
+  
   return userStillClaimableAmount
 }
 
@@ -98,7 +99,6 @@ export const claim = async (
   const userClaimablePCNVAmount = await getUserClaimablePCNVAmount(signer)
   const maxStableClaimableAmount = userClaimablePCNVAmount
   const proof = merkleTree.getHexProof(leafOf(address))
-
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
     tokenIn as any,
