@@ -62,6 +62,8 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
     )
     await permitDaiTx.wait(1)
   }
+  console.log(merkleTree.getHexRoot());
+
   console.log('PERMIT')
 
   return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
@@ -98,7 +100,6 @@ export const claim = async (
   const userClaimablePCNVAmount = await getUserClaimablePCNVAmount(signer)
   const maxStableClaimableAmount = userClaimablePCNVAmount
   const proof = merkleTree.getHexProof(leafOf(address))
-
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
     tokenIn as any,
