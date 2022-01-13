@@ -45,36 +45,39 @@ const claimWithDai = async (
   // console.log(userAddress, dai.address, roundId, maxAmount, amount, proof)
   // return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof)
 
-  const SECOND = 1000
-  const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
-  const nonce = await dai.nonces(userAddress)
+  const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
+  if (daiAllowance.lt(amount)) {
+    const SECOND = 1000
+    const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
+    const nonce = await dai.nonces(userAddress)
 
-  const permit = await signDaiPermit(
-    dai.signer,
-    {
-      name: 'Dai Stablecoin',
-      version: '1',
-      chainId: chain.ropsten.id,
-      verifyingContract: dai.address,
-    },
-    userAddress,
-    pCNV.address,
-    expiry,
-    nonce as any,
-  )
+    const permit = await signDaiPermit(
+      dai.signer,
+      {
+        name: 'Dai Stablecoin',
+        version: '1',
+        chainId: chain.ropsten.id,
+        verifyingContract: dai.address,
+      },
+      userAddress,
+      pCNV.address,
+      expiry,
+      nonce as any,
+    )
 
-  const permitDaiTx = await dai.permit(
-    permit.holder,
-    permit.spender,
-    permit.nonce,
-    permit.expiry,
-    true,
-    permit.v,
-    permit.r,
-    permit.s,
-    { gasLimit: 210000 },
-  )
-  await permitDaiTx.wait(1)
+    const permitDaiTx = await dai.permit(
+      permit.holder,
+      permit.spender,
+      permit.nonce,
+      permit.expiry,
+      true,
+      permit.v,
+      permit.r,
+      permit.s,
+      { gasLimit: 210000 },
+    )
+    await permitDaiTx.wait(1)
+  }
 
   return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof, {
     gasLimit: 210000,
