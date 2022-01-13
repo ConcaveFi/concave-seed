@@ -51,7 +51,7 @@ import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
 import { ICNV } from "./interfaces/ICNV.sol";
 
 /// @notice Concave Presale Token
-/// @author Convex & Dionysus (ConcaveFi)
+/// @author 0xBarista & Dionysus (ConcaveFi)
 contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
     /* ---------------------------------------------------------------------- */
