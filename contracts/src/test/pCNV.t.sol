@@ -9,7 +9,7 @@ import "./utils/VM.sol";
 import { pCNVWhitelist } from "./utils/pCNVWhitelist.sol";
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
-import { pCNV } from "../pCNV_v2.sol"; // Test scaffolding
+import { pCNV } from "../pCNV.sol"; // Test scaffolding
 
 
 interface IStable {
