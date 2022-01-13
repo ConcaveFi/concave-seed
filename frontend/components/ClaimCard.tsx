@@ -29,7 +29,10 @@ export function ClaimCard() {
   const onClaim = async () => {
     setIsLoading(true)
     await claim(await account.connector.getSigner(), amount, inputToken)
-      .then(syncUserClaimableAmount)
+      .then(() => {
+        syncUserClaimableAmount()
+        setAmount('0')
+      })
       .finally(() => setIsLoading(false))
   }
 
