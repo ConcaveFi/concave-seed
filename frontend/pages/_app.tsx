@@ -27,7 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
       : localStorageManager
   return (
     <ChakraProvider resetCSS theme={theme} colorModeManager={colorModeManager} portalZIndex={100}>
-      <Provider autoConnect connectorStorageKey="concave.seed" connectors={connectors}>
+      <Provider autoConnect connectorStorageKey="concave" connectors={connectors}>
         <Component {...pageProps} />
       </Provider>
     </ChakraProvider>
