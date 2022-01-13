@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "contracts": "yarn eth-sdk --path .",
-    "postinstall": "yarn contracts"
+    "postinstall": "yarn contracts",
+    "prod": "next build && next start"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.1.1",

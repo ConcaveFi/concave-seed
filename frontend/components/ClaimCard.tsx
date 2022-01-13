@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
@@ -18,21 +18,19 @@ export function ClaimCard() {
 
   const [claimableAmount, setClaimableAmount] = useState(0)
 
+  const syncUserClaimableAmount = useCallback(() => {
+    if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
+  }, [signer])
+
   useEffect(() => {
-    if (signer)
-      getUserClaimablePCNVAmount(signer)
-        .then((a) => {
-          console.log('CURRENT ADDRESS CLAIMABLE PCNV')
-          console.log(a)
-          setClaimableAmount(a)})
-        .catch(console.log)
+    if (signer) syncUserClaimableAmount()
   }, [signer])
 
   const onClaim = async () => {
     setIsLoading(true)
-    await claim(await account.connector.getSigner(), amount, inputToken).finally(() =>
-      setIsLoading(false),
-    )
+    await claim(await account.connector.getSigner(), amount, inputToken)
+      .then(syncUserClaimableAmount)
+      .finally(() => setIsLoading(false))
   }
 
   return (
