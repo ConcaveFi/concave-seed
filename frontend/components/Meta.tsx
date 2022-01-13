@@ -16,8 +16,8 @@ export const Head = ({ customMeta }: { customMeta?: MetaProps }): JSX.Element =>
   const router = useRouter()
   router.basePath
   const meta: MetaProps = {
-    title: 'Concave',
-    description: '🥄 Spooonnn',
+    title: 'Concave Seed',
+    description: 'Seed round for pCNV',
     image: `${HOST_URL}/images/site-preview.png`,
     type: 'website',
     ...customMeta,
