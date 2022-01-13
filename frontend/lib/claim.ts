@@ -95,16 +95,14 @@ export const claim = async (
 
   const tokenIn = { frax, dai }[inputToken]
   const tokenInDecimals = await tokenIn.decimals()
-
-  const userClaimablePCNVAmount = await getUserClaimablePCNVAmount(signer)
-  const maxStableClaimableAmount = userClaimablePCNVAmount
+  const userClaimablePCNVAmount = getClaimablePCNVAmount(address)
   const proof = merkleTree.getHexProof(leafOf(address))
   const claimFunc = inputToken === 'dai' ? claimWithDai : claimWithFrax
   const claimTx = await claimFunc(
     tokenIn as any,
     pCNV,
     userAddress,
-    ethers.utils.parseUnits(maxStableClaimableAmount.toString(), tokenInDecimals),
+    ethers.utils.parseUnits(userClaimablePCNVAmount.toString(), tokenInDecimals),
     ethers.utils.parseUnits(amount.toString(), tokenInDecimals),
     proof,
   )
