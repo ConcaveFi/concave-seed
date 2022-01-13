@@ -390,6 +390,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
+	
+
 
 	/// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
 	function test_mint_should_fail_if_DAI_not_approved() public {
@@ -483,6 +485,46 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
 		require(IERC20(DAI).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
 		require(IERC20(DAI).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
+	}
+
+	/// @notice	
+	function test_mint_alice_cannot_claim_for_bob_wip() public {
+		setRound(merkleRoot,rate);
+
+		uint256 initialTreasuryStableBalance  = IERC20(DAI).balanceOf(treasury);
+
+        uint256 userIndex = 0;
+		address userAddress = getUserAddress(userIndex);
+		uint256 userMaxAmount = getUserMaxAmount(userIndex);
+		bytes32[] memory proof = getUserProof(userIndex);
+
+		uint256 amountIn = userMaxAmount;
+
+		deposit_DAI(userAddress,amountIn);
+		
+
+		uint256 initialUserStableBalance = IERC20(DAI).balanceOf(userAddress);
+		require(initialUserStableBalance >= amountIn);
+		
+        vm.startPrank(getUserAddress(1));
+		IERC20(DAI).approve(address(PCNV),amountIn);
+		vm.expectRevert("!PROOF");
+		PCNV.mint(
+            getUserAddress(1),
+            DAI,
+            userMaxAmount,
+            amountIn,
+            proof
+        );
+        vm.stopPrank();
+
+		// uint256 amountOut = amountIn * 1e18 / rate;
+
+		// require(PCNV.totalSupply() == amountOut,"TESTFAIL:1");
+		// require(PCNV.totalMinted() == amountOut,"TESTFAIL:2");
+		// require(PCNV.balanceOf(userAddress) == amountOut,"TESTFAIL:3");
+		// require(IERC20(DAI).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
+		// require(IERC20(DAI).balanceOf(treasury) == initialTreasuryStableBalance + amountIn,"TESTFAIL:4");
 	}
 
 	/// @notice mint of maxAmount succeeds, checks totalSupply, totalMinted, user pCNV balance, user FRAX balance, treasury FRAX balance
@@ -796,9 +838,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// - CNV balance of user should increase by `amountOut`
 		require(CNV.balanceOf(userAddress) == initialCNVBalance + amountOut, "ERR:6");
 	}
-
-	// TODO manage function test
-	// TODO coverage for redeemable
 
 	function test_redeem_redeemable_values_2() public {
 		// Round is Set

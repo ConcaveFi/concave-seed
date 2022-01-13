@@ -275,7 +275,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice redeem pCNV for CNV
-    /// @param to address that will receive redeemed CNV
+    /// @param to       address that will receive redeemed CNV
     /// @param amountIn amount of pCNV to redeem
     function redeem(
         address to,
@@ -304,7 +304,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /*                               PUBLIC VIEW                              */
     /* ---------------------------------------------------------------------- */
     
-    /// @notice Returns the amount of CNV a user will receive for redeeming "amountIn"
+    /// @notice Returns the amount of CNV a user will receive for redeeming `amountIn` of pCNV
+    /// @param who      address that will receive redeemed CNV 
+    /// @param amountIn amount of pCNV
     function redeemAmountOut(address who, uint256 amountIn) public view returns (uint256) {
         // Make sure amountIn is less than participants maximum redeem amount in
         require(amountIn <= maxRedeemAmountIn(who), "!AMOUNT");
