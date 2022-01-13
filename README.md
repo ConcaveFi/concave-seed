@@ -1,5 +1,6 @@
 # Concave-Seed
-Simple interface to claim pTokens
+
+Includes generator used to create merkle root, frontend used to redeem, as well as underlying contracts
 
     npm i
 
