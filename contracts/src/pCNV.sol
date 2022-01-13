@@ -2,6 +2,8 @@
 pragma solidity >=0.8.0;
 
 /**
+    Concave Presale Token
+    
     pCNV to CNV mechanics
     ---------------------
     The contract features two vesting schedules to redeem pCNV into CNV. Both

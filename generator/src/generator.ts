@@ -28,10 +28,10 @@ export default class Generator {
   constructor(decimals: number, airdrop: Record<string, number>) {
     // For each airdrop entry
     let total = 0;
-    const amounts:any = []
+    const amounts: any = [];
     for (const [address, tokens] of Object.entries(airdrop)) {
       // Push:
-      total+=tokens;
+      total += tokens;
       amounts.push(tokens);
       this.recipients.push({
         // Checksum address
@@ -40,8 +40,8 @@ export default class Generator {
         value: parseUnits(tokens.toString(), decimals).toString()
       });
     }
-    console.log(total)
-    console.log(amounts)
+    console.log(total);
+    console.log(amounts);
   }
 
   /**
@@ -61,8 +61,8 @@ export default class Generator {
   async process(): Promise<void> {
     logger.info("Generating Merkle tree.");
 
-    const addys:any = []
-    const proofs:any = []
+    const addys: any = [];
+    const proofs: any = [];
 
     let merkleLeaf: string[];
     // Generate merkle tree
@@ -72,7 +72,7 @@ export default class Generator {
         // console.log(getAddress(address));
         // console.log(this.generateLeaf(address, value).toString('hex'));
         addys.push(getAddress(address));
-        proofs.push(this.generateLeaf(address, value).toString('hex'));
+        proofs.push(this.generateLeaf(address, value).toString("hex"));
         return this.generateLeaf(address, value);
       }),
       // Hashing function
@@ -80,18 +80,26 @@ export default class Generator {
       { sortPairs: true }
     );
 
-    console.log(addys)
-    console.log(proofs)
-    console.log(addys.length)
-    const pppp:any = [];
+    console.log(addys);
+    console.log(proofs);
+    console.log(addys.length);
+    const pppp: any = [];
     for (let index = 0; index < proofs.length; index++) {
-        // const element = array[index];
-        pppp.push(
-            merkleTree.getProof(proofs[index]).map((d:any) => d.data.toString('hex'))
-            //.map(d => [...d.map((d:any) => d.data)])
-        )
-
+      // const element = array[index];
+      pppp.push(
+        merkleTree
+          .getProof(proofs[index])
+          .map((d: any) => d.data.toString("hex"))
+        //.map(d => [...d.map((d:any) => d.data)])
+      );
     }
+    // for (let index = 0; index < pppp.length; index++) {
+    //   if (pppp[i].length < 7) {
+    //     for (let i = 0; i < pppp[i].length - 7; i++) {
+    //       pppp[i].push("0x0");
+    //     }
+    //   }
+    // }
     console.log(pppp);
 
     // Collect and log merkle root
