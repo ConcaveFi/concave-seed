@@ -160,7 +160,40 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	}
 
-	// function 
+	function test_man_revert_on_amount() public {
+		setRound(merkleRoot,rate);
+		claim_user(0);
+
+		vm.startPrank(treasury);
+		vm.expectRevert("!AMOUNT");
+		PCNV.manage(address(0),MAX_SUPPLY-1);
+		vm.stopPrank();
+	}
+
+	function test_man_revert_on_amount_not_address_0() public {
+		setRound(merkleRoot,rate);
+		claim_user(0);
+
+		vm.startPrank(treasury);
+		vm.expectRevert("!AMOUNT");
+		PCNV.manage(getUserAddress(0),MAX_SUPPLY-1);
+		vm.stopPrank();
+	}
+
+	function test_manage_mint() public {
+		uint256 balance1 = PCNV.balanceOf(getUserAddress(0));
+
+		uint256 amount = 5e18;
+
+		vm.startPrank(treasury);
+		PCNV.manage(getUserAddress(0),amount);
+		vm.stopPrank();
+
+		require(
+			PCNV.balanceOf(getUserAddress(0)) == balance1 + amount,
+			"ERR"
+		);
+	}
 
 
 	/* ---------------------------------------------------------------------- */
@@ -765,7 +798,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 	// TODO manage function test
-	// TODO calculat TWO_YEARS in seconds
 	// TODO coverage for redeemable
 
 	function test_redeem_redeemable_values_2() public {
