@@ -12,42 +12,6 @@ import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
 import { pCNV } from "../pCNV.sol"; // Test scaffolding
 
 
-interface IStable {
-
-
-    // --- Auth ---
-  function wards() external returns ( uint256 );
-
-  function rely(address guy) external;
-
-  function deny(address guy) external;
-
-    // --- Token ---
-  function transfer(address dst, uint wad) external returns (bool);
-
-  function transferFrom(address src, address dst, uint wad) external returns (bool);
-
-  function mint(address usr, uint wad) external;
-
-  function burn(address usr, uint wad) external;
-
-  function approve(address usr, uint wad) external returns (bool);
-
-    // --- Alias ---
-  function push(address usr, uint wad) external;
-
-  function pull(address usr, uint wad) external;
-
-  function move(address src, address dst, uint wad) external;
-
-    // --- Approve by signature ---
-  function permit(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s) external;
-
-
-  function balanceOf(address account) external view returns (uint256);
-}
-
-
 
 contract pCNVTest is DSTest, pCNVWhitelist {
 	/// @notice FRAX mainnet address
@@ -724,15 +688,19 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	/// @notice mint all users with randomized stable - same as "test_mint_all_users" 
 	/// but with alternating FRAX/DAI
-	function test_mint_all_users_random_stable(
-		bool isFrax
-	) public {
+	function test_mint_all_users_random_stable_now() public {
 		setRound(merkleRoot,rate);
 		uint256 treasuryBalance = IERC20(FRAX).balanceOf(treasury)  + IERC20(DAI).balanceOf(treasury);
 		uint256 totalSupply;
 		uint256 totalMinted;
+		bool isFrax;
 		for (uint256 i; i < whitelist_addresses.length; i++) {
-			//Collect current users address, max donation for seed, and merkle proof
+			uint remainder = i%2;
+			if(remainder==0)
+				isFrax = true;
+			else
+				isFrax = false;
+			// Collect current users address, max donation for seed, and merkle proof
 			uint256 userIndex = i;
 			address userAddress = getUserAddress(userIndex);
 			uint256 userMaxAmount = getUserMaxAmount(userIndex);
@@ -776,8 +744,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			require(IERC20(stable).balanceOf(userAddress) == initialUserStableBalance - amountIn,"TESTFAIL:4");
 			require(IERC20(FRAX).balanceOf(treasury) + IERC20(DAI).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
 		}
-		emit log_uint(IERC20(DAI).balanceOf(treasury));
-		emit log_uint(IERC20(FRAX).balanceOf(treasury));
+		// emit log_uint(IERC20(DAI).balanceOf(treasury));
+		// emit log_uint(IERC20(FRAX).balanceOf(treasury));
 		require(IERC20(FRAX).balanceOf(treasury) + IERC20(DAI).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
 		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
 		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
@@ -1132,62 +1100,14 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-	
-
-	/**
-	TEST STORIES
-	 // Contract should distribute proper amount to each holder after 2 year
-	 // Sender+Receiver should have redemption ratio adjusted after transfer
-	*/
-		function test_ratio_calibration_logic() public {
-		// address from = getUserAddress(0);
-		// address to = getUserAddress(1);
-
-
-		// setRound(merkleRoot,rate);
-		// setRedeemable();
-		// uint256 time = 30 days;
-		// vm.warp(initialTimestamp+time);
-		// claim_user(userAddress);
-		// uint256 initialTimestamp = block.timestamp;
-
-    // function _beforeTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 amount
-    // ) internal {
- 
-
-    //     // calculate amount to adjust redeem amounts by
-    //     uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
-
-    //     // reduce "from" redeemed by amount * "from" redeem purchase ratio
-    //     fromParticipant.redeemed -= adjustedAmount;
-
-    //     // reduce "from" purchased amount by the amount being sent
-    //     fromParticipant.purchased -= amount;
-
-    //     // increase "to" redeemed by amount * "from" redeem purchase ratio
-    //     toParticipant.redeemed += adjustedAmount;
-
-    //     // increase "to" purchased by amount received
-    //     toParticipant.purchased += amount;
-    // }
-		}
-	
-
-
 
     /* ---------------------------------------------------------------------- */
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
-
-// 	we cannot mint more than pCNV supplyusre aaddress and amount must be in merkle root
-// 	user cannot mint  more than  they are allowed (no double minting)
-// only msg.sender can mint for their whitelist address (i.e no pranking)
 	
 	
-
+	/// @notice 	helper to redeem max for a specific user
+	/// @param ix 	index of user 
 	function redeemMax(uint256 ix) public {
 		
 		vm.startPrank(getUserAddress(ix));
@@ -1198,6 +1118,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.stopPrank();
 	}
 
+	/// @notice 		helper to redeem an amount for a specific user
+	/// @param ix 		index of user 
+	/// @param amount 	amount to redeem
 	function redeem(uint256 ix, uint256 amount) public {
 		
 		vm.startPrank(getUserAddress(ix));
@@ -1205,7 +1128,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.stopPrank();
 	}
 	
-
+	/// @notice 			mint max amount for user
+	/// @param userIndex	index of user 
 	function claim_user(uint256 userIndex) public {
 		setRound(merkleRoot,rate);
 
@@ -1245,7 +1169,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 
 
-	/// @notice treasury sets round
+	/// @notice 			treasury sets round
+	/// @param _merkleRoot	merkleroot
+	/// @param _rate		price of pCNV in Stable
 	function setRound(
 		bytes32 _merkleRoot,
         uint256 _rate
@@ -1258,6 +1184,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.stopPrank();
 	}
 
+	/// @notice treasury sets redeemable with address(CNV)
 	function setRedeemable() public {
 		vm.startPrank(treasury);
 		PCNV.setRedeemable(address(CNV));
@@ -1266,15 +1193,20 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 
 
-
+	/// @notice 	get user address
+	/// @param ix	user index
 	function getUserAddress(uint256 ix) public returns(address) {
 		return whitelist_addresses[ix];
 	}
 
+	/// @notice 	get user max amount
+	/// @param ix	user index
 	function getUserMaxAmount(uint256 ix) public returns(uint256) {
 		return amounts[ix]*1e18;
 	}
 
+	/// @notice 	get user proof
+	/// @param ix	user index
 	function getUserProof(uint256 ix) public returns(bytes32[] memory proof) {
 		uint256 proofLength;
         for (uint256 i; i < 7; i++) {
@@ -1291,27 +1223,26 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 
-    /// @notice transfer `amount` of DAI to `to`
+    /// @notice 		transfer `amount` of DAI to `to`
+	/// @param to		address to transfer to
+	/// @param amount	amount to transfer
     function deposit_DAI(address to, uint256 amount) public {
         address DAI_WHALE = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
         vm.startPrank(DAI_WHALE);
         IERC20(DAI).transfer(to,amount);
         vm.stopPrank();
-		require(IStable(DAI).balanceOf(to) >= amount,"DAIO");
+		require(IERC20(DAI).balanceOf(to) >= amount,"DAIO");
     }
 
-    /// @notice transfer `amount` of FRAX to `to`
+    /// @notice 		transfer `amount` of DAI to `to`
+	/// @param to		address to transfer to
+	/// @param amount	amount to transfer
     function deposit_FRAX(address to, uint256 amount) public {
         address FRAX_WHALE = 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B;
         vm.startPrank(FRAX_WHALE);
         IERC20(FRAX).transfer(to,amount);
         vm.stopPrank();
-		require(IStable(FRAX).balanceOf(to) >= amount,"DAIO");
+		require(IERC20(FRAX).balanceOf(to) >= amount,"DAIO");
     }
 
 }
-
-
-/**
-  - after changing merkle root address cannot keep claiming
- */
