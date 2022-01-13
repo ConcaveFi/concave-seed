@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 
+
 /**
     pCNV to CNV mechanics
     ---------------------
@@ -69,7 +70,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public immutable GENESIS = block.timestamp;
 
     /// @notice Two years in seconds
-    uint256 public immutable TWO_YEARS = 365 days * 2;
+    uint256 public immutable TWO_YEARS = 365 days * 2; // fetch in seconds
 
     /// @notice FRAX tokenIn address
     ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
@@ -86,7 +87,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     ICNV public CNV;
 
     /// @notice Address that is recipient of raised funds + access control
-    address public treasury;
+    address public treasury = msg.sender;
 
     /// @notice Returns the current merkle root being used
     bytes32 public merkleRoot;
@@ -98,7 +99,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public rate;
 
     /// @notice Returns the max supply that is allowed to be minted (in total)
-    uint256 public maxSupply = 33_000_000e18;
+    uint256 public maxSupply = 33_000_000 * 10 ** 18;
 
     /// @notice Returns the total amount of pCNV that has cummulativly been minted
     uint256 public totalMinted;
@@ -137,11 +138,6 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         _;
     }
 
-    // @dev Only using constructor for tests - to set initial treasury address
-    constructor(address _treasury) {
-        treasury = _treasury;
-    }
-
     /* ---------------------------------------------------------------------- */
     /*                              ONLY CONCAVE                              */
     /* ---------------------------------------------------------------------- */
@@ -171,37 +167,14 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         bytes32 _merkleRoot,
         uint256 _rate
     ) external onlyConcave {
+        require(_rate > 0, "!RATE");
         // push new root to array of all roots - for viewing
         roots.push(_merkleRoot);
         // update merkle root
         merkleRoot = _merkleRoot;
         // update rate
         rate = _rate;
-
     }
-
-    // // NOTE: alternative setRound, assuming maxSupply=0 at contract deployment
-    // /// @notice Update
-    // /// @param _merkleRoot  root of merkle tree
-    // /// @param _rate        rate ...
-    // function setRound(
-    //     bytes32 _merkleRoot,
-    //     uint256 _rate,
-    //     uint256 _roundSupply
-    // ) external onlyConcave {
-    //     // push new root to array of all roots - for viewing
-    //     roots.push(_merkleRoot);
-    //     // update merkle root
-    //     merkleRoot = _merkleRoot;
-    //     // update rate
-    //     rate = _rate;
-
-    //     // if the maxSupply from the previous round has not been satisfied,
-    //     // reset maxSupply to totalMinted
-    //     maxSupply = totalMinted;
-    //     // update max supply with the amount that should be minted in this round
-    //     maxSupply += _roundSupply;
-    // }
 
     /// @notice Reduce an "amount" of available supply or mint it to "target"
     /// @param amount to reduce from max supply or mint to "target"
@@ -302,24 +275,19 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @notice redeem a specific amount of pCNV for CNV
     /// @param amount amount of pCNV to be redeemed
     function redeem(uint256 amount) external {
+
+        require(redeemable, "!REDEEMABLE");
+
         // store amountIn and amountOut before mutating state
         uint256 amountIn = redeemAmountIn(msg.sender);
         uint256 amountOut = redeemAmountOut(msg.sender);
         require(amount <= amountIn, "!VESTED");
         Participant storage participant = participants[msg.sender];
         participant.redeemed += amount;
-        _redeem(msg.sender,amount, amountOut);
+        _burn(msg.sender, amountIn);
+        CNV.mint(msg.sender, amountOut);
     }
 
-    /// @notice redeem maximum amount of redeemable pCNV for CNV
-    function redeemMax() external {
-        // store amountIn and amountOut before mutating state
-        uint256 amountIn = redeemAmountIn(msg.sender);
-        uint256 amountOut = redeemAmountOut(msg.sender);
-        Participant storage participant = participants[msg.sender];
-        participant.redeemed += amountIn;
-        _redeem(msg.sender,amountIn, amountOut);
-    }
 
     /* ---------------------------------------------------------------------- */
     /*                               PUBLIC VIEW                              */
@@ -330,6 +298,11 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     function redeemAmountIn(
         address who
     ) public view returns (uint256) {
+        
+        if (!redeemable) return 0;
+
+        if (CNV.totalSupply() == 0) return 0;
+
         // Access sender's participant memory
         Participant memory participant = participants[who];
         // return maximum amount of pCNV "who" can currently redeem
@@ -455,15 +428,6 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
 
         // increase "to" purchased by amount received
         toParticipant.purchased += amount;
-    }
-
-    /// @notice burns `amountIn` of pCNV from `to`, and mints `amountOut` of CNV to `to`
-    /// @param to           address from which pCNV will be burned and CNV will be minted
-    /// @param amountIn     amount of pCNV to be burned
-    /// @param amountOut    amount of CNV to be minted
-    function _redeem(address to, uint256 amountIn, uint256 amountOut) internal {
-        _burn(to, amountIn);
-        CNV.mint(to, amountOut);
     }
 }
 

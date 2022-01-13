@@ -66,7 +66,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     MockCNV CNV;
 
     function setUp() public virtual {
-        PCNV = new pCNV(treasury);
+        PCNV = new pCNV();
         CNV = new MockCNV(333000e18);
     }
 
@@ -734,6 +734,10 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(CNV.balanceOf(userAddress) == initialCNVBalance + amountOut, "ERR:6");
 	}
 
+	// TODO manage function test
+	// TODO calculat TWO_YEARS in  seconds
+	// TODO coverage for redeemable
+
 	function test_redeem_redeemable_values_2() public {
 		// Round is Set
 		// setRound(merkleRoot,rate);
@@ -741,37 +745,22 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// setRedeemable();
 		// // User #0 claims their pCNV
 		// claim_user(0);
-
 		// address userAddress = getUserAddress(0);
-
 		// // we get current pCNV balance (10,000)
 		// uint pcnvBalance = PCNV.balanceOf(userAddress);
-
 		// // at current time, 0 tokens should be vestable
 		// require(0 == PCNV.redeemAmountIn(userAddress));
-
-		// //
+		// 
 		// for (uint256 i; i < 30; i++) {
-		// 	vm.warp(initialTimestamp+(30 days * i));
+		// vm.warp(initialTimestamp+(30 days * i));
 		// 	// the amount vested should be equal to expect
 		// 	// require(
 		// 	// 	PCNV.redeemAmountIn(userAddress) == pcnvBalance * purchaseVested() / 1e18,
 		// 	// );
-
-			
 		// }
-		
-
 		// // uint256 initialTimestamp = block.timestamp;
-
 		// // vm.warp(initialTimestamp+(30 days * 25));
 		// // emit log_uint(PCNV.amountVested()/1e18);
-
-		
-
-
-
-		
 	}
 
 	function test_transfer_wip() public {
@@ -825,6 +814,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		);
 	}
 
+
+	
+
 	/**
 	TEST STORIES
 	 // Contract should distribute proper amount to each holder after 2 year
@@ -865,8 +857,6 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     //     toParticipant.purchased += amount;
     // }
 		}
-
-
 	
 
 
@@ -879,7 +869,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	function redeemMax(uint256 ix) public {
 		
 		vm.startPrank(getUserAddress(ix));
-		PCNV.redeemMax();
+		PCNV.redeem(
+			PCNV.redeemAmountIn(getUserAddress(ix))
+		);
 		vm.stopPrank();
 	}
 
