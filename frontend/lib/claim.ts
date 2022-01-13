@@ -9,34 +9,18 @@ const ethSdk = process.env.NODE_ENV === 'production' ? getMainnetSdk : getRopste
 const merkleRoot = merkleTree.getHexRoot()
 export const inputTokens = ['dai', 'frax']
 
-const claimWithFrax = async (
-  frax: Frax,
-  pCNV: PCNV,
-  userAddress,
-  roundId,
-  maxAmount,
-  amount,
-  proof,
-) => {
+const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
   const fraxAllowance = await frax.allowance(userAddress, pCNV.address, { from: userAddress })
   if (fraxAllowance.lt(amount)) {
     const fraxApprove = await frax.approve(pCNV.address, maxAmount, { from: userAddress })
     await fraxApprove.wait(1)
   }
-  return pCNV.mint(userAddress, frax.address, roundId, maxAmount, amount, proof, {
+  return pCNV.mint(userAddress, frax.address, maxAmount, amount, proof, {
     gasLimit: 210000,
   })
 }
 
-const claimWithDai = async (
-  dai: Dai,
-  pCNV: PCNV,
-  userAddress,
-  roundId,
-  maxAmount,
-  amount,
-  proof,
-) => {
+const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
   // const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
   // if (daiAllowance < amount) {
   //   const daiApprove = await dai.approve(pCNV.address, maxAmount, { from: userAddress })
@@ -78,22 +62,20 @@ const claimWithDai = async (
     )
     await permitDaiTx.wait(1)
   }
+  console.log('PERMIT')
 
-  return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof, {
+  return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
     gasLimit: 210000,
   })
 }
 
 export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
-  console.log(userAddress)
   const { pCNV } = ethSdk(signer)
-  console.log(pCNV)
   const userAlreadyClaimedAmount = ethers.utils.parseUnits(
-    (await pCNV.spentAmounts.call(merkleRoot, userAddress)).toString(),
+    (await pCNV.spentAmounts(merkleRoot, userAddress)).toString(),
     18,
   )
-  console.log(userAlreadyClaimedAmount)
   const userStillClaimableAmount = BigNumber.from(getClaimablePCNVAmount(userAddress)).sub(
     userAlreadyClaimedAmount,
   )
@@ -122,12 +104,12 @@ export const claim = async (
     tokenIn as any,
     pCNV,
     userAddress,
-    roundId,
     ethers.utils.parseUnits(maxStableClaimableAmount.toString(), tokenInDecimals),
     ethers.utils.parseUnits(amount.toString(), tokenInDecimals),
     proof,
   )
   await claimTx.wait(1) // ?
+  console.log('CLAIMED')
 
   // } catch (e) {
   //   console.error(`Error when claiming tokens: ${e}`)

@@ -9,8 +9,9 @@ export const AlreadyClaimedCard = () => {
   const [{ data: account }] = useAccount()
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} textAlign="center">
-      <Text>Your's {getClaimablePCNVAmount(account.address)} pCNV have been claimed!</Text>
+      <Text>Your {getClaimablePCNVAmount(account.address)} pCNV have been claimed!</Text>
       <Text>Thanks for participating!</Text>
+      <Text>WAGMI</Text>
     </Card>
   )
 }
