@@ -96,10 +96,10 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @notice Returns the current pCNV price in DAI/FRAX
     uint256 public rate;
 
-    /// @notice Returns the max supply that is allowed to be minted (in total)
+    /// @notice Returns the max supply of pCNV that is allowed to be minted (in total)
     uint256 public maxSupply = 33_000_000 * 10 ** 18;
 
-    /// @notice Returns the total amount of pCNV that has cummulativly been minted
+    /// @notice Returns the total amount of pCNV that has cumulatively been minted
     uint256 public totalMinted;
 
     /// @notice Returns if pCNV are redeemable for CNV
@@ -109,10 +109,10 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /*                              STRUCTURED STATE                          */
     /* ---------------------------------------------------------------------- */
 
-    /// @notice Structure of Participant storage
+    /// @notice Structure of Participant vesting storage
     struct Participant {
-        uint256 purchased; // amount (in total) that user has purchased
-        uint256 redeemed;  // amount (in total) that user has redeemed
+        uint256 purchased; // amount (in total) of pCNV that user has purchased
+        uint256 redeemed;  // amount (in total) of pCNV that user has redeemed
     }
 
     /// @notice maps an account to vesting storage
@@ -120,10 +120,10 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// Participant     - Structured vesting storage
     mapping(address => Participant) public participants;
 
-    /// @notice amount of DAI/FRAX user has spent for a specific root
-    /// bytes32         - markleRoot
+    /// @notice amount of DAI/FRAX user has spent for a specific merkle root
+    /// bytes32         - merkle root
     /// address         - account to check
-    /// returns uint256 - amount in stables (denominated in ether) spent purchasing pCNV
+    /// returns uint256 - amount in DAI/FRAX (denominated in ether) spent purchasing pCNV
     mapping(bytes32 => mapping(address => uint256)) public spentAmounts;
 
     /* ---------------------------------------------------------------------- */
@@ -141,13 +141,14 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /* ---------------------------------------------------------------------- */
 
     /// @notice Set a new treasury address if treasury
+    /// @param _treasury    address of the treasury
     function setTreasury(
         address _treasury
     ) external onlyConcave {
         treasury = _treasury;
     }
 
-    /// @notice allow pCNV to be redeemed for CNV by setting redeemable as true and setting CNV address
+    /// @notice Allow pCNV to be redeemed for CNV by setting redeemable as true and setting CNV address
     /// @param  _CNV address of CNV
     function setRedeemable(
         address _CNV
@@ -158,9 +159,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         CNV = ICNV(_CNV);
     }
 
-    /// @notice Update
+    /// @notice Update the rate and merkle root that determines addresses and amounts that can mint pCNV
     /// @param _merkleRoot  root of merkle tree
-    /// @param _rate        rate ...
+    /// @param _rate        rate of CNV for pCNV
     function setRound(
         bytes32 _merkleRoot,
         uint256 _rate
@@ -174,8 +175,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         rate = _rate;
     }
 
-    /// @notice Reduce an "amount" of available supply or mint it to "target"
-    /// @param amount          to reduce from max supply or mint to "target"
+    /// @notice Reduce an `amount` of available supply or mint it to `target`
+    /// @param target   address to which to mint `amount`; if target=address(0), `amount` is burned
+    /// @param amount   to reduce from max supply or mint to `target`
     function manage(
         address target,
         uint256 amount
@@ -201,9 +203,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /*                              PUBLIC LOGIC                              */
     /* ---------------------------------------------------------------------- */
 
-    /// @notice Purchase pCNV assuming you're whitelisted for at least "amountIn"
+    /// @notice Mint pCNV by depositing DAI/FRAX and proving address and amount are in merkle root
     /// @param to             whitelisted address purchased pCNV will be sent to
-    /// @param tokenIn        address of tokenIn user wishes to deposit
+    /// @param tokenIn        address of token user wishes to deposit (DAI or FRAX)
     /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
     /// @param amountIn       amount of DAI/FRAX sender wishes to deposit for pCNV
     /// @param proof          merkle proof to prove address and amount are in tree
@@ -217,11 +219,11 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
         return _purchase(msg.sender, to, tokenIn, maxAmount, amountIn, proof);
     }
 
-    /// @notice mint pCNV for a specific round by giving merkle proof; uses EIP-2612 permit to save a transaction
+    /// @notice Mint pCNV by depositing DAI and proving address and amount are in merkle root; uses EIP-2612 permit to save a transaction
     /// @param to             whitelisted address purchased pCNV will be sent to
-    /// @param tokenIn        address of tokenIn user wishes to deposit
-    /// @param maxAmount      max amount of DAI/FRAX sender can deposit for pCNV
-    /// @param amountIn       amount of DAI/FRAX sender wishes to deposit for pCNV
+    /// @param tokenIn        address of token user wishes to deposit (DAI)
+    /// @param maxAmount      max amount of DAI sender can deposit for pCNV
+    /// @param amountIn       amount of DAI sender wishes to deposit for pCNV
     /// @param proof          merkle proof to prove address and amount are in tree
     /// @param permitDeadline time when permit is no longer valid
     /// @param v              part of EIP-2612 signature
@@ -247,8 +249,8 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice transfer "amount" of tokens from msg.sender to "to"
-    /// @param to           address tokens are being sent to
-    /// @param amount       number of tokens being transfered
+    /// @param to       address tokens are being sent to
+    /// @param amount   number of tokens being transfered
     function transfer(
         address to,
         uint256 amount
@@ -260,9 +262,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     }
 
     /// @notice transfer "amount" of tokens from "from" to "to"
-    /// @param from         address tokens are being transfered from
-    /// @param to           address tokens are being sent to
-    /// @param amount       number of tokens being transfered
+    /// @param from     address tokens are being transfered from
+    /// @param to       address tokens are being sent to
+    /// @param amount   number of tokens being transfered
     function transferFrom(
         address from,
         address to,
