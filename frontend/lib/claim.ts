@@ -74,13 +74,12 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
 export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
   const { pCNV } = ethSdk(signer)
-  const userAlreadyClaimedAmount = ethers.utils.parseUnits(
+  const userAlreadyClaimedAmount = ethers.utils.formatUnits(
     (await pCNV.spentAmounts(merkleRoot, userAddress)).toString(),
     18,
   )
-  const userStillClaimableAmount = BigNumber.from(getClaimablePCNVAmount(userAddress)).sub(
-    userAlreadyClaimedAmount,
-  )
+  const userStillClaimableAmount = getClaimablePCNVAmount(userAddress) - userAlreadyClaimedAmount
+  
   return userStillClaimableAmount
 }
 

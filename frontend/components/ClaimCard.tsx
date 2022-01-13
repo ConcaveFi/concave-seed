@@ -21,7 +21,10 @@ export function ClaimCard() {
   useEffect(() => {
     if (signer)
       getUserClaimablePCNVAmount(signer)
-        .then((a) => setClaimableAmount(a.toNumber()))
+        .then((a) => {
+          console.log('CURRENT ADDRESS CLAIMABLE PCNV')
+          console.log(a)
+          setClaimableAmount(a)})
         .catch(console.log)
   }, [signer])
 

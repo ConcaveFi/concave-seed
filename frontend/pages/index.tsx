@@ -33,7 +33,7 @@ function CNVSeed() {
       if (network?.chain?.unsupported) return 'wrong_network'
       if (!account?.address) return 'not_connected'
       if (!isWhitelisted(account.address)) return 'not_whitelisted'
-      if ((await getUserClaimablePCNVAmount(await account.connector.getSigner())).eq(0))
+      if ((await getUserClaimablePCNVAmount(await account.connector.getSigner())) == 0)
         return 'already_claimed'
       return 'claiming'
     })().then(setState)
