@@ -68,7 +68,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public immutable GENESIS = block.timestamp;
 
     /// @notice Two years in seconds
-    uint256 public immutable TWO_YEARS = 365 days * 2; // fetch in seconds
+    uint256 public immutable TWO_YEARS = 63072000; 
 
     /// @notice FRAX tokenIn address
     ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);

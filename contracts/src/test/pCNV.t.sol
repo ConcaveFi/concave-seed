@@ -765,7 +765,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 	// TODO manage function test
-	// TODO calculat TWO_YEARS in  seconds
+	// TODO calculat TWO_YEARS in seconds
 	// TODO coverage for redeemable
 
 	function test_redeem_redeemable_values_2() public {
@@ -791,6 +791,10 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// // uint256 initialTimestamp = block.timestamp;
 		// // vm.warp(initialTimestamp+(30 days * 25));
 		// // emit log_uint(PCNV.amountVested()/1e18);
+	}
+
+	function test_tata() public {
+		emit log_uint(365 days * 2);
 	}
 
 	function test_transfer_wip() public {
