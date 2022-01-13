@@ -4,18 +4,18 @@ pragma solidity >=0.8.0;
 /// ============ Imports ============
 
 import { DSTest } from "ds-test/test.sol"; // DSTest
-import { MerkleClaimERC20 } from "../../MerkleClaimERC20.sol"; // MerkleClaimERC20
-import { MerkleClaimERC20User } from "./MerkleClaimERC20User.sol"; // MerkleClaimERC20 user
+import { pCNV } from "../../pCNV.sol"; // pCNV
+import { pCNVUser } from "./pCNVUser.sol"; // pCNV user
 import { ERC20 } from "@solmate/tokens/ERC20.sol"; // Solmate: ERC20
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 
 import "./VM.sol";
 
 
-/// @title MerkleClaimERC20Test
-/// @notice Scaffolding for MerkleClaimERC20 tests
+/// @title pCNVTest
+/// @notice Scaffolding for pCNV tests
 /// @author Anish Agnihotri <contact@anishagnihotri.com>
-contract MerkleClaimERC20Test is DSTest {
+contract pCNVTest is DSTest {
 
   /// ============ Storage ============
 
@@ -32,31 +32,31 @@ contract MerkleClaimERC20Test is DSTest {
   /// =================================
 
 
-  /// @dev MerkleClaimERC20 contract
-  MerkleClaimERC20 internal TOKEN;
+  /// @dev pCNV contract
+  pCNV internal TOKEN;
   /// @dev User: Alice (in merkle tree)
-  MerkleClaimERC20User internal ALICE;
+  pCNVUser internal ALICE;
   /// @dev User: Bob (not in merkle tree)
-  MerkleClaimERC20User internal BOB;
+  pCNVUser internal BOB;
 
   /// ============ Setup test suite ============
 
   function setUp() public virtual {
     // Create airdrop token
-    TOKEN = new MerkleClaimERC20(
-      "My Token",
-      "MT",
-      18,
+    TOKEN = new pCNV(
+      // "My Token",
+      // "MT",
+      // 18,
       // Merkle root containing ALICE with 100e18 tokens but no BOB
-      0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
-      _FRAX,
-      _DAI,
+      // 0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
+      ERC20(_FRAX),
+      ERC20(_DAI),
       _treasury
     );
 
     // Setup airdrop users
-    ALICE = new MerkleClaimERC20User(TOKEN, _DAI); // 0x109f93893af4c4b0afc7a9e97b59991260f98313
-    BOB = new MerkleClaimERC20User(TOKEN, _FRAX); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
+    ALICE = new pCNVUser(TOKEN, _DAI); // 0x109f93893af4c4b0afc7a9e97b59991260f98313
+    BOB = new pCNVUser(TOKEN, _FRAX); // 0x689856e2a6eb68fc33099eb2ccba0a5a4e8be52f
 
     vm.startPrank(DAI_WHALE);
     IERC20(_DAI).transfer(address(ALICE),3000e18);
@@ -69,6 +69,19 @@ contract MerkleClaimERC20Test is DSTest {
     vm.stopPrank();
     vm.startPrank(address(BOB));
     IERC20(_FRAX).approve(address(TOKEN),3000e18);
+    vm.stopPrank();
+
+    vm.startPrank(_treasury);
+    uint256 maxDebt = 200e18;
+    uint256 rate = 3e18;
+    uint256 deadline = block.timestamp+1000;
+    TOKEN.newRound(
+        0x6a0b89fc219e9e72ad683e00d9c152532ec8e5c559600e04160d310936400a00,
+        maxDebt,
+        rate,
+        deadline
+    );
+    vm.stopPrank();
     // emit log_uint(IERC20(_DAI).balanceOf(address(ALICE)));
   }
 }

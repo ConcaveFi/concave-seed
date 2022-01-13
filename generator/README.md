@@ -2,7 +2,7 @@
 
 Given a `decimals` count for a token and list of airdrop recipients, outputs:
 
-1. A merkle root for use in a MerkleClaimERC20 contract
+1. A merkle root for use in a pCNV contract
 2. A merkle tree for use in a front-end
 
 ## Run locally

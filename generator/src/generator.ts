@@ -27,8 +27,12 @@ export default class Generator {
    */
   constructor(decimals: number, airdrop: Record<string, number>) {
     // For each airdrop entry
+    let total = 0;
+    const amounts:any = []
     for (const [address, tokens] of Object.entries(airdrop)) {
       // Push:
+      total+=tokens;
+      amounts.push(tokens);
       this.recipients.push({
         // Checksum address
         address: getAddress(address),
@@ -36,6 +40,8 @@ export default class Generator {
         value: parseUnits(tokens.toString(), decimals).toString()
       });
     }
+    console.log(total)
+    console.log(amounts)
   }
 
   /**
@@ -54,18 +60,39 @@ export default class Generator {
 
   async process(): Promise<void> {
     logger.info("Generating Merkle tree.");
-    let merkleLeaf : string[];
+
+    const addys:any = []
+    const proofs:any = []
+
+    let merkleLeaf: string[];
     // Generate merkle tree
     const merkleTree = new MerkleTree(
       // Generate leafs
       this.recipients.map(({ address, value }) => {
-        console.log(this.generateLeaf(address,value))
-        this.generateLeaf(address, value)
-    }),
+        // console.log(getAddress(address));
+        // console.log(this.generateLeaf(address, value).toString('hex'));
+        addys.push(getAddress(address));
+        proofs.push(this.generateLeaf(address, value).toString('hex'));
+        return this.generateLeaf(address, value);
+      }),
       // Hashing function
       keccak256,
       { sortPairs: true }
     );
+
+    console.log(addys)
+    console.log(proofs)
+    console.log(addys.length)
+    const pppp:any = [];
+    for (let index = 0; index < proofs.length; index++) {
+        // const element = array[index];
+        pppp.push(
+            merkleTree.getProof(proofs[index]).map((d:any) => d.data.toString('hex'))
+            //.map(d => [...d.map((d:any) => d.data)])
+        )
+
+    }
+    console.log(pppp);
 
     // Collect and log merkle root
     const merkleRoot: string = merkleTree.getHexRoot();
