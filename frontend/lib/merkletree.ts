@@ -87,11 +87,11 @@ export const addressClaimableQuantity = {
 // 0x2aa48f410007b7380d2846d03142febbbedeb3d3
 // 0x9ead5e6e90440e69b5f28fef5942a5b273387c13
 
-export const getClaimableAmount = (address: string): number =>
+  export const getClaimablePCNVAmount = (address: string): number =>
   addressClaimableQuantity[ethers.utils.getAddress(address)] || 0
 
 export const leafOf = (address: string) => {
-  const claimableQuantiy = getClaimableAmount(address)
+  const claimableQuantiy = getClaimablePCNVAmount(address)
   console.log(address,claimableQuantiy)
   return Buffer.from(
     ethers.utils

@@ -2,7 +2,7 @@ import { Box, Heading, Text, Flex, Container, Button, Image, Spinner } from '@ch
 import React, { useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useAccount, useNetwork } from 'wagmi'
-import { getClaimableAmount } from 'lib/merkletree'
+import { getClaimablePCNVAmount } from 'lib/merkletree'
 import { WrongNetworkCard } from 'components/WrongNetwork'
 import { NotConnectedCard } from 'components/NotConnectedCard'
 import { ClaimCard } from 'components/ClaimCard'
@@ -20,7 +20,7 @@ type AppState =
 const resolveState = (network, account): AppState => {
   if (network?.chain?.unsupported) return 'wrong_network'
   if (!account?.address) return 'not_connected'
-  if (getClaimableAmount(account.address) === 0) return 'not_whitelisted'
+  if (getClaimablePCNVAmount(account.address) === 0) return 'not_whitelisted'
   if (false) return 'already_claimed'
   return 'claiming'
 }
@@ -52,7 +52,7 @@ function CNVSeed() {
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
             {state === 'claiming' && account && (
-              <ClaimCard maxAmount={getClaimableAmount(account.address)} />
+              <ClaimCard maxAmount={getClaimablePCNVAmount(account.address)} />
             )}
           </Flex>
         </Flex>

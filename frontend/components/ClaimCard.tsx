@@ -1,19 +1,29 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
 import { inputTokens, claim } from 'lib/claim'
-import { useAccount, useProvider } from 'wagmi'
+import { getClaimablePCNVAmount } from 'lib/merkletree'
+import { useSigner } from '../hooks/useSigner'
 
 export function ClaimCard({ maxAmount }) {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
-  const [{ data: account }] = useAccount()
-
   const [isLoading, setIsLoading] = useState(false)
 
+  const [{ data: signer }] = useSigner()	
+  useEffect(() => {	
+    if (signer)	
+      getClaimablePCNVAmount(signer)
+  }, [signer])
+  const onClaim = async () => {
+    setIsLoading(true)
+    await claim(await account.connector.getSigner(), amount, inputToken).finally(() =>
+      setIsLoading(false),
+    )
+  }
   const claimPCNV = async () => {
     setIsLoading(true)
     const signer = await account.connector.getSigner()
@@ -26,6 +36,7 @@ export function ClaimCard({ maxAmount }) {
     }
     setIsLoading(false)
   }
+
 
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
