@@ -4,6 +4,25 @@ import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
 import { claim, getUserClaimablePCNVAmount, inputTokens } from 'lib/claim'
+import { erc20ABI, useAccount, useContractRead, useContractWrite } from 'wagmi'
+import { appNetwork } from 'pages/_app'
+import { networkContracts } from 'eth-sdk/contracts'
+import { Dai__factory } from '.dethcrypto/eth-sdk-client/esm/types'
+
+const addresses = networkContracts(appNetwork.id)
+
+const useDaiPermit = () => {
+  useContractWrite(
+    { addressOrName: addresses.dai, contractInterface: Dai__factory.createInterface() },
+    'permit',
+  )
+}
+
+const useAllowance = (contractAddress) =>
+  useContractRead({ addressOrName: contractAddress, contractInterface: erc20ABI }, 'allowance')
+
+const useApproval = (contractAddress) =>
+  useContractWrite({ addressOrName: contractAddress, contractInterface: erc20ABI }, 'approve')
 
 export function ClaimCard({ signer, afterSuccessfulClaim }) {
   const [amount, setAmount] = useState('0')
@@ -20,6 +39,10 @@ export function ClaimCard({ signer, afterSuccessfulClaim }) {
   useEffect(() => {
     if (signer) syncUserClaimableAmount()
   }, [signer])
+
+  const [daiPermit, askForDaiPermit] = useDaiPermit()
+  const [fraxAllowance, fetchFraxAllowance] = useApproval(addresses.frax)
+  const [allowance, fetchInputTokenAllowance] = useAllowance(addresses[inputToken])
 
   const onClaim = async () => {
     setIsLoading(true)

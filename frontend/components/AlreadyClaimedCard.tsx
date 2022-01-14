@@ -4,12 +4,13 @@ import colors from 'theme/colors'
 import { Card } from 'components/Card'
 import { useAccount } from 'wagmi'
 import { getClaimablePCNVAmount } from 'lib/merkletree'
-import ethConfig from 'eth-sdk.config'
+import ethConfig from 'eth-sdk/config'
 import { appNetwork } from 'pages/_app'
 import { HOST_URL } from './Meta'
+import { networkIDtoSymbol } from '@dethcrypto/eth-sdk/dist/abi-management/networks'
 
 const pCNV = {
-  address: ethConfig.contracts[appNetwork.name.toLocaleLowerCase()].pCNV as string,
+  address: ethConfig.contracts[networkIDtoSymbol[appNetwork.id]].pCNV as string,
   image: `${HOST_URL}/assets/tokens/pCNV.png`,
   symbol: 'pCNV',
   decimals: 18,

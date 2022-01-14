@@ -7,7 +7,7 @@ import { chain } from 'wagmi'
 
 const ethSdk = process.env.NODE_ENV === 'production' ? getMainnetSdk : getRopstenSdk
 const merkleRoot = merkleTree.getHexRoot()
-export const inputTokens = ['dai', 'frax']
+export const inputTokens = ['dai', 'frax'] as const
 
 const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
   const fraxAllowance = await frax.allowance(userAddress, pCNV.address, { from: userAddress })
@@ -18,6 +18,26 @@ const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amo
   return pCNV.mint(userAddress, frax.address, maxAmount, amount, proof, {
     gasLimit: 210000,
   })
+}
+
+const daiPermit = async (userAddress) => {
+  const SECOND = 1000
+  const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
+  const nonce = await dai.nonces(userAddress)
+
+  const permit = await signDaiPermit(
+    dai.signer,
+    {
+      name: 'Dai Stablecoin',
+      version: '1',
+      chainId: chain.mainnet.id,
+      verifyingContract: dai.address,
+    },
+    userAddress,
+    pCNV.address,
+    expiry,
+    nonce as any,
+  )
 }
 
 const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
@@ -31,24 +51,6 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
 
   const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
   if (daiAllowance.lt(amount)) {
-    const SECOND = 1000
-    const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
-    const nonce = await dai.nonces(userAddress)
-
-    const permit = await signDaiPermit(
-      dai.signer,
-      {
-        name: 'Dai Stablecoin',
-        version: '1',
-        chainId: chain.mainnet.id,
-        verifyingContract: dai.address,
-      },
-      userAddress,
-      pCNV.address,
-      expiry,
-      nonce as any,
-    )
-
     const permitDaiTx = await dai.permit(
       permit.holder,
       permit.spender,

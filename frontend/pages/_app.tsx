@@ -1,16 +1,18 @@
 import { ChakraProvider, cookieStorageManager, localStorageManager } from '@chakra-ui/react'
 import type { AppProps } from 'next/app'
 
-import { Provider, chain } from 'wagmi'
+import { Provider } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import theme from 'theme'
 import 'public/fonts.css'
-
-const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
+import { chain } from 'eth-sdk/chains'
+import { providers } from 'ethers'
 
 export const appNetwork = process.env.NODE_ENV === 'development' ? chain.mainnet : chain.mainnet
 
+const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
+const provider = ({ chainId }) => new providers.InfuraProvider(chainId, infuraId)
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
   new WalletConnectConnector({
@@ -27,7 +29,12 @@ export default function App({ Component, pageProps }: AppProps) {
       : localStorageManager
   return (
     <ChakraProvider resetCSS theme={theme} colorModeManager={colorModeManager} portalZIndex={100}>
-      <Provider autoConnect connectorStorageKey="concave" connectors={connectors}>
+      <Provider
+        autoConnect
+        connectorStorageKey="concave"
+        connectors={connectors}
+        provider={provider}
+      >
         <Component {...pageProps} />
       </Provider>
     </ChakraProvider>
