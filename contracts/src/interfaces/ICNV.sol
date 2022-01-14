@@ -1,7 +1,6 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: WTFPL
 pragma solidity >=0.8.0;
 
-// TODO make sure interface is correct
 interface ICNV {
     function mint(address to, uint256 amount) external returns (uint256);
 

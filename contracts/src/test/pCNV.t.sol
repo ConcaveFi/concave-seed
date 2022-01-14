@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: WTFPL
 pragma solidity >=0.8.0;
 
 /// ============ Imports ============
@@ -111,7 +111,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 		// require(amount - amount*2 < 10,"BLAMO");
 		vm.startPrank(treasury);
-		vm.expectRevert("!SUPPLY");
+		vm.expectRevert("!AMOUNT");
 		PCNV.manage(address(0),MAX_SUPPLY+1);
 		vm.stopPrank();
 
@@ -308,7 +308,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount+1;
 
         vm.startPrank(userAddress);
-		vm.expectRevert("!AMOUNT_IN");
+		vm.expectRevert("!AMOUNT");
 		PCNV.mint(
             userAddress,
             DAI,
@@ -629,7 +629,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
             amountIn - 10e18,
             proof
         );
-		vm.expectRevert("!AMOUNT_IN");
+		vm.expectRevert("!AMOUNT");
 		PCNV.mint(
             userAddress,
             FRAX,

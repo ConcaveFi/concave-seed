@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: WTFPL
 pragma solidity >=0.8.0;
 
 /**
@@ -78,6 +78,12 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
     /// @notice DAI tokenIn address
     ERC20 public immutable DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
 
+    /// @notice Error related to amount
+    string constant AMOUNT_ERROR = "!AMOUNT";
+
+    /// @notice Error related to token address
+    string constant TOKEN_IN_ERROR = "!TOKEN_IN";
+
     /* ---------------------------------------------------------------------- */
     /*                              MUTABLE STATE                             */
     /* ---------------------------------------------------------------------- */
@@ -99,13 +105,16 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
     uint256 public rate;
 
     /// @notice Returns the max supply of pCNV that is allowed to be minted (in total)
-    uint256 public maxSupply = 33_000_000 * 10 ** 18;
+    uint256 public maxSupply = 33000000000000000000000000;
 
     /// @notice Returns the total amount of pCNV that has cumulatively been minted
     uint256 public totalMinted;
 
     /// @notice Returns if pCNV are redeemable for CNV
     bool public redeemable;
+
+    /// @notice Returns whether transfers are paused
+    bool public transfersPaused;
 
     /* ---------------------------------------------------------------------- */
     /*                              STRUCTURED STATE                          */
@@ -243,11 +252,11 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         // if target is address 0, reduce supply
         if (target == address(0)) {
             // avoid subtracting into negatives
-            require(amount <= maxSupply,"!SUPPLY");
-
+            require(amount <= maxSupply, AMOUNT_ERROR);
+            // new maxSupply would be set to maxSupply minus amount
             newAmount = maxSupply - amount;
             // Make sure there's enough unminted supply to allow for supply reduction
-            require(newAmount >= totalMinted, "!AMOUNT");
+            require(newAmount >= totalMinted, AMOUNT_ERROR);
             // Reduce max supply by "amount"
             maxSupply = newAmount;
             // end the function
@@ -255,16 +264,22 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
             emit Managed(target, amount, maxSupply);
             return;
         }
-
+        // new maxSupply would be set to totalMinted + amount
         newAmount = totalMinted + amount;
         // make sure total newAmount (totalMinted + amount) is less than or equal to maximum supply
-        require(newAmount <= maxSupply, "!AMOUNT");
+        require(newAmount <= maxSupply, AMOUNT_ERROR);
         // set totalMinted to newAmount (totalMinted + amount)
         totalMinted = newAmount;
         // mint target amount
         _mint(target, amount);
 
         emit Managed(target, amount, maxSupply);
+    }
+
+    /// @notice         Allows Concave to pause transfers in the event of a bug
+    /// @param paused   if transfers should be paused or not
+    function setTransfersPaused(bool paused) external onlyConcave {
+        transfersPaused = paused;
     }
 
     /* ---------------------------------------------------------------------- */
@@ -307,13 +322,13 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external {
-        // Make sure payment tokenIn is DA
-        require(tokenIn == address(DAI), "!DAI");
+    ) external returns (uint256 amountOut) {
+        // Make sure payment tokenIn is DAI
+        require(tokenIn == address(DAI), TOKEN_IN_ERROR);
         // Approve tokens for spender - https://eips.ethereum.org/EIPS/eip-2612
         ERC20(tokenIn).permit(msg.sender, address(this), amountIn, permitDeadline, v, r, s);
         // allow sender to mint for "to"
-        _purchase(msg.sender, to, tokenIn, maxAmount, amountIn, proof);
+        return _purchase(msg.sender, to, tokenIn, maxAmount, amountIn, proof);
     }
 
     /// @notice         transfer "amount" of tokens from msg.sender to "to"
@@ -383,7 +398,7 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
     /// @param amountIn amount of pCNV
     function redeemAmountOut(address who, uint256 amountIn) public view returns (uint256) {
         // Make sure amountIn is less than participants maximum redeem amount in
-        require(amountIn <= maxRedeemAmountIn(who), "!AMOUNT");
+        require(amountIn <= maxRedeemAmountIn(who), AMOUNT_ERROR);
 
         // Calculate percentage of maxRedeemAmountIn that participant is redeeming
         uint256 ratio = 1e18 * amountIn / maxRedeemAmountIn(who);
@@ -464,21 +479,21 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         bytes32[] calldata proof
     ) internal returns(uint256 amountOut) {
         // Make sure payment tokenIn is either DAI or FRAX
-        require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
+        require(tokenIn == address(DAI) || tokenIn == address(FRAX), TOKEN_IN_ERROR);
 
         // Require merkle proof with `to` and `maxAmount` to be successfully verified
         require(MerkleProof.verify(proof, merkleRoot, keccak256(abi.encodePacked(to, maxAmount))), "!PROOF");
 
         // Verify amount claimed by user does not surpass "maxAmount"
         uint256 newAmount = spentAmounts[merkleRoot][to] + amountIn; // save gas
-        require(newAmount <= maxAmount, "!AMOUNT_IN");
+        require(newAmount <= maxAmount, AMOUNT_ERROR);
         spentAmounts[merkleRoot][to] = newAmount;
 
         // Calculate rate of pCNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / rate;
 
         // make sure total minted + amount is less than or equal to maximum supply
-        require(totalMinted + amountOut <= maxSupply, "!AMOUNT");
+        require(totalMinted + amountOut <= maxSupply, AMOUNT_ERROR);
 
         // Interface storage for participant
         Participant storage participant = participants[to];
@@ -507,6 +522,9 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         address to,
         uint256 amount
     ) internal {
+        // transfers must not be paused
+        require(!transfersPaused, "PAUSED");
+
         // Interface "to" participant storage
         Participant storage toParticipant = participants[to];
 
@@ -528,4 +546,13 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         // increase "to" purchased by amount received
         toParticipant.purchased += amount;
     }
+
+    /// @notice         Rescues accidentally sent tokens and ETH
+    /// @param token    address of token to rescue, if address(0) rescue ETH
+    function rescue(address token) external onlyConcave {
+        if (token == address(0)) payable(treasury).transfer( address(this).balance );
+        else ERC20(token).transfer(treasury, ERC20(token).balanceOf(address(this)));
+    }
 }
+
+// © 2022 WTFPL – Do What the Fuck You Want to Public License.
