@@ -10,7 +10,7 @@ import { HOST_URL } from './Meta'
 
 const pCNV = {
   address: ethConfig.contracts[appNetwork.name.toLocaleLowerCase()].pCNV as string,
-  image: `${HOST_URL}/assets/tokens/pCNV.png`,
+  image: `/assets/tokens/pCNV.png`,
   symbol: 'pCNV',
   decimals: 18,
 }
@@ -22,8 +22,8 @@ export const AlreadyClaimedCard = () => {
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} align="center">
       <Image src={pCNV.image} w={128} h={128} mr={2} />
       <VStack spacing={1}>
-        <Text>Your {getClaimablePCNVAmount(account.address)}pCNV have been claimed!</Text>
-        <Text>Thanks for participating!</Text>
+        <Text>Your {getClaimablePCNVAmount(account.address)} worth of pCNV have been claimed!</Text>
+        <Text>Thanks for participating! WAGMI</Text>
       </VStack>
       <Button
         variant="primary.outline"
