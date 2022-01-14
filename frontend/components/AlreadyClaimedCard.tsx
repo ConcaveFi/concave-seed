@@ -10,7 +10,7 @@ import { HOST_URL } from './Meta'
 
 const pCNV = {
   address: ethConfig.contracts[appNetwork.name.toLocaleLowerCase()].pCNV as string,
-  image: `/assets/tokens/pCNV.png`,
+  image: `/seed/assets/tokens/pCNV.png`,
   symbol: 'pCNV',
   decimals: 18,
 }
