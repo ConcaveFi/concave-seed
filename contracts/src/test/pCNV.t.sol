@@ -683,8 +683,10 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			require(IERC20(FRAX).balanceOf(treasury) == treasuryBalance,"TESTFAIL:5");
 		}
 		require(IERC20(FRAX).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
-		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
-		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
+		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:7");
+        // emit log_uint(PCNV.totalMinted());
+        // emit log_uint(whitelist_maxDebt);
+		require(PCNV.totalMinted()/1e15 == whitelist_maxDebt/1e15,"TESTFAIL:8");
 	}
 
 	/// @notice mint all users with randomized stable - same as "test_mint_all_users"
@@ -748,8 +750,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// emit log_uint(IERC20(DAI).balanceOf(treasury));
 		// emit log_uint(IERC20(FRAX).balanceOf(treasury));
 		require(IERC20(FRAX).balanceOf(treasury) + IERC20(DAI).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
-		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
-		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
+		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:7");
+		// require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:8");
+        require(PCNV.totalMinted()/1e15 == whitelist_maxDebt/1e15,"TESTFAIL:8");
 	}
 
 
@@ -964,8 +967,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 player1Balance = PCNV.balanceOf(player1);
 		uint256 player2Balance = PCNV.balanceOf(player2);
 
-		require(player1Balance == amounts[0]*1e18,"ERR:1");
-		require(player2Balance == amounts[1]*1e18,"ERR:2");
+		require(player1Balance == amounts[0]*1e18 * 1e18 / rate,"ERR:1");
+		require(player2Balance == amounts[1]*1e18* 1e18 / rate, "ERR:2");
 
 		uint256 time = 365 days;
 		vm.warp(initialTimestamp+time);
@@ -1016,7 +1019,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 player1Balance = PCNV.balanceOf(player1);
 		uint256 player2Balance = PCNV.balanceOf(player2);
 
-		require(player1Balance == amounts[0]*1e18,"ERR:1");
+		require(player1Balance == amounts[0]*1e18* 1e18 / rate,"ERR:1");
 		require(player2Balance == 0,"ERR:2");
 
 		uint256 time = 365 days;
@@ -1066,7 +1069,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 player1Balance = PCNV.balanceOf(player1);
 		uint256 player2Balance = PCNV.balanceOf(player2);
 
-		require(player1Balance == amounts[0]*1e18,"ERR:1");
+		require(player1Balance == amounts[0]*1e18* 1e18 / rate,"ERR:1");
 		require(player2Balance == 0,"ERR:2");
 
 		uint256 time = 365 days;
