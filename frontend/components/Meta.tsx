@@ -2,7 +2,7 @@ import NextHead from 'next/head'
 import { useRouter } from 'next/router'
 import React from 'react'
 
-export const HOST_URL = process.env.NEXT_PUBLIC_HOST_URL
+export const HOST_URL = process.env.NEXT_PUBLIC_VERCEL_URL
 export const TWITTER = process.env.NEXT_PUBLIC_TWITTER
 
 export interface MetaProps {
