@@ -1,5 +1,5 @@
-import { Box, Heading, Text, Flex, Container, Spinner } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
+import { Box, Flex, Container, Spinner } from '@chakra-ui/react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useAccount, useNetwork } from 'wagmi'
 import { isWhitelisted } from 'lib/merkletree'
@@ -10,6 +10,7 @@ import { NotWhitelistedCard } from 'components/NotWhitelistedCard'
 import { appNetwork } from './_app'
 import { getUserClaimablePCNVAmount } from 'lib/claim'
 import { AlreadyClaimedCard } from 'components/AlreadyClaimedCard'
+import { useSigner } from 'hooks/useSigner'
 
 type AppState =
   | 'loading'
@@ -22,37 +23,37 @@ type AppState =
 function CNVSeed() {
   const [{ data: network, loading: networkLoading }] = useNetwork()
   const [{ data: account, loading: accountLoading }] = useAccount()
+  const [{ data: signer, loading: signerLoading }] = useSigner()
 
   const [state, setState] = useState<AppState>('loading')
 
-  useEffect(() => {
+  const syncState = useCallback(() => {
     setState('loading')
-    console.log('aaa')
-    if (accountLoading || networkLoading) return
+    if (accountLoading || networkLoading || signerLoading) return
     ;(async () => {
       if (network?.chain?.unsupported) return 'wrong_network'
       if (!account?.address) return 'not_connected'
       if (!isWhitelisted(account.address)) return 'not_whitelisted'
-      if ((await getUserClaimablePCNVAmount(await account.connector.getSigner())) == 0)
-        return 'already_claimed'
-      return 'claiming'
+      if (signer && (await getUserClaimablePCNVAmount(signer)) == 0) return 'already_claimed'
+      if (signer) return 'claiming'
+      return 'loading'
     })().then(setState)
-  }, [account?.address, network?.chain?.id])
+  }, [account?.address, network?.chain?.id, signerLoading])
+
+  useEffect(() => syncState(), [account?.address, network?.chain?.id, signerLoading])
 
   return (
     <Layout>
       <Container maxW="container.md">
         <Flex direction="column" gap={12}>
-          <Box mt={12} flexWrap="wrap" justify="center">
-             
-          </Box>
+          <Box mt={12} flexWrap="wrap" justify="center"></Box>
           <Flex gap={6} flexWrap="wrap" justify="center">
             {state === 'loading' && <Spinner />}
             {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
             {state === 'already_claimed' && <AlreadyClaimedCard />}
-            {state === 'claiming' && <ClaimCard />}
+            {state === 'claiming' && <ClaimCard signer={signer} afterSuccessfulClaim={syncState} />}
           </Flex>
         </Flex>
       </Container>

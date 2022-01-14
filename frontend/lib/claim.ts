@@ -1,4 +1,4 @@
-import { BigNumber, ethers, Signer } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import { signDaiPermit } from 'eth-permit'
 import { merkleTree, leafOf, getClaimablePCNVAmount } from './merkletree'
 import { getRopstenSdk, getMainnetSdk } from '@dethcrypto/eth-sdk-client'
@@ -62,9 +62,6 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
     )
     await permitDaiTx.wait(1)
   }
-  console.log(merkleTree.getHexRoot());
-
-  console.log('PERMIT')
 
   return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
     gasLimit: 210000,
@@ -79,7 +76,7 @@ export const getUserClaimablePCNVAmount = async (signer) => {
     18,
   )
   const userStillClaimableAmount = getClaimablePCNVAmount(userAddress) - userAlreadyClaimedAmount
-  
+
   return userStillClaimableAmount
 }
 
@@ -106,10 +103,5 @@ export const claim = async (
     ethers.utils.parseUnits(amount.toString(), tokenInDecimals),
     proof,
   )
-  await claimTx.wait(1) // ?
-  console.log('CLAIMED')
-
-  // } catch (e) {
-  //   console.error(`Error when claiming tokens: ${e}`)
-  // }
+  await claimTx.wait(1)
 }

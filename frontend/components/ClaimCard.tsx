@@ -4,17 +4,12 @@ import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
 import { claim, getUserClaimablePCNVAmount, inputTokens } from 'lib/claim'
-import { useAccount } from 'wagmi'
-import { useSigner } from 'hooks/useSigner'
 
-export function ClaimCard() {
+export function ClaimCard({ signer, afterSuccessfulClaim }) {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
   const [isLoading, setIsLoading] = useState(false)
-
-  const [{ data: account }] = useAccount()
-  const [{ data: signer }] = useSigner()
 
   const [claimableAmount, setClaimableAmount] = useState(0)
 
@@ -28,8 +23,12 @@ export function ClaimCard() {
 
   const onClaim = async () => {
     setIsLoading(true)
-    await claim(await account.connector.getSigner(), amount, inputToken)
-      .then(syncUserClaimableAmount)
+    await claim(signer, amount, inputToken)
+      .then(() => {
+        syncUserClaimableAmount()
+        setAmount('0')
+        afterSuccessfulClaim()
+      })
       .finally(() => setIsLoading(false))
   }
 
@@ -45,8 +44,8 @@ export function ClaimCard() {
       />
       <Button
         onClick={onClaim}
-        isLoading={isLoading}
-        isDisabled={Number(amount) < 1}
+        isLoading={!signer || isLoading}
+        isDisabled={!signer || Number(amount) < 1}
         variant="primary"
         size="large"
         fontSize={24}
