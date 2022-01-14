@@ -60,7 +60,7 @@ Finally, you can review your smart contract interaction and confirm the transact
 
 ## User Story
 
-    ---------------------
+    -------------------------------------------------------------------------
     The contract features two vesting schedules to redeem pCNV into CNV.
     Both schedules are linear, and have a duration of 2 years.
 
