@@ -40,7 +40,7 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
       {
         name: 'Dai Stablecoin',
         version: '1',
-        chainId: chain.ropsten.id,
+        chainId: chain.mainnet.id,
         verifyingContract: dai.address,
       },
       userAddress,
