@@ -25,7 +25,6 @@ const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amo
 const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
   const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
   if (daiAllowance.lt(amount)) {
-      permit.spender,
     const daiApprove = await dai.approve(pCNV.address, maxAmount, { from: userAddress })
     await daiApprove.wait(1)
   }

@@ -22,7 +22,7 @@ export const AlreadyClaimedCard = () => {
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} align="center">
       <Image src={pCNV.image} w={128} h={128} mr={2} />
       <VStack spacing={1}>
-        <Text>Your {getClaimablePCNVAmount(account.address)} worth of pCNV have been claimed!</Text>
+        <Text>Your {getClaimablePCNVAmount(account.address) / 3} pCNV have been claimed!</Text>
         <Text>Thanks for participating! WAGMI</Text>
       </VStack>
       <Button
