@@ -3,14 +3,14 @@ pragma solidity >=0.8.0;
 
 /**
     Concave Presale Token
-    
+
     pCNV to CNV mechanics
     ---------------------
     The contract features two vesting schedules to redeem pCNV into CNV. Both
     schedules are linear, and have a duration of 2 years.
 
     The first vesting schedule determines how many pCNV a holder can redeem at
-    any point in time. At contract inception - 0% of a holder's pCNV can be 
+    any point in time. At contract inception - 0% of a holder's pCNV can be
     redeemed. At the end of 2 years, 100% of a holder's pCNV can be redeemed.
     It goes from 0% to 100% in a linear fashion.
 
@@ -25,7 +25,7 @@ pragma solidity >=0.8.0;
         - pCNV total supply is 200
         - CNV total supply is 1000
         - 1 year has passed and Alice has not made any previous redemptions
-    
+
     Then:
         - The first vesting schedule tells us that users may redeem 50% of their
           holdings, so Alice may redeem 50 pCNV.
@@ -40,7 +40,7 @@ pragma solidity >=0.8.0;
     Conclusion:
         - Alice burns 50 pCNV
         - Alice mints 25 CNV
-        
+
 */
 
 /* -------------------------------------------------------------------------- */
@@ -70,7 +70,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     uint256 public immutable GENESIS = block.timestamp;
 
     /// @notice Two years in seconds
-    uint256 public immutable TWO_YEARS = 63072000; 
+    uint256 public immutable TWO_YEARS = 63072000;
 
     /// @notice FRAX tokenIn address
     ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
@@ -87,7 +87,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     ICNV public CNV;
 
     /// @notice Address that is recipient of raised funds + access control
-    address public treasury = msg.sender;
+    address public treasury = 0x226e7AF139a0F34c6771DeB252F9988876ac1Ced;
 
     /// @notice Returns the current merkle root being used
     bytes32 public merkleRoot;
@@ -131,7 +131,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /* ---------------------------------------------------------------------- */
     /*                                  EVENTS                                */
     /* ---------------------------------------------------------------------- */
-    
+
     /// @notice Emitted when treasury changes treasury address
     /// @param  treasury address of new treasury
     event TreasurySet(address treasury);
@@ -158,10 +158,10 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param  deposited       amount of DAI/FRAX deposited
     /// @param  totalMinted     total amount of pCNV minted so far
     event Minted(
-        address indexed depositedFrom, 
-        address indexed mintedTo, 
-        uint256 amount, 
-        uint256 deposited, 
+        address indexed depositedFrom,
+        address indexed mintedTo,
+        uint256 amount,
+        uint256 deposited,
         uint256 totalMinted
     );
 
@@ -171,9 +171,9 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /// @param  burned      amount of pCNV burned
     /// @param  minted      amount of CNV minted
     event Redeemed(
-        address indexed burnedFrom, 
-        address indexed mintedTo, 
-        uint256 burned, 
+        address indexed burnedFrom,
+        address indexed mintedTo,
+        uint256 burned,
         uint256 minted
     );
 
@@ -255,7 +255,7 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
             emit Managed(target, amount, maxSupply);
             return;
         }
-        
+
         newAmount = totalMinted + amount;
         // make sure total newAmount (totalMinted + amount) is less than or equal to maximum supply
         require(newAmount <= maxSupply, "!AMOUNT");
@@ -377,14 +377,14 @@ contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
     /* ---------------------------------------------------------------------- */
     /*                               PUBLIC VIEW                              */
     /* ---------------------------------------------------------------------- */
-    
+
     /// @notice         Returns the amount of CNV a user will receive for redeeming `amountIn` of pCNV
-    /// @param who      address that will receive redeemed CNV 
+    /// @param who      address that will receive redeemed CNV
     /// @param amountIn amount of pCNV
     function redeemAmountOut(address who, uint256 amountIn) public view returns (uint256) {
         // Make sure amountIn is less than participants maximum redeem amount in
         require(amountIn <= maxRedeemAmountIn(who), "!AMOUNT");
-        
+
         // Calculate percentage of maxRedeemAmountIn that participant is redeeming
         uint256 ratio = 1e18 * amountIn / maxRedeemAmountIn(who);
 

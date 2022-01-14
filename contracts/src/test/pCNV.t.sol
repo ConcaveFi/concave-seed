@@ -34,7 +34,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     function setUp() public virtual {
         PCNV = new pCNV();
+        vm.startPrank(0x226e7AF139a0F34c6771DeB252F9988876ac1Ced);
 		PCNV.setTreasury(treasury);
+        vm.stopPrank();
         CNV = new MockCNV(333000e18);
     }
 
@@ -47,7 +49,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.startPrank(treasury);
         PCNV.setTreasury(address(0));
         vm.stopPrank();
-        
+
         require(PCNV.treasury() == address(0));
 
         vm.expectRevert("!CONCAVE");
@@ -280,7 +282,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		bytes32[] memory proof = getUserProof(userIndex);
 
 		uint256 amountIn = userMaxAmount+1;
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("!PROOF");
 		PCNV.mint(
@@ -291,11 +293,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
             proof
         );
         vm.stopPrank();
-		
+
 	}
 
 	/// @notice fails with "!AMOUNT_IN" when `amountIn` is larger than `maxAmount`
-	function test_mint_should_fal_with_amountin() public { 
+	function test_mint_should_fal_with_amountin() public {
         setRound(merkleRoot,rate);
 
         uint256 userIndex = 0;
@@ -304,7 +306,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		bytes32[] memory proof = getUserProof(userIndex);
 
 		uint256 amountIn = userMaxAmount+1;
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("!AMOUNT_IN");
 		PCNV.mint(
@@ -330,7 +332,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		require(IERC20(DAI).balanceOf(userAddress) < amountIn);
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("Dai/insufficient-balance");
 		PCNV.mint(
@@ -355,7 +357,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		require(IERC20(FRAX).balanceOf(userAddress) < amountIn);
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("ERC20: transfer amount exceeds balance");
 		PCNV.mint(
@@ -368,7 +370,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
-	
+
 
 
 	/// @notice fails with "Dai/insufficient-allowance" if user has not approved enough DAI
@@ -385,7 +387,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		deposit_DAI(userAddress,amountIn);
 
 		require(IERC20(DAI).balanceOf(userAddress) >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("Dai/insufficient-allowance");
 		PCNV.mint(
@@ -412,7 +414,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		deposit_FRAX(userAddress,amountIn);
 
 		require(IERC20(FRAX).balanceOf(userAddress) >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		vm.expectRevert("ERC20: transfer amount exceeds allowance");
 		PCNV.mint(
@@ -440,11 +442,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_DAI(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(DAI).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		IERC20(DAI).approve(address(PCNV),amountIn);
 		PCNV.mint(
@@ -479,11 +481,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_DAI(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(DAI).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn);
-		
+
         vm.startPrank(getUserAddress(1));
 		IERC20(DAI).approve(address(PCNV),amountIn);
 		vm.expectRevert("!PROOF");
@@ -519,11 +521,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_FRAX(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		IERC20(FRAX).approve(address(PCNV),amountIn);
 		PCNV.mint(
@@ -558,11 +560,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_FRAX(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		IERC20(FRAX).approve(address(PCNV),amountIn);
 
@@ -611,11 +613,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_FRAX(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn);
-		
+
         vm.startPrank(userAddress);
 		IERC20(FRAX).approve(address(PCNV),amountIn);
 
@@ -639,7 +641,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
         vm.stopPrank();
 	}
 
-	/// @notice mint all users, verify totalSupply, totalMinted, stable balance for each user, 
+	/// @notice mint all users, verify totalSupply, totalMinted, stable balance for each user,
 	/// stable balance for treasury,
 	function test_mint_all_users() public {
 		setRound(merkleRoot,rate);
@@ -653,7 +655,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			uint256 userMaxAmount = getUserMaxAmount(userIndex);
 			bytes32[] memory proof = getUserProof(userIndex);
 
-			
+
 
 			uint256 amountIn = userMaxAmount;
 			deposit_FRAX(userAddress,amountIn);
@@ -685,7 +687,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
 	}
 
-	/// @notice mint all users with randomized stable - same as "test_mint_all_users" 
+	/// @notice mint all users with randomized stable - same as "test_mint_all_users"
 	/// but with alternating FRAX/DAI
 	function test_mint_all_users_random_stable_now() public {
 		setRound(merkleRoot,rate);
@@ -705,9 +707,9 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			uint256 userMaxAmount = getUserMaxAmount(userIndex);
 			bytes32[] memory proof = getUserProof(userIndex);
 
-			
+
 			uint256 amountIn = userMaxAmount;
-			
+
 
 			address stable;
 			if (isFrax) {
@@ -718,8 +720,8 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 				deposit_DAI(userAddress,amountIn);
 			}
 
-			
-			
+
+
 
 			uint256 initialUserStableBalance = IERC20(stable).balanceOf(userAddress);
 
@@ -749,7 +751,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:6");
 		require(PCNV.totalMinted() == whitelist_maxDebt,"TESTFAIL:6");
 	}
-            
+
 
 	/* ---------------------------------------------------------------------- */
     /*                         PUBLIC LOGIC: redeem()                         */
@@ -778,7 +780,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 				vestable += PCNV.maxRedeemAmountIn(getUserAddress(i));
 			}
 
-			
+
 			for (uint256 i; i < numberOfUsers; i++) {
 				address fromAddress = getUserAddress(i);
 				uint256 fromBalance = PCNV.balanceOf(fromAddress);
@@ -809,16 +811,16 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			// emit log_uint(vestable2);
 			require(vestable/1e16 == vestable2/1e16,"VVV");
 		}
-		
+
 	}
 
 	/// @notice logs user maxRedeemAmount and PCNV.amountVested() for sanity check
 	function test_sanity_check() public {
 		setRound(merkleRoot,rate);
-		        
+
 		setRedeemable();
 		claim_user(0);
-		
+
 
 		uint256 initialTimestamp = block.timestamp;
 		emit log_uint(PCNV.balanceOf(getUserAddress(0))/1e18);
@@ -1103,12 +1105,12 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     /* ---------------------------------------------------------------------- */
     /*                              HELPERS                                   */
     /* ---------------------------------------------------------------------- */
-	
-	
+
+
 	/// @notice 	helper to redeem max for a specific user
-	/// @param ix 	index of user 
+	/// @param ix 	index of user
 	function redeemMax(uint256 ix) public {
-		
+
 		vm.startPrank(getUserAddress(ix));
 		PCNV.redeem(
 			getUserAddress(ix),
@@ -1118,17 +1120,17 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	}
 
 	/// @notice 		helper to redeem an amount for a specific user
-	/// @param ix 		index of user 
+	/// @param ix 		index of user
 	/// @param amount 	amount to redeem
 	function redeem(uint256 ix, uint256 amount) public {
-		
+
 		vm.startPrank(getUserAddress(ix));
 		PCNV.redeem(getUserAddress(ix),amount);
 		vm.stopPrank();
 	}
-	
+
 	/// @notice 			mint max amount for user
-	/// @param userIndex	index of user 
+	/// @param userIndex	index of user
 	function claim_user(uint256 userIndex) public {
 		setRound(merkleRoot,rate);
 
@@ -1141,11 +1143,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		uint256 amountIn = userMaxAmount;
 
 		deposit_FRAX(userAddress,amountIn);
-		
+
 
 		uint256 initialUserStableBalance = IERC20(FRAX).balanceOf(userAddress);
 		require(initialUserStableBalance >= amountIn,"TESTFAIL:6");
-		
+
         vm.startPrank(userAddress);
 		IERC20(FRAX).approve(address(PCNV),amountIn);
 		PCNV.mint(
