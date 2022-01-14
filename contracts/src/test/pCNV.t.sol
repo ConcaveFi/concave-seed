@@ -73,7 +73,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
     }
 
-	// @notice onlyConcave may setRound, else fails with "!CONCAVE". Verifies if value is set correctly.
+	/// @notice onlyConcave may setRound, else fails with "!CONCAVE". Verifies if value is set correctly.
     function test_setRound() public {
         vm.expectRevert("!CONCAVE");
         PCNV.setRound(merkleRoot,rate);
