@@ -1,7 +1,12 @@
 import * as React from 'react'
 import { Signer } from 'ethers'
 
-import { useAccount, useContext } from 'wagmi'
+import { useContext } from 'wagmi'
+
+type Config = {
+  /** Disables fetching */
+  skip?: boolean
+}
 
 type State = {
   data?: Signer
@@ -15,27 +20,35 @@ const initialState: State = {
   loading: false,
 }
 
-export const useSigner = () => {
-  const [{ data: account, loading: accountLoading }] = useAccount()
+export const useSigner = ({ skip }: Config = {}) => {
+  const {
+    state: { connector, cacheBuster },
+  } = useContext()
   const [state, setState] = React.useState<State>(initialState)
-  const wagmi = useContext()
 
   const getSigner = React.useCallback(async () => {
     try {
       setState((x) => ({ ...x, error: undefined, loading: true }))
-      const signer = await account?.connector?.getSigner()
+      const signer = await connector?.getSigner()
       setState((x) => ({ ...x, data: signer, loading: false }))
-
       return signer
     } catch (error_) {
       const error = <Error>error_
       setState((x) => ({ ...x, data: undefined, error, loading: false }))
     }
-  }, [accountLoading])
+  }, [connector])
 
   React.useEffect(() => {
+    if (skip) return
+
+    let didCancel = false
+    if (didCancel) return
     getSigner()
-  }, [wagmi.state.cacheBuster, getSigner])
+
+    return () => {
+      didCancel = true
+    }
+  }, [cacheBuster, connector, getSigner, skip])
 
   return [state, getSigner] as const
 }
