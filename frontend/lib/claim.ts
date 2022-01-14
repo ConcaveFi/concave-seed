@@ -23,51 +23,52 @@ const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amo
 }
 
 const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
-  // const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
-  // if (daiAllowance < amount) {
-  //   const daiApprove = await dai.approve(pCNV.address, maxAmount, { from: userAddress })
-  //   await daiApprove.wait(1)
-  // }
-  // console.log(userAddress, dai.address, roundId, maxAmount, amount, proof)
-  // return pCNV.mint(userAddress, dai.address, roundId, maxAmount, amount, proof)
-
   const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
   if (daiAllowance.lt(amount)) {
-    const SECOND = 1000
-    const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
-    const nonce = await dai.nonces(userAddress)
-
-    const permit = await signDaiPermit(
-      dai.signer,
-      {
-        name: 'Dai Stablecoin',
-        version: '1',
-        chainId: appNetwork.id,
-        verifyingContract: dai.address,
-      },
-      userAddress,
-      pCNV.address,
-      expiry,
-      nonce as any,
-    )
-
-    const permitDaiTx = await dai.permit(
-      permit.holder,
-      permit.spender,
-      permit.nonce,
-      permit.expiry,
-      true,
-      permit.v,
-      permit.r,
-      permit.s,
-      { gasLimit: 210000 },
-    )
-    await permitDaiTx.wait(1)
+    const daiApprove = await dai.approve(pCNV.address, maxAmount, { from: userAddress })
+    await daiApprove.wait(1)
   }
-
   return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
     gasLimit: 210000,
   })
+
+  // const daiAllowance = await dai.allowance(userAddress, pCNV.address, { from: userAddress })
+  // if (daiAllowance.lt(amount)) {
+  //   const SECOND = 1000
+  //   const expiry = Math.trunc((Date.now() + 120 * SECOND) / SECOND)
+  //   const nonce = await dai.nonces(userAddress)
+
+  //   const permit = await signDaiPermit(
+  //     dai.signer,
+  //     {
+  //       name: 'Dai Stablecoin',
+  //       version: '1',
+  //       chainId: appNetwork.id,
+  //       verifyingContract: dai.address,
+  //     },
+  //     userAddress,
+  //     pCNV.address,
+  //     expiry,
+  //     nonce as any,
+  //   )
+
+  //   const permitDaiTx = await dai.permit(
+  //     permit.holder,
+  //     permit.spender,
+  //     permit.nonce,
+  //     permit.expiry,
+  //     true,
+  //     permit.v,
+  //     permit.r,
+  //     permit.s,
+  //     { gasLimit: 210000 },
+  //   )
+  //   await permitDaiTx.wait(1)
+  // }
+
+  // return pCNV.mint(userAddress, dai.address, maxAmount, amount, proof, {
+  //   gasLimit: 210000,
+  // })
 }
 
 export const getUserClaimablePCNVAmount = async (signer) => {
