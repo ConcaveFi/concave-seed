@@ -21,6 +21,7 @@ export default class Document extends NextDocument {
             type="font/woff2"
             crossOrigin="anonymous"
           />
+          <link rel="icon" type="image/png" href="/favicon.png" />
         </Head>
         <body>
           <ColorModeScript initialColorMode={theme.config.initialColorMode} />
