@@ -1,0 +1,38 @@
+{
+  "abi": [
+    {
+      "type": "event",
+      "name": "LogNote",
+      "inputs": [
+        {
+          "name": "sig",
+          "type": "bytes4",
+          "indexed": true
+        },
+        {
+          "name": "usr",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "arg1",
+          "type": "bytes32",
+          "indexed": true
+        },
+        {
+          "name": "arg2",
+          "type": "bytes32",
+          "indexed": true
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "indexed": false
+        }
+      ],
+      "anonymous": true
+    }
+  ],
+  "bin": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220064f7c288405d8a9c1bd82dccfe41244aefbfa109092f01ca3edfa606f0ef33b64736f6c63430007050033",
+  "bin-runtime": "0x6080604052600080fdfea2646970667358221220064f7c288405d8a9c1bd82dccfe41244aefbfa109092f01ca3edfa606f0ef33b64736f6c63430007050033"
+}
