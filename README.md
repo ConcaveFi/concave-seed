@@ -43,7 +43,6 @@ How does this work? The amount of pConcave redeemable at time T = Circulating su
 
 Why is there a 5-month cliff imposed on the work team? What does that mean? The cliff means that you, as a member of the work team, cannot redeem anything until month 5. And if you end up doing some really stupid shit before month 5, the core team could take away your pConcave allocation at the contract level. The goal of this 5-month cliff is to ensure every member of the work team (especially core team and early contributors) won't just get their pConcave allocation and disappear or lay down on the floor. We want the work team to stay focused and motivated, especially during the first few months which is critical to the success of the project. 
 
-The Concave model seems to be different than the legacy model. Which one is better? Yes you are right, they are a bit different. Let me do a deep dive analysis and let you judge which one is better. The legacy model doesn’t have a vesting schedule, if your pToken allocation is 10% of the total supply, you can start redeem up to 10% of the circulating supply every single month and then stake it. Therefore, as illustrated below, the winning strategy from an individual pToken holder perspective is to Wooden Hand all the way (redeem max amount whenever you can and stake it). 
 
 # Gnosis Safe Instructions
 Source Material: https://help.gnosis-safe.io/en/articles/3738081-contract-interactions
