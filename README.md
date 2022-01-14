@@ -1,39 +1,19 @@
 # pCNV to CNV mechanics
-    ---------------------
-    The contract features two vesting schedules to redeem pCNV into CNV.
-    Both schedules are linear, and have a duration of 2 years.
 
-    The first vesting schedule determines how many pCNV a holder can redeem at
-    any point in time. At contract inception - 0% of a holder's pCNV can be 
-    redeemed. At the end of 2 years, 100% of a holder's pCNV can be redeemed.
-    It goes from 0% to 100% in a linear fashion.
+What is pCNV? 
 
-    The second vesting schedule determines the percent of CNV supply that pCNV
-    corresponds to. This vesting schedule also begins at 0% on day one, and
-    advances linearly to reach 10% at the end of year two.
+pCNV Holder = Concave Stakeholder or owner
 
-    The following is a breakdown of a pCNV to CNV redemption:
+On a surface level, just like pOHM, pCNV is a precursor derivative of CNV; it gives the holder the option to mint CNV by burning pCNV and providing the intrinsic value of CNV. For example, an investor would provide 1 DAI and 1 pCNV to mint 1 CNV. 
 
-    Assumptions:
-        - Alice holds 100 pCNV
-        - pCNV total supply is 200
-        - CNV total supply is 1000
-        - 1 year has passed and Alice has not made any previous redemptions
-    
-    Then:
-        - The first vesting schedule tells us that users may redeem 50% of their
-          holdings, so Alice may redeem 50 pCNV.
-        - The second vesting schedule tells us that pCNV total supply corresponds
-          to 5% of total CNV supply.
-        - Since total CNV supply is 1000, 5% of it is 50, so 50 CNV are what
-          correspond to the 200 pCNV supply.
-        - Alice has 50% of total pCNV supply
-        - Thus, Alice is entitled to 50% of the claimable CNV supply, i.e Alice
-          is entitled to 25 CNV
+On a deeper level, pCNV represents the claim of a constant % of circulating supply (thus a constant share of market cap) and it is quoted in related to or as a % of the 333,000,000 “Target Terminal supply” (TTS). Maybe let’s run through an example, say Sert did a great job building an awesome bonding machine for our treasury, MiaoShi decides to award him with 3,330,000 pCNV. This 3,330,000 is quoted in related to TTS which means Sert will always have 3,330,000/333,000,000 = 1% of circulating supply after his pToken becomes fully vested. Let’s look at 3 cases:
 
-    Conclusion:
-        - Alice burns 50 pCNV
-        - Alice mints 25 CNV
+At the end of year 2 when all of his pCNVs are fully vested, circulating supply is 200,000,000. He can basically cash out 200 million X 1% = 2million CNVs by providing 2million DAI, assuming he hasn’t redeemed any pCNV before.
+
+At the end of day 900 when concave reaches TTS and all of his pCNVs are vested, circulating supply is 333,000,000. He can basically cash out 333 million X 1% = 3.33million CNVs by providing 3.33million DAI, assuming he hasn’t redeemed any pCNV before.
+
+At the end of year 5, circulating supply is 1,000,000,000.  He can basically redeem 1000 million X 1% = 10million CNVs by providing 10million DAI, assuming he hasn’t redeemed any pCNV before.
+
 
 ![image](https://user-images.githubusercontent.com/96172957/149446529-b67f5a16-99b9-407a-8337-91e3e6b580bc.png)
 
@@ -75,6 +55,45 @@ Finally, you can review your smart contract interaction and confirm the transact
 
 
 # FEEL FREE TO PING US IN DISCORD IF YOU NEED HELP CLAIMING USING A MULTISIG
+
+## User Story
+
+    ---------------------
+    The contract features two vesting schedules to redeem pCNV into CNV.
+    Both schedules are linear, and have a duration of 2 years.
+
+    The first vesting schedule determines how many pCNV a holder can redeem at
+    any point in time. At contract inception - 0% of a holder's pCNV can be 
+    redeemed. At the end of 2 years, 100% of a holder's pCNV can be redeemed.
+    It goes from 0% to 100% in a linear fashion.
+
+    The second vesting schedule determines the percent of CNV supply that pCNV
+    corresponds to. This vesting schedule also begins at 0% on day one, and
+    advances linearly to reach 10% at the end of year two.
+
+    The following is a breakdown of a pCNV to CNV redemption:
+
+    Assumptions:
+        - Alice holds 100 pCNV
+        - pCNV total supply is 200
+        - CNV total supply is 1000
+        - 1 year has passed and Alice has not made any previous redemptions
+    
+    Then:
+        - The first vesting schedule tells us that users may redeem 50% of their
+          holdings, so Alice may redeem 50 pCNV.
+        - The second vesting schedule tells us that pCNV total supply corresponds
+          to 5% of total CNV supply.
+        - Since total CNV supply is 1000, 5% of it is 50, so 50 CNV are what
+          correspond to the 200 pCNV supply.
+        - Alice has 50% of total pCNV supply
+        - Thus, Alice is entitled to 50% of the claimable CNV supply, i.e Alice
+          is entitled to 25 CNV
+
+    Conclusion:
+        - Alice burns 50 pCNV
+        - Alice mints 25 CNV
+
 
 # Developer Notes
 Includes generator used to create merkle root, frontend used to redeem, as well as underlying contracts
