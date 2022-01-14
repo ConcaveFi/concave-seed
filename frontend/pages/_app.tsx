@@ -7,9 +7,9 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import theme from 'theme'
 import 'public/fonts.css'
 
-const infuraId = process.env.INFURA_ID
+const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
-export const appNetwork = process.env.NODE_ENV === 'development' ? chain.ropsten : chain.ropsten
+export const appNetwork = process.env.NODE_ENV === 'development' ? chain.ropsten : chain.mainnet
 
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
