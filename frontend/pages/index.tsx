@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Flex, Container, Spinner } from '@chakra-ui/react'
+import { Box, Flex, Container, Spinner } from '@chakra-ui/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useAccount, useNetwork } from 'wagmi'
@@ -34,7 +34,7 @@ function CNVSeed() {
       if (network?.chain?.unsupported) return 'wrong_network'
       if (!account?.address) return 'not_connected'
       if (!isWhitelisted(account.address)) return 'not_whitelisted'
-      if ((await getUserClaimablePCNVAmount(signer)) == 0) return 'already_claimed'
+      if (signer && (await getUserClaimablePCNVAmount(signer)) == 0) return 'already_claimed'
       if (signer) return 'claiming'
       return 'loading'
     })().then(setState)
