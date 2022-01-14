@@ -4,6 +4,8 @@ import { merkleTree, leafOf, getClaimablePCNVAmount } from './merkletree'
 import { getRopstenSdk, getMainnetSdk } from '@dethcrypto/eth-sdk-client'
 import { Dai, Frax, PCNV } from '.dethcrypto/eth-sdk-client/esm/types'
 import { chain } from 'wagmi'
+import { appNetwork } from 'pages/_app'
+
 
 const ethSdk = process.env.NODE_ENV === 'production' ? getMainnetSdk : getRopstenSdk
 const merkleRoot = merkleTree.getHexRoot()
@@ -40,7 +42,7 @@ const claimWithDai = async (dai: Dai, pCNV: PCNV, userAddress, maxAmount, amount
       {
         name: 'Dai Stablecoin',
         version: '1',
-        chainId: chain.mainnet.id,
+        chainId: appNetwork.id,
         verifyingContract: dai.address,
       },
       userAddress,
