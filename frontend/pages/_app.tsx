@@ -9,7 +9,7 @@ import 'public/fonts.css'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
-export const appNetwork = process.env.NODE_ENV === 'development' ? chain.ropsten : chain.mainnet
+export const appNetwork = process.env.NODE_ENV === 'development' ? chain.mainnet : chain.mainnet
 
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
