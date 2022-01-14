@@ -54,7 +54,7 @@ import { ICNV } from "./interfaces/ICNV.sol";
 
 /// @notice Concave Presale Token
 /// @author 0xBarista & Dionysus (ConcaveFi)
-contract pCNV is ERC20("Concave Presale token", "pCNV", 18) {
+contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
 
     /* ---------------------------------------------------------------------- */
     /*                                DEPENDENCIES                            */
