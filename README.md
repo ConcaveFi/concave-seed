@@ -35,6 +35,15 @@
         - Alice burns 50 pCNV
         - Alice mints 25 CNV
 
+![image](https://user-images.githubusercontent.com/96172957/149446529-b67f5a16-99b9-407a-8337-91e3e6b580bc.png)
+
+# FAQs
+
+How does this work? The amount of pConcave redeemable at time T = Circulating supply at T * Vesting % at time T * Your pToken ownership as a % of circulating supply. Let’s just run an example, say Akarin owns half of all pTokens, which is 5% of the circulating supply. At the end of year 1, circulating supply is say 20,000,000 and he can vest 50% of his token, thus he can take out up to 20mil * 50% * 5% = 0.5mil of Concave Native Tokens by providing 0.5mil DAI. If he chooses to take all of it out, he will be left with 5% - 50%*5% = 2.5% claim on the circulating supply. Then at the end of year 2, circulating supply becomes 150mil and his vesting % becomes 100%. Now he can redeem up to 150mil * 100% *2.5% = 3.75mil pConcave by providing the same amount of DAI. 
+
+Why is there a 5-month cliff imposed on the work team? What does that mean? The cliff means that you, as a member of the work team, cannot redeem anything until month 5. And if you end up doing some really stupid shit before month 5, the core team could take away your pConcave allocation at the contract level. The goal of this 5-month cliff is to ensure every member of the work team (especially core team and early contributors) won't just get their pConcave allocation and disappear or lay down on the floor. We want the work team to stay focused and motivated, especially during the first few months which is critical to the success of the project. 
+
+The Concave model seems to be different than the legacy model. Which one is better? Yes you are right, they are a bit different. Let me do a deep dive analysis and let you judge which one is better. The legacy model doesn’t have a vesting schedule, if your pToken allocation is 10% of the total supply, you can start redeem up to 10% of the circulating supply every single month and then stake it. Therefore, as illustrated below, the winning strategy from an individual pToken holder perspective is to Wooden Hand all the way (redeem max amount whenever you can and stake it). 
 
 # Gnosis Safe Instructions
 Source Material: https://help.gnosis-safe.io/en/articles/3738081-contract-interactions
