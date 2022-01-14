@@ -75,7 +75,7 @@ The interface will now display the parameters and parameter types of this method
 Finally, you can review your smart contract interaction and confirm the transaction. Depending on your owner setup, the transaction will have to be confirmed by other signers as well.
 
 
-
+# FEEL FREE TO PING US IN DISCORD IF YOU NEED HELP CLAIMING USING A MULTISIG
 
 # Developer Notes
 Includes generator used to create merkle root, frontend used to redeem, as well as underlying contracts
