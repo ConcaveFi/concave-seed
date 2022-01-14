@@ -386,7 +386,13 @@
         "type": "bytes32"
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
 
     "stateMutability": "nonpayable"
   },
@@ -601,6 +607,20 @@
   },
   {
     "type": "function",
+    "name": "rescue",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "outputs": [],
+
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "roots",
     "inputs": [
       {
@@ -646,6 +666,20 @@
         "internalType": "uint256",
         "name": "_rate",
         "type": "uint256"
+      }
+    ],
+    "outputs": [],
+
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setTransfersPaused",
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "paused",
+        "type": "bool"
       }
     ],
     "outputs": [],
@@ -804,6 +838,20 @@
   },
   {
     "type": "function",
+    "name": "transfersPaused",
+    "inputs": [],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "treasury",
     "inputs": [],
     "outputs": [
@@ -840,6 +888,116 @@
   },
   {
     "type": "event",
+    "name": "Managed",
+    "inputs": [
+      {
+        "name": "target",
+        "type": "address",
+        "indexed": false
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false
+      },
+      {
+        "name": "maxSupply",
+        "type": "uint256",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Minted",
+    "inputs": [
+      {
+        "name": "depositedFrom",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "mintedTo",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false
+      },
+      {
+        "name": "deposited",
+        "type": "uint256",
+        "indexed": false
+      },
+      {
+        "name": "totalMinted",
+        "type": "uint256",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewRound",
+    "inputs": [
+      {
+        "name": "merkleRoot",
+        "type": "bytes32",
+        "indexed": false
+      },
+      {
+        "name": "rate",
+        "type": "uint256",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RedeemableSet",
+    "inputs": [
+      {
+        "name": "CNV",
+        "type": "address",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Redeemed",
+    "inputs": [
+      {
+        "name": "burnedFrom",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "mintedTo",
+        "type": "address",
+        "indexed": true
+      },
+      {
+        "name": "burned",
+        "type": "uint256",
+        "indexed": false
+      },
+      {
+        "name": "minted",
+        "type": "uint256",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "Transfer",
     "inputs": [
       {
@@ -855,6 +1013,18 @@
       {
         "name": "amount",
         "type": "uint256",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "TreasurySet",
+    "inputs": [
+      {
+        "name": "treasury",
+        "type": "address",
         "indexed": false
       }
     ],
