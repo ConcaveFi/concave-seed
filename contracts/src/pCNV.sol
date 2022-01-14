@@ -463,9 +463,6 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
         uint256 amountIn,
         bytes32[] calldata proof
     ) internal returns(uint256 amountOut) {
-        // make sure total minted + amount is less than or equal to maximum supply
-        require(totalMinted + amountIn <= maxSupply, "!AMOUNT");
-
         // Make sure payment tokenIn is either DAI or FRAX
         require(tokenIn == address(DAI) || tokenIn == address(FRAX), "!TOKEN_IN");
 
@@ -479,6 +476,9 @@ contract pCNV is ERC20("Concave Presale Token", "pCNV", 18) {
 
         // Calculate rate of pCNV that should be returned for "amountIn"
         amountOut = amountIn * 1e18 / rate;
+
+        // make sure total minted + amount is less than or equal to maximum supply
+        require(totalMinted + amountOut <= maxSupply, "!AMOUNT");
 
         // Interface storage for participant
         Participant storage participant = participants[to];
