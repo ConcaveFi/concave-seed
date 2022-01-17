@@ -20,7 +20,7 @@ export const AlreadyClaimedCard = () => {
   const [error, setError] = useState()
   return account ? (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} align="center">
-      <Image src={pCNV.image} w={128} h={128} mr={2} />
+      <Image src={pCNV.image} w={128} h={128} mr={2} alt="pCNV icon" />
       <VStack spacing={1}>
         <Text>Your {getClaimablePCNVAmount(account.address)} worth of pCNV have been claimed!</Text>
         <Text>Thanks for participating! WAGMI</Text>
@@ -30,12 +30,12 @@ export const AlreadyClaimedCard = () => {
         borderRadius="xl"
         onClick={() => account.connector.watchAsset(pCNV).catch(setError)}
       >
-        <Image src={pCNV.image} width="32px" height="32px" mr={2} />
+        <Image src={pCNV.image} width="32px" height="32px" mr={2} alt="pCNV icon" />
         Add pCNV to wallet
       </Button>
       {error && (
         <Text color="text.3" textAlign="center" maxW={233}>
-          Looks like your wallet doesn't support token watching
+          {`Looks like your wallet doesn't support token watching`}
         </Text>
       )}
     </Card>

@@ -17,9 +17,7 @@ export function ClaimCard({ signer, afterSuccessfulClaim }) {
     if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
   }, [signer])
 
-  useEffect(() => {
-    if (signer) syncUserClaimableAmount()
-  }, [signer])
+  useEffect(() => syncUserClaimableAmount(), [syncUserClaimableAmount])
 
   const onClaim = async () => {
     setIsLoading(true)
