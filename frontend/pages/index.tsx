@@ -1,4 +1,4 @@
-import { Box, Flex, Container, Spinner } from '@chakra-ui/react'
+import { Flex, Container, Spinner } from '@chakra-ui/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useAccount, useNetwork } from 'wagmi'
@@ -38,15 +38,21 @@ function CNVSeed() {
       if (signer) return 'claiming'
       return 'loading'
     })().then(setState)
-  }, [account?.address, network?.chain?.id, signerLoading])
+  }, [
+    account?.address,
+    accountLoading,
+    network?.chain?.unsupported,
+    networkLoading,
+    signer,
+    signerLoading,
+  ])
 
-  useEffect(() => syncState(), [account?.address, network?.chain?.id, signerLoading])
+  useEffect(() => syncState(), [syncState])
 
   return (
     <Layout>
       <Container maxW="container.md">
         <Flex direction="column" gap={12}>
-          <Box mt={12} flexWrap="wrap" justify="center"></Box>
           <Flex gap={6} flexWrap="wrap" justify="center">
             {state === 'loading' && <Spinner />}
             {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
