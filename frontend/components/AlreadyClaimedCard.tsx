@@ -16,7 +16,7 @@ const pCNV = {
 }
 
 export const AlreadyClaimedCard = () => {
-  const [{ data: account }] = useAccount()
+  const [{ data: account }] = useAccount({ fetchEns: false })
   const [error, setError] = useState()
   return account ? (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} align="center">

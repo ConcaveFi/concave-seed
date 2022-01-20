@@ -1,7 +1,7 @@
 import { Flex, Container, Spinner } from '@chakra-ui/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useNetwork, useSigner } from 'wagmi'
 import { isWhitelisted } from 'lib/merkletree'
 import { WrongNetworkCard } from 'components/WrongNetwork'
 import { NotConnectedCard } from 'components/NotConnectedCard'
@@ -10,7 +10,6 @@ import { NotWhitelistedCard } from 'components/NotWhitelistedCard'
 import { appNetwork } from './_app'
 import { getUserClaimablePCNVAmount } from 'lib/claim'
 import { AlreadyClaimedCard } from 'components/AlreadyClaimedCard'
-import { useSigner } from 'hooks/useSigner'
 
 type AppState =
   | 'loading'
@@ -22,7 +21,7 @@ type AppState =
 
 function CNVSeed() {
   const [{ data: network, loading: networkLoading }] = useNetwork()
-  const [{ data: account, loading: accountLoading }] = useAccount()
+  const [{ data: account, loading: accountLoading }] = useAccount({ fetchEns: false })
   const [{ data: signer, loading: signerLoading }] = useSigner()
 
   const [state, setState] = useState<AppState>('loading')

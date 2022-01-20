@@ -5,8 +5,9 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
+/** @type {import('@sentry/cli').SentryCliOptions} */
 const sentryConfig = {
-  silent: true, // Suppresses all logs
+  silent: true, // Suppresses all logss
 }
 
 // Make sure adding Sentry config is the last code to run before exporting, to
