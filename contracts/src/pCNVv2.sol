@@ -431,39 +431,39 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
         emit Minted(sender, to, amountOut, amountIn, totalMinted);
     }
 
-    // /// @notice         Maintains total amount of redeemable tokens when pCNV is being transfered
-    // /// @param from     address tokens are being transfered from
-    // /// @param to       address tokens are being sent to
-    // /// @param amount   number of tokens being transfered
-    // function _beforeTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 amount
-    // ) internal {
-    //     // transfers must not be paused
-    //     require(!transfersPaused, "PAUSED");
-    //
-    //     // Interface "to" participant storage
-    //     Participant storage toParticipant = participants[to];
-    //
-    //     // Interface "from" participant storage
-    //     Participant storage fromParticipant = participants[from];
-    //
-    //     // calculate amount to adjust redeem amounts by
-    //     uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
-    //
-    //     // reduce "from" redeemed by amount * "from" redeem purchase ratio
-    //     fromParticipant.redeemed -= adjustedAmount;
-    //
-    //     // reduce "from" purchased amount by the amount being sent
-    //     fromParticipant.purchased -= amount;
-    //
-    //     // increase "to" redeemed by amount * "from" redeem purchase ratio
-    //     toParticipant.redeemed += adjustedAmount;
-    //
-    //     // increase "to" purchased by amount received
-    //     toParticipant.purchased += amount;
-    // }
+    /// @notice         Maintains total amount of redeemable tokens when pCNV is being transfered
+    /// @param from     address tokens are being transfered from
+    /// @param to       address tokens are being sent to
+    /// @param amount   number of tokens being transfered
+    function _beforeTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
+        // transfers must not be paused
+        require(!transfersPaused, "PAUSED");
+    
+        // Interface "to" participant storage
+        Participant storage toParticipant = participants[to];
+    
+        // Interface "from" participant storage
+        Participant storage fromParticipant = participants[from];
+    
+        // calculate amount to adjust redeem amounts by
+        uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
+    
+        // reduce "from" redeemed by amount * "from" redeem purchase ratio
+        fromParticipant.redeemed -= adjustedAmount;
+    
+        // reduce "from" purchased amount by the amount being sent
+        fromParticipant.purchased -= amount;
+    
+        // increase "to" redeemed by amount * "from" redeem purchase ratio
+        toParticipant.redeemed += adjustedAmount;
+    
+        // increase "to" purchased by amount received
+        toParticipant.purchased += amount;
+    }
 
     /// @notice         Rescues accidentally sent tokens and ETH
     /// @param token    address of token to rescue, if address(0) rescue ETH
