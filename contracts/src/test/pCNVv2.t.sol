@@ -110,10 +110,10 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// require(PCNV.maxSupply() == maxSupply - amount);
 
 		// require(amount - amount*2 < 10,"BLAMO");
-		vm.startPrank(treasury);
-		vm.expectRevert("!AMOUNT");
-		PCNV.manage(address(0),MAX_SUPPLY+1);
-		vm.stopPrank();
+		// vm.startPrank(treasury);
+		// vm.expectRevert("!AMOUNT");
+		// PCNV.manage(address(0),MAX_SUPPLY+1);
+		// vm.stopPrank();
 
 		// require(PCNV.maxSupply() == maxSupply - amount);
 
@@ -127,27 +127,27 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	}
 
-	/// @notice calling manage() with address(0) cannot burn amount that would make maxSupply < totalMinted
-	function test_man_revert_on_amount() public {
-		setRound(merkleRoot,rate);
-		claim_user(0);
+	// /// @notice calling manage() with address(0) cannot burn amount that would make maxSupply < totalMinted
+	// function test_man_revert_on_amount() public {
+	// 	setRound(merkleRoot,rate);
+	// 	claim_user(0);
 
-		vm.startPrank(treasury);
-		vm.expectRevert("!AMOUNT");
-		PCNV.manage(address(0),MAX_SUPPLY-1);
-		vm.stopPrank();
-	}
+	// 	vm.startPrank(treasury);
+	// 	vm.expectRevert("!AMOUNT");
+	// 	PCNV.manage(address(0),MAX_SUPPLY-1);
+	// 	vm.stopPrank();
+	// }
 
-	/// @notice calling manage() to mint remaining tokens to address should fail if amount plus totalMinted would exceed maxSupply
-	function test_man_revert_on_amount_not_address_0() public {
-		setRound(merkleRoot,rate);
-		claim_user(0);
+	// /// @notice calling manage() to mint remaining tokens to address should fail if amount plus totalMinted would exceed maxSupply
+	// function test_man_revert_on_amount_not_address_0() public {
+	// 	setRound(merkleRoot,rate);
+	// 	claim_user(0);
 
-		vm.startPrank(treasury);
-		vm.expectRevert("!AMOUNT");
-		PCNV.manage(getUserAddress(0),MAX_SUPPLY-1);
-		vm.stopPrank();
-	}
+	// 	vm.startPrank(treasury);
+	// 	vm.expectRevert("!AMOUNT");
+	// 	PCNV.manage(getUserAddress(0),MAX_SUPPLY-1);
+	// 	vm.stopPrank();
+	// }
 
 	/// @notice calling manage() to mint to target increases target balance, pCNV totalSupply, and pCNV totalMinted
 	function test_manage_mint() public {
@@ -331,7 +331,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 		uint256 amountIn = userMaxAmount;
 
-		require(IERC20(DAI).balanceOf(userAddress) < amountIn);
+		require(IERC20(DAI).balanceOf(userAddress) < amountIn,"pinger");
 
         vm.startPrank(userAddress);
 		vm.expectRevert("Dai/insufficient-balance");
@@ -762,60 +762,64 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	/// @notice claim 10 users, advance timestamp for 10 months and in each step
 	/// make transfers between users, and verify total vestable amount of users
-	// function test_random_transfers_and_vesting_xxx() public {
-	// 	setRound(merkleRoot,rate);
-	// 	setRedeemable();
-    //
-	// 	uint numberOfUsers = 10;
-	// 	uint numberOfMonths = 10;
-    //
-	// 	for (uint256 i; i < numberOfUsers; i++) {
-	// 		claim_user(i);
-	// 	}
-    //
-	// 	uint256 initialTimestamp = block.timestamp;
-    //
-	// 	for (uint256 ix; ix < numberOfMonths; ix++) {
-	// 		vm.warp(initialTimestamp+(30 days * ix));
-    //
-	// 		uint256 vestable;
-	// 		for (uint256 i; i < numberOfUsers; i++) {
-	// 			vestable += PCNV.maxRedeemAmountIn(getUserAddress(i));
-	// 		}
-    //
-    //
-	// 		for (uint256 i; i < numberOfUsers; i++) {
-	// 			address fromAddress = getUserAddress(i);
-	// 			uint256 fromBalance = PCNV.balanceOf(fromAddress);
-	// 			address toAddress;
-	// 			if (i == numberOfUsers - 1) {
-	// 				toAddress = getUserAddress(0);
-	// 			} else {
-	// 				toAddress = getUserAddress(i+1);
-	// 			}
-	// 			uint256 toBalance = PCNV.balanceOf(toAddress);
-	// 			require(fromBalance > 0,"FFF");
-	// 			uint256 amount = fromBalance/2;
-    //
-	// 			vm.startPrank(fromAddress);
-	// 			PCNV.transfer(toAddress,amount);
-	// 			vm.stopPrank();
-	// 			require(PCNV.balanceOf(fromAddress) ==  fromBalance - amount);
-	// 			require(PCNV.balanceOf(toAddress) ==  toBalance + amount);
-	// 		}
-    //
-	// 		uint256 vestable2;
-	// 		for (uint256 i; i < numberOfUsers; i++) {
-	// 			vestable2 += PCNV.maxRedeemAmountIn(getUserAddress(i));
-	// 		}
-	// 		// emit log("---");
-	// 		// emit log_uint(ix);
-	// 		// emit log_uint(vestable);
-	// 		// emit log_uint(vestable2);
-	// 		require(vestable/1e16 == vestable2/1e16,"VVV");
-	// 	}
-    //
-	// }
+	function test_random_transfers_and_vesting_xxx() public {
+		setRound(merkleRoot,rate);
+		// setRedeemable();
+
+		vm.startPrank(treasury);
+		PCNV.setTransfersPaused(false);
+		vm.stopPrank();
+    
+		uint numberOfUsers = 10;
+		uint numberOfMonths = 10;
+    
+		for (uint256 i; i < numberOfUsers; i++) {
+			claim_user(i);
+		}
+    
+		uint256 initialTimestamp = block.timestamp;
+    
+		for (uint256 ix; ix < numberOfMonths; ix++) {
+			vm.warp(initialTimestamp+(30 days * ix));
+    
+			uint256 vestable;
+			// for (uint256 i; i < numberOfUsers; i++) {
+			// 	vestable += PCNV.maxRedeemAmountIn(getUserAddress(i));
+			// }
+    
+    
+			for (uint256 i; i < numberOfUsers; i++) {
+				address fromAddress = getUserAddress(i);
+				uint256 fromBalance = PCNV.balanceOf(fromAddress);
+				address toAddress;
+				if (i == numberOfUsers - 1) {
+					toAddress = getUserAddress(0);
+				} else {
+					toAddress = getUserAddress(i+1);
+				}
+				uint256 toBalance = PCNV.balanceOf(toAddress);
+				require(fromBalance > 0,"FFF");
+				uint256 amount = fromBalance/2;
+    
+				vm.startPrank(fromAddress);
+				PCNV.transfer(toAddress,amount);
+				vm.stopPrank();
+				require(PCNV.balanceOf(fromAddress) ==  fromBalance - amount);
+				require(PCNV.balanceOf(toAddress) ==  toBalance + amount);
+			}
+    
+			// uint256 vestable2;
+			// for (uint256 i; i < numberOfUsers; i++) {
+			// 	vestable2 += PCNV.maxRedeemAmountIn(getUserAddress(i));
+			// }
+			// emit log("---");
+			// emit log_uint(ix);
+			// emit log_uint(vestable);
+			// emit log_uint(vestable2);
+			// require(vestable/1e16 == vestable2/1e16,"VVV");
+		}
+    
+	}
 
 	/// @notice logs user maxRedeemAmount and PCNV.amountVested() for sanity check
 	// function test_sanity_check() public {
@@ -1003,55 +1007,60 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 	// }
 
 	/// @notice test transfer between holder and non holdere and verify vestable amounts
-	// function test_transfer_to_non_holder_wip() public {
-    //
-	// 	uint256 initialTimestamp = block.timestamp;
-    //
-	// 	setRound(merkleRoot,rate);
-	// 	setRedeemable();
-    //
-	// 	address player1 = getUserAddress(0);
-	// 	address player2 = address(100);
-    //
-	// 	claim_user(0);
-	// 	// claim_user(1);
-    //
-	// 	uint256 player1Balance = PCNV.balanceOf(player1);
-	// 	uint256 player2Balance = PCNV.balanceOf(player2);
-    //
-	// 	require(player1Balance == amounts[0]*1e18* 1e18 / rate,"ERR:1");
-	// 	require(player2Balance == 0,"ERR:2");
-    //
-	// 	uint256 time = 365 days;
-	// 	vm.warp(initialTimestamp+time);
-	// 	// redeem 10% of player 1
-	// 	uint player1Redeemed = player1Balance/10;
-	// 	uint player2Redeemed = player2Balance/20;
-	// 	redeem(0,player1Redeemed);
-	// 	// redeem(1,player2Redeemed);
-    //
-	// 	uint256 a_starting_redeemable = PCNV.maxRedeemAmountIn(player1);
-	// 	uint256 b_starting_redeemable = PCNV.maxRedeemAmountIn(player2);
-    //
-	// 	// require(a_starting_redeemable/player1Balance == b_starting_redeemable/player2Balance, "ERR:3");
-    //
-	// 	uint256 transferAmount = player1Balance/2;
-    //
-	// 	vm.startPrank(player1);
-	// 	PCNV.transfer(player2,transferAmount);
-	// 	vm.stopPrank();
-    //
-	// 	uint256 a_ending_redeemable = PCNV.maxRedeemAmountIn(player1);
-	// 	uint256 b_ending_redeemable = PCNV.maxRedeemAmountIn(player2);
-    //
-	// 	require(PCNV.balanceOf(player1) == player1Balance - player1Redeemed - transferAmount,"SAFU:1");
-	// 	require(PCNV.balanceOf(player2) == player2Balance - player2Redeemed + transferAmount,"SAFU:2");
-    //
-	// 	require(
-	// 		a_starting_redeemable + b_starting_redeemable == a_ending_redeemable + b_ending_redeemable,
-	// 		"NOT SAFU!"
-	// 	);
-	// }
+	function test_transfer_to_non_holder_wip() public {
+    
+		uint256 initialTimestamp = block.timestamp;
+    
+		setRound(merkleRoot,rate);
+		// setRedeemable();
+    
+		address player1 = getUserAddress(0);
+		address player2 = address(100);
+    
+		claim_user(0);
+		// claim_user(1);
+    
+		uint256 player1Balance = PCNV.balanceOf(player1);
+		uint256 player2Balance = PCNV.balanceOf(player2);
+    
+		require(player1Balance == amounts[0]*1e18* 1e18 / rate,"ERR:1");
+		require(player2Balance == 0,"ERR:2");
+    
+		// uint256 time = 365 days;
+		// vm.warp(initialTimestamp+time);
+		// redeem 10% of player 1
+		// uint player1Redeemed = player1Balance/10;
+		// uint player2Redeemed = player2Balance/20;
+		// redeem(0,player1Redeemed);
+		// redeem(1,player2Redeemed);
+    
+		// uint256 a_starting_redeemable = PCNV.maxRedeemAmountIn(player1);
+		// uint256 b_starting_redeemable = PCNV.maxRedeemAmountIn(player2);
+    
+		// require(a_starting_redeemable/player1Balance == b_starting_redeemable/player2Balance, "ERR:3");
+    
+		uint256 transferAmount = player1Balance/2;
+
+		vm.startPrank(treasury);
+		PCNV.setTransfersPaused(true);
+		vm.stopPrank();
+
+		vm.startPrank(player1);
+		vm.expectRevert("PAUSED");
+		PCNV.transfer(player2,transferAmount);
+		vm.stopPrank();
+    
+		// uint256 a_ending_redeemable = PCNV.maxRedeemAmountIn(player1);
+		// uint256 b_ending_redeemable = PCNV.maxRedeemAmountIn(player2);
+    
+		// require(PCNV.balanceOf(player1) == player1Balance - player1Redeemed - transferAmount,"SAFU:1");
+		// require(PCNV.balanceOf(player2) == player2Balance - player2Redeemed + transferAmount,"SAFU:2");
+    
+		// require(
+		// 	a_starting_redeemable + b_starting_redeemable == a_ending_redeemable + b_ending_redeemable,
+		// 	"NOT SAFU!"
+		// );
+	}
 
 	/// @notice test if non-holder receiver can redeem
 	// function test_transfer_to_non_holder_and_redeem() public {

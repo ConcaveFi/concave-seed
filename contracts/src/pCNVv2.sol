@@ -39,12 +39,6 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
     /*                             IMMUTABLE STATE                            */
     /* ---------------------------------------------------------------------- */
 
-    /// @notice UNIX timestamp when contact was created
-    // uint256 public immutable GENESIS = block.timestamp;
-
-    /// @notice Two years in seconds
-    // uint256 public immutable TWO_YEARS = 63072000;
-
     /// @notice FRAX tokenIn address
     ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
 
@@ -63,7 +57,7 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
 
     /// @notice CNV ERC20 token
     /// @dev will be address(0) until redeemable = true
-    ICNV public CNV;
+    // ICNV public CNV;
 
     /// @notice Address that is recipient of raised funds + access control
     address public treasury = 0x226e7AF139a0F34c6771DeB252F9988876ac1Ced;
@@ -87,7 +81,7 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
     // bool public redeemable;
 
     /// @notice Returns whether transfers are paused
-    bool public transfersPaused;
+    bool public transfersPaused = false;
 
     /* ---------------------------------------------------------------------- */
     /*                              STRUCTURED STATE                          */
@@ -118,10 +112,6 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
     /// @param  treasury address of new treasury
     event TreasurySet(address treasury);
 
-    /// @notice Emitted when redeemable is set to true and CNV address is set
-    /// @param  CNV address of CNV token
-    event RedeemableSet(address CNV);
-
     /// @notice             Emitted when a new round is set by treasury
     /// @param  merkleRoot  new merkle root
     /// @param  rate        new price of pCNV in DAI/FRAX
@@ -130,7 +120,8 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
     /// @notice             Emitted when maxSupply of pCNV is burned or minted to target
     /// @param  target      target to which to mint pCNV or burn if target = address(0)
     /// @param  amount      amount of pCNV minted to target or burned
-    event Managed(address target, uint256 amount);
+    /// @param  totalMinted amount of pCNV minted to target or burned
+    event Managed(address target, uint256 amount, uint256 totalMinted);
 
     /// @notice                 Emitted when pCNV minted via "mint()" or "mintWithPermit"
     /// @param  depositedFrom   address from which DAI/FRAX was deposited
@@ -145,18 +136,6 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
         uint256 deposited,
         uint256 totalMinted
     );
-
-    // /// @notice             Emitted when pCNV redeemed for CNV by callign "redeem()"
-    // /// @param  burnedFrom  address from which pCNV were burned
-    // /// @param  mintedTo    address to which CNV were minted to
-    // /// @param  burned      amount of pCNV burned
-    // /// @param  minted      amount of CNV minted
-    // event Redeemed(
-    //     address indexed burnedFrom,
-    //     address indexed mintedTo,
-    //     uint256 burned,
-    //     uint256 minted
-    // );
 
     /* ---------------------------------------------------------------------- */
     /*                                MODIFIERS                               */
@@ -181,19 +160,6 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
         emit TreasurySet(_treasury);
     }
 
-    // /// @notice         allow pCNV to be redeemed for CNV by setting redeemable as true and setting CNV address
-    // /// @param  _CNV    address of CNV
-    // function setRedeemable(
-    //     address _CNV
-    // ) external onlyConcave {
-    //     // Allow tokens to be redeemed for CNV
-    //     redeemable = true;
-    //     // Set CNV address so tokens can be minted
-    //     CNV = ICNV(_CNV);
-    //
-    //     emit RedeemableSet(_CNV);
-    // }
-
     /// @notice             Update merkle root and rate
     /// @param _merkleRoot  root of merkle tree
     /// @param _rate        price of pCNV in DAI/FRAX
@@ -201,7 +167,6 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
         bytes32 _merkleRoot,
         uint256 _rate
     ) external onlyConcave {
-        // require(_rate > 0, "!RATE");
         // push new root to array of all roots - for viewing
         roots.push(_merkleRoot);
         // update merkle root
@@ -219,33 +184,12 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
         address target,
         uint256 amount
     ) external onlyConcave {
-        // declare new variable for totalMinted + amount (gas savings)
-        // uint256 newAmount;
-        // if target is address 0, reduce supply
-        // if (target == address(0)) {
-        //     // avoid subtracting into negatives
-        //     require(amount <= maxSupply, AMOUNT_ERROR);
-        //     // new maxSupply would be set to maxSupply minus amount
-        //     newAmount = maxSupply - amount;
-        //     // Make sure there's enough unminted supply to allow for supply reduction
-        //     require(newAmount >= totalMinted, AMOUNT_ERROR);
-        //     // Reduce max supply by "amount"
-        //     maxSupply = newAmount;
-        //     // end the function
-        //
-        //     emit Managed(target, amount, maxSupply);
-        //     return;
-        // }
-        // new maxSupply would be set to totalMinted + amount
-        // newAmount = totalMinted + amount;
-        // make sure total newAmount (totalMinted + amount) is less than or equal to maximum supply
-        // require(newAmount <= maxSupply, AMOUNT_ERROR);
-        // set totalMinted to newAmount (totalMinted + amount)
+
         totalMinted += amount;
         // mint target amount
         _mint(target, amount);
 
-        emit Managed(target, amount);
+        emit Managed(target, amount, totalMinted);
     }
 
     /// @notice         Allows Concave to pause transfers in the event of a bug
