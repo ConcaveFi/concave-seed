@@ -5,11 +5,11 @@ import { getRopstenSdk, getMainnetSdk } from '@dethcrypto/eth-sdk-client'
 import { Dai, Frax, PCNV } from '.dethcrypto/eth-sdk-client/esm/types'
 import { chain } from 'wagmi'
 import { appNetwork } from 'pages/_app'
-
+import { TokenName } from 'eth-sdk/addresses'
 
 const ethSdk = process.env.NODE_ENV === 'production' ? getMainnetSdk : getRopstenSdk
 const merkleRoot = merkleTree.getHexRoot()
-export const inputTokens = ['dai', 'frax']
+export const inputTokens = ['dai', 'frax'] as TokenName[]
 
 const claimWithFrax = async (frax: Frax, pCNV: PCNV, userAddress, maxAmount, amount, proof) => {
   const fraxAllowance = await frax.allowance(userAddress, pCNV.address, { from: userAddress })
@@ -75,7 +75,7 @@ export const getUserClaimablePCNVAmount = async (signer) => {
   const userAddress = await signer.getAddress()
   const { pCNV } = ethSdk(signer)
   const userAlreadyClaimedAmount: any = ethers.utils.formatUnits(
-    (await pCNV.spentAmounts(merkleRoot, userAddress)).toString(),
+    (await pCNV.spentAmounts(merkleRoot, userAddress, { gasLimit: 210000 })).toString(),
     18,
   )
   const userStillClaimableAmount = getClaimablePCNVAmount(userAddress) - userAlreadyClaimedAmount

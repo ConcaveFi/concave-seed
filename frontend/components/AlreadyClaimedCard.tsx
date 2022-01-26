@@ -4,12 +4,12 @@ import colors from 'theme/colors'
 import { Card } from 'components/Card'
 import { useAccount } from 'wagmi'
 import { getClaimablePCNVAmount } from 'lib/merkletree'
-import ethConfig from 'eth-sdk.config'
 import { appNetwork } from 'pages/_app'
 import { HOST_URL } from './Meta'
+import { addresses } from 'eth-sdk/addresses'
 
 const pCNV = {
-  address: ethConfig.contracts[appNetwork.name.toLocaleLowerCase()].pCNV as string,
+  address: addresses[appNetwork.id].pCNV as string,
   image: `/seed/assets/tokens/pCNV.png`,
   symbol: 'pCNV',
   decimals: 18,

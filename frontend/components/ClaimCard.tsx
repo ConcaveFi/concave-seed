@@ -4,26 +4,67 @@ import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
 import { claim, getUserClaimablePCNVAmount, inputTokens } from 'lib/claim'
+import { useAccount, useContractRead, useContractWrite } from 'wagmi'
+import { appNetwork } from 'pages/_app'
+import { addresses, TokenName } from 'eth-sdk/addresses'
+import erc20Abi from 'eth-sdk/abis/erc20.json'
 
-export function ClaimCard({ signer, afterSuccessfulClaim }) {
+const useAllowance = (allowed: TokenName, spender: TokenName) => {
+  const [account] = useAccount()
+  console.log(addresses[appNetwork.id][allowed])
+  const [allowance, fetchAllowance] = useContractRead(
+    { addressOrName: addresses[appNetwork.id][allowed], contractInterface: erc20Abi },
+    'allowance',
+    { skip: true, watch: true },
+  )
+
+  useEffect(() => {
+    if (account.data.address && !allowance.data && !allowance.error && !allowance.loading)
+      fetchAllowance({ args: [account.data.address, addresses[appNetwork.id][spender]] })
+  }, [
+    account.data.address,
+    allowance.data,
+    allowance.error,
+    allowance.loading,
+    fetchAllowance,
+    spender,
+  ])
+
+  return [allowance]
+}
+
+const useApproval = (addressOrName) =>
+  useContractWrite({ addressOrName, contractInterface: erc20Abi }, 'approve', {
+    args: [addresses[appNetwork.id].pCNV, 1],
+    overrides: { gasLimit: 210000 },
+  })
+
+export function ClaimCard({ signer, afterSuccessfulClaim, merkletree, contractAddress }) {
   const [amount, setAmount] = useState('0')
-  const [inputToken, setInputToken] = useState(inputTokens[0])
+  const [inputToken, setInputToken] = useState<TokenName>(inputTokens[0])
 
   const [isLoading, setIsLoading] = useState(false)
 
   const [claimableAmount, setClaimableAmount] = useState(0)
 
-  const syncUserClaimableAmount = useCallback(() => {
-    if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
-  }, [signer])
+  // const syncUserClaimableAmount = useCallback(() => {
+  //   if (signer) getUserClaimablePCNVAmount(signer).then(setClaimableAmount).catch(console.log)
+  // }, [signer])
 
-  useEffect(() => syncUserClaimableAmount(), [syncUserClaimableAmount])
+  // useEffect(() => syncUserClaimableAmount(), [syncUserClaimableAmount])
+
+  const [allowance] = useAllowance(inputToken, 'pCNV')
+  const [, approveToken] = useApproval(addresses[appNetwork.id][inputToken])
+
+  // useEffect(() => {
+  //   if (allowance.data) console.log(allowance.data)
+  // }, [allowance.data])
 
   const onClaim = async () => {
     setIsLoading(true)
     await claim(signer, amount, inputToken)
       .then(() => {
-        syncUserClaimableAmount()
+        // syncUserClaimableAmount()
         setAmount('0')
         afterSuccessfulClaim()
       })
