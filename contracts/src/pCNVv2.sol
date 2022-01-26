@@ -81,7 +81,7 @@ contract pCNVv2 is ERC20("Concave Presale Token", "pCNVv2", 18) {
     // bool public redeemable;
 
     /// @notice Returns whether transfers are paused
-    bool public transfersPaused = false;
+    bool public transfersPaused;
 
     /* ---------------------------------------------------------------------- */
     /*                              STRUCTURED STATE                          */
