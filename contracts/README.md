@@ -31,7 +31,7 @@ forge test --root . --verbosity 4
 FRAX:   0xE7E9F348202f6EDfFF2607025820beE92F51cdAA
 DAI:    0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5
 bbtCNV: 0xc32baea7792bf39b8b89fa33a108d2064db43ee5
-cCNV:   0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf
+aCNV:   0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf
 
 ```
 
