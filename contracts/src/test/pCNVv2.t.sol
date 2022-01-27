@@ -8,7 +8,7 @@ import "./utils/VM.sol";
 import { pCNVWhitelist } from "./utils/pCNVWhitelist.sol";
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
-import { pCNVv2 } from "../pCNVv2.sol"; // Test scaffolding
+import { bbtCNV } from "../bbtCNV.sol"; // Test scaffolding
 
 
 
@@ -29,11 +29,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
 
-    pCNVv2 PCNV;
+    bbtCNV PCNV;
     MockCNV CNV;
 
     function setUp() public virtual {
-        PCNV = new pCNVv2();
+        PCNV = new bbtCNV();
         vm.startPrank(0x226e7AF139a0F34c6771DeB252F9988876ac1Ced);
 		PCNV.setTreasury(treasury);
         vm.stopPrank();
@@ -769,25 +769,25 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.startPrank(treasury);
 		PCNV.setTransfersPaused(false);
 		vm.stopPrank();
-    
+
 		uint numberOfUsers = 10;
 		uint numberOfMonths = 10;
-    
+
 		for (uint256 i; i < numberOfUsers; i++) {
 			claim_user(i);
 		}
-    
+
 		uint256 initialTimestamp = block.timestamp;
-    
+
 		for (uint256 ix; ix < numberOfMonths; ix++) {
 			vm.warp(initialTimestamp+(30 days * ix));
-    
+
 			uint256 vestable;
 			// for (uint256 i; i < numberOfUsers; i++) {
 			// 	vestable += PCNV.maxRedeemAmountIn(getUserAddress(i));
 			// }
-    
-    
+
+
 			for (uint256 i; i < numberOfUsers; i++) {
 				address fromAddress = getUserAddress(i);
 				uint256 fromBalance = PCNV.balanceOf(fromAddress);
@@ -800,14 +800,14 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 				uint256 toBalance = PCNV.balanceOf(toAddress);
 				require(fromBalance > 0,"FFF");
 				uint256 amount = fromBalance/2;
-    
+
 				vm.startPrank(fromAddress);
 				PCNV.transfer(toAddress,amount);
 				vm.stopPrank();
 				require(PCNV.balanceOf(fromAddress) ==  fromBalance - amount);
 				require(PCNV.balanceOf(toAddress) ==  toBalance + amount);
 			}
-    
+
 			// uint256 vestable2;
 			// for (uint256 i; i < numberOfUsers; i++) {
 			// 	vestable2 += PCNV.maxRedeemAmountIn(getUserAddress(i));
@@ -818,7 +818,7 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 			// emit log_uint(vestable2);
 			// require(vestable/1e16 == vestable2/1e16,"VVV");
 		}
-    
+
 	}
 
 	/// @notice logs user maxRedeemAmount and PCNV.amountVested() for sanity check
@@ -1008,24 +1008,24 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 
 	/// @notice test transfer between holder and non holdere and verify vestable amounts
 	function test_transfer_to_non_holder_wip() public {
-    
+
 		uint256 initialTimestamp = block.timestamp;
-    
+
 		setRound(merkleRoot,rate);
 		// setRedeemable();
-    
+
 		address player1 = getUserAddress(0);
 		address player2 = address(100);
-    
+
 		claim_user(0);
 		// claim_user(1);
-    
+
 		uint256 player1Balance = PCNV.balanceOf(player1);
 		uint256 player2Balance = PCNV.balanceOf(player2);
-    
+
 		require(player1Balance == amounts[0]*1e18* 1e18 / rate,"ERR:1");
 		require(player2Balance == 0,"ERR:2");
-    
+
 		// uint256 time = 365 days;
 		// vm.warp(initialTimestamp+time);
 		// redeem 10% of player 1
@@ -1033,12 +1033,12 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		// uint player2Redeemed = player2Balance/20;
 		// redeem(0,player1Redeemed);
 		// redeem(1,player2Redeemed);
-    
+
 		// uint256 a_starting_redeemable = PCNV.maxRedeemAmountIn(player1);
 		// uint256 b_starting_redeemable = PCNV.maxRedeemAmountIn(player2);
-    
+
 		// require(a_starting_redeemable/player1Balance == b_starting_redeemable/player2Balance, "ERR:3");
-    
+
 		uint256 transferAmount = player1Balance/2;
 
 		vm.startPrank(treasury);
@@ -1049,13 +1049,13 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		vm.expectRevert("PAUSED");
 		PCNV.transfer(player2,transferAmount);
 		vm.stopPrank();
-    
+
 		// uint256 a_ending_redeemable = PCNV.maxRedeemAmountIn(player1);
 		// uint256 b_ending_redeemable = PCNV.maxRedeemAmountIn(player2);
-    
+
 		// require(PCNV.balanceOf(player1) == player1Balance - player1Redeemed - transferAmount,"SAFU:1");
 		// require(PCNV.balanceOf(player2) == player2Balance - player2Redeemed + transferAmount,"SAFU:2");
-    
+
 		// require(
 		// 	a_starting_redeemable + b_starting_redeemable == a_ending_redeemable + b_ending_redeemable,
 		// 	"NOT SAFU!"

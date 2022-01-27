@@ -25,7 +25,32 @@ forge update
 forge test --root . --verbosity 4
 ```
 
+## Testnet (ropsten)
+
+```
+FRAX:   0xE7E9F348202f6EDfFF2607025820beE92F51cdAA
+DAI:    0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5
+bbtCNV: 0xc32baea7792bf39b8b89fa33a108d2064db43ee5
+cCNV:   0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf
+
+```
+
+## abis
+
+```
+../artifacts/bbtCNV.json
+../artifacts/aCNV.json
+```
+
 ## Deploy
+
+```
+forge create bbtCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize  --force --root .
+
+forge create aCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize  --force --root .
+```
+
+## extra
 
 Follow the `forge create` instructions ([CLI README](https://github.com/gakonst/foundry/blob/master/cli/README.md#build)) to deploy your contracts or use [Remix](https://remix.ethereum.org/).
 

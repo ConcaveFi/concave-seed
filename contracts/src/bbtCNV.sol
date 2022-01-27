@@ -40,10 +40,12 @@ contract bbtCNV is ERC20("Concave Presale Token (BBT)", "bbtCNV", 18) {
     /* ---------------------------------------------------------------------- */
 
     /// @notice FRAX tokenIn address
-    ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
+    // ERC20 public immutable FRAX = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e);
+    ERC20 public immutable FRAX = ERC20(0xE7E9F348202f6EDfFF2607025820beE92F51cdAA); // TESTNET
 
     /// @notice DAI tokenIn address
-    ERC20 public immutable DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    // ERC20 public immutable DAI = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    ERC20 public immutable DAI = ERC20(0x7B731FFcf1b9C6E0868dA3F1312673A12Da28dc5); // TESTNET
 
     /// @notice Error related to amount
     string constant AMOUNT_ERROR = "!AMOUNT";
@@ -60,7 +62,8 @@ contract bbtCNV is ERC20("Concave Presale Token (BBT)", "bbtCNV", 18) {
     // ICNV public CNV;
 
     /// @notice Address that is recipient of raised funds + access control
-    address public treasury = 0x226e7AF139a0F34c6771DeB252F9988876ac1Ced;
+    // address public treasury = 0x226e7AF139a0F34c6771DeB252F9988876ac1Ced;
+    address public treasury = 0xB1DF8b1E93172235eEB8Bbb60D4356f046dff3AF; // TESTNET
 
     /// @notice Returns the current merkle root being used
     bytes32 public merkleRoot;
