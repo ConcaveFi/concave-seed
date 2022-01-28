@@ -156,7 +156,7 @@ export function ClaimTokenCard({
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
 
-  const needsApproval: boolean = allowance.data?.lt(
+  const needsApproval: boolean = approveTx.data || allowance.data?.lt(
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
 
