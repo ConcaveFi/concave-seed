@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Link, Spinner, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, ButtonProps, Heading, Link, Spinner, Stack, Text } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
@@ -77,47 +77,48 @@ const useClaimableAmount = (tokenName: TokenName, userAddress) => {
 const inputTokens = ['dai', 'frax'] as TokenName[]
 
 export function ClaimCard({ userAddress }: { userAddress: string }) {
-  if (isWhitelisted(userAddress, 'bbtCNV')) return <ClaimBBTCNVCard userAddress={userAddress} />
-  return <ClaimCCNVCard userAddress={userAddress} />
+  const [claiming, setClaiming] = useState<TokenName>(
+    isWhitelisted(userAddress, 'bbtCNV') ? 'bbtCNV' : 'cCNV',
+  )
+  return (
+    <Stack>
+      <Stack mb={4}>
+        <Heading>Claiming {claiming}</Heading>
+        {claiming === 'bbtCNV' && isWhitelisted(userAddress, 'cCNV') && (
+          <YourAlsoWhitelisted tokenName="cCNV" onClick={() => setClaiming('cCNV')} />
+        )}
+        {claiming === 'cCNV' && isWhitelisted(userAddress, 'bbtCNV') && (
+          <YourAlsoWhitelisted tokenName="bbtCNV" onClick={() => setClaiming('bbtCNV')} />
+        )}
+      </Stack>
+      <ClaimTokenCard userAddress={userAddress} claimingToken={claiming} />
+    </Stack>
+  )
 }
 
-const YourAlsoWhitelisted = ({ tokenName }) => (
-  <Button borderRadius="2xl" p={6} variant="secondary" bgGradient={colors.gradients.green}>
+const YourAlsoWhitelisted = ({ tokenName, ...props }: { tokenName: TokenName } & ButtonProps) => (
+  <Button
+    borderRadius="2xl"
+    w="min"
+    p={0}
+    _focus={{
+      outline: 'none',
+      opacity: 0.6,
+    }}
+    _active={{
+      bg: 'none',
+    }}
+    _hover={{
+      bg: 'none',
+      color: 'text.3',
+    }}
+    bg="none"
+    {...props}
+  >
     Your also whitelisted for claiming {tokenName}
     <ArrowRightIcon ml={3} h={3} />
   </Button>
 )
-
-const ClaimCCNVCard = ({ userAddress }) => {
-  return (
-    <Stack spacing={3} align="center">
-      <ClaimTokenCard userAddress={userAddress} claimingToken="cCNV" />
-      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-          discord
-        </Link>
-      </Text>
-      {isWhitelisted(userAddress, 'bbtCNV') && <YourAlsoWhitelisted tokenName="bbtCNV" />}
-    </Stack>
-  )
-}
-
-const ClaimBBTCNVCard = ({ userAddress }) => {
-  return (
-    <Stack spacing={3} align="center">
-      <ClaimTokenCard userAddress={userAddress} claimingToken="bbtCNV" />
-      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-          discord
-        </Link>{' '}
-        if you need help claiming using a multisig
-      </Text>
-      {isWhitelisted(userAddress, 'cCNV') && <YourAlsoWhitelisted tokenName="cCNV" />}
-    </Stack>
-  )
-}
 
 export function ClaimTokenCard({
   userAddress,
@@ -178,35 +179,43 @@ export function ClaimTokenCard({
   if (claimableAmount === 0) return <AlreadyClaimedCard tokenName={claimingToken} />
 
   return (
-    <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
-      <AmountInput
-        maxAmount={stableClaimableAmount}
-        value={amount}
-        onChangeValue={setAmount}
-        tokenOptions={inputTokens}
-        selectedToken={inputToken}
-        onSelectToken={setInputToken}
-      />
-      {needsApproval ? (
-        <ApproveButton
-          onClick={onApprove}
-          isLoading={approveTx.loading}
-          tokenToApprove={inputToken}
+    <Stack spacing={3} align="center">
+      <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
+        <AmountInput
+          maxAmount={stableClaimableAmount}
+          value={amount}
+          onChangeValue={setAmount}
+          tokenOptions={inputTokens}
+          selectedToken={inputToken}
+          onSelectToken={setInputToken}
         />
-      ) : (
-        <Button
-          onClick={onClaim}
-          isLoading={isLoading}
-          isDisabled={Number(amount) < 1}
-          variant="primary"
-          size="large"
-          fontSize={24}
-          isFullWidth
-        >
-          Claim {claimingToken}
-        </Button>
-      )}
-      {/* {approveTx.error && <Text color="red.300">{inputToken.toUpperCase()} not approved</Text>} */}
-    </Card>
+        {needsApproval ? (
+          <ApproveButton
+            onClick={onApprove}
+            isLoading={approveTx.loading}
+            tokenToApprove={inputToken}
+          />
+        ) : (
+          <Button
+            onClick={onClaim}
+            isLoading={isLoading}
+            isDisabled={Number(amount) < 1}
+            variant="primary"
+            size="large"
+            fontSize={24}
+            isFullWidth
+          >
+            Claim {claimingToken}
+          </Button>
+        )}
+        {/* {approveTx.error && <Text color="red.300">{inputToken.toUpperCase()} not approved</Text>} */}
+      </Card>
+      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
+        Feel free to ping us in{' '}
+        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+          discord
+        </Link>
+      </Text>
+    </Stack>
   )
 }
