@@ -1,5 +1,4 @@
 import { addresses, TokenName } from 'eth-sdk/addresses'
-import { BigNumber } from 'ethers'
 import { appNetwork } from 'pages/_app'
 import { useMemo } from 'react'
 import { erc20ABI, useContractRead } from 'wagmi'
@@ -11,7 +10,7 @@ export const useAllowance = (allowed: TokenName, spender: TokenName, userAddress
     useMemo(
       () => ({
         skip: !userAddress,
-        watch: true,
+        // watch: true,
         args: [userAddress, addresses[appNetwork.id][spender]],
         overrides: { from: userAddress },
       }),
