@@ -7,7 +7,7 @@ export const Tokens = {
   aCNV: {
     decimals: 18,
     whitelist: aCNVWhitelist,
-    price: 10,
+    price: 50,
     address: addresses[appNetwork.id].aCNV,
     symbol: 'aCNV',
     image: `/seed/assets/tokens/pCNV.png`,
@@ -15,7 +15,7 @@ export const Tokens = {
   bbtCNV: {
     decimals: 18,
     whitelist: bbtCNVWhitelist,
-    price: 50,
+    price: 10,
     address: addresses[appNetwork.id].bbtCNV,
     symbol: 'bbtCNV',
     image: `/seed/assets/tokens/pCNV.png`,
