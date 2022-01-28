@@ -6,10 +6,10 @@ import cCNVWhitelist from './cCNV_whitelist.json'
 export const Tokens = {
   cCNV: {
     decimals: 18,
-    whitelist: cCNVWhitelist,
+    whitelist: aCNVWhitelist,
     price: 10,
-    address: addresses[appNetwork.id].cCNV,
-    symbol: 'cCNV',
+    address: addresses[appNetwork.id].aCNV,
+    symbol: 'aCNV',
     image: `/seed/assets/tokens/pCNV.png`,
   },
   bbtCNV: {

@@ -78,16 +78,16 @@ const inputTokens = ['dai', 'frax'] as TokenName[]
 
 export function ClaimCard({ userAddress }: { userAddress: string }) {
   const [claiming, setClaiming] = useState<TokenName>(
-    isWhitelisted(userAddress, 'bbtCNV') ? 'bbtCNV' : 'cCNV',
+    isWhitelisted(userAddress, 'bbtCNV') ? 'bbtCNV' : 'aCNV',
   )
   return (
     <Stack>
       <Stack mb={4}>
         <Heading>Claiming {claiming}</Heading>
-        {claiming === 'bbtCNV' && isWhitelisted(userAddress, 'cCNV') && (
-          <YourAlsoWhitelisted tokenName="cCNV" onClick={() => setClaiming('cCNV')} />
+        {claiming === 'bbtCNV' && isWhitelisted(userAddress, 'aCNV') && (
+          <YourAlsoWhitelisted tokenName="aCNV" onClick={() => setClaiming('aCNV')} />
         )}
-        {claiming === 'cCNV' && isWhitelisted(userAddress, 'bbtCNV') && (
+        {claiming === 'aCNV' && isWhitelisted(userAddress, 'bbtCNV') && (
           <YourAlsoWhitelisted tokenName="bbtCNV" onClick={() => setClaiming('bbtCNV')} />
         )}
       </Stack>
