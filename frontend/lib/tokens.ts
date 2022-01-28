@@ -1,7 +1,7 @@
 import { addresses } from 'eth-sdk/addresses'
 import { appNetwork } from 'pages/_app'
 import bbtCNVWhitelist from './bbtCNV_whitelist.json'
-import cCNVWhitelist from './cCNV_whitelist.json'
+import aCNVWhitelist from './cCNV_whitelist.json'
 
 export const Tokens = {
   cCNV: {
