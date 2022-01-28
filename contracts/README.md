@@ -50,6 +50,24 @@ forge create bbtCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize 
 forge create aCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize  --force --root .
 ```
 
+
+
+## set rounds
+```
+bbtCNV
+merkleRoot: 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2
+rate: 10000000000000000000 (10e18)
+```
+```
+aCNV
+merkleRoot: 0x304c55b6afd8dd52f28b62a43710bdff2d7de4b0355610e65276325182973a75
+rate: 50000000000000000000 (50e18)
+```
+
+```
+cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  0xc32baea7792bf39b8b89fa33a108d2064db43ee5 "setRound(bytes32,uint256)" 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2 10000000000000000000
+```
+
 ## extra
 
 Follow the `forge create` instructions ([CLI README](https://github.com/gakonst/foundry/blob/master/cli/README.md#build)) to deploy your contracts or use [Remix](https://remix.ethereum.org/).
