@@ -1,50 +1,37 @@
 import { Flex, Container, Spinner } from '@chakra-ui/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
-import { useAccount, useNetwork, useSigner } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { isWhitelisted } from 'lib/merkletree'
 import { WrongNetworkCard } from 'components/WrongNetwork'
 import { NotConnectedCard } from 'components/NotConnectedCard'
 import { ClaimCard } from 'components/ClaimCard'
 import { NotWhitelistedCard } from 'components/NotWhitelistedCard'
 import { appNetwork } from './_app'
-import { getUserClaimablePCNVAmount } from 'lib/claim'
-import { AlreadyClaimedCard } from 'components/AlreadyClaimedCard'
 
-type AppState =
-  | 'loading'
-  | 'wrong_network'
-  | 'not_connected'
-  | 'not_whitelisted'
-  | 'already_claimed'
-  | 'claiming'
+type AppState = 'loading' | 'wrong_network' | 'not_connected' | 'not_whitelisted' | 'claiming'
 
 function CNVSeed() {
   const [{ data: network, loading: networkLoading }] = useNetwork()
   const [{ data: account, loading: accountLoading }] = useAccount({ fetchEns: false })
-  const [{ data: signer, loading: signerLoading }] = useSigner()
 
   const [state, setState] = useState<AppState>('loading')
 
+  // const claimableCCNV = useClaimableAmount('cCNV', account.address)
+  // const claimableBbtCNV = useClaimableAmount('bbtCNV', account.address)
+
   const syncState = useCallback(() => {
-    setState('loading')
-    if (accountLoading || networkLoading || signerLoading) return
     ;(async () => {
+      if (accountLoading || networkLoading) return 'loading'
       if (network?.chain?.unsupported) return 'wrong_network'
       if (!account?.address) return 'not_connected'
-      if (!isWhitelisted(account.address)) return 'not_whitelisted'
-      // if (signer && (await getUserClaimablePCNVAmount(signer)) == 0) return 'already_claimed'
-      if (signer) return 'claiming'
-      return 'loading'
+      if (!isWhitelisted(account.address, 'bbtCNV') && !isWhitelisted(account.address, 'cCNV'))
+        return 'not_whitelisted'
+      // if (claimableCCNV === 0) return 'already_claimed_cCNV'
+      // if (claimableBbtCNV === 0) return 'already_claimed_bbtCNV'
+      return 'claiming'
     })().then(setState)
-  }, [
-    account?.address,
-    accountLoading,
-    network?.chain?.unsupported,
-    networkLoading,
-    signer,
-    signerLoading,
-  ])
+  }, [account?.address, accountLoading, network?.chain?.unsupported, networkLoading])
 
   useEffect(() => syncState(), [syncState])
 
@@ -57,8 +44,13 @@ function CNVSeed() {
             {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
-            {state === 'already_claimed' && <AlreadyClaimedCard />}
-            {state === 'claiming' && <ClaimCard signer={signer} afterSuccessfulClaim={syncState} />}
+            {/* {state === 'already_claimed_bbtCNV' && <AlreadyClaimedCard token='bbtCNV' />}
+            {state === 'already_claimed_cCNV' && <AlreadyClaimedCard token='cCNV' />} */}
+            {state === 'claiming' && (
+              <>
+                <ClaimCard userAddress={account.address} />
+              </>
+            )}
           </Flex>
         </Flex>
       </Container>

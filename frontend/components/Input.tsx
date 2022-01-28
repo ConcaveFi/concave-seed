@@ -18,6 +18,7 @@ import Image from 'next/image'
 import React from 'react'
 import colors from 'theme/colors'
 import NumberFormat, { NumberFormatProps } from 'react-number-format'
+import { TokenName } from 'eth-sdk/addresses'
 
 const BaseInput = (props: InputProps & NumberFormatProps) => (
   <Input
@@ -127,7 +128,7 @@ export function AmountInput({
   maxAmount: number
   value: string
   onChangeValue: (value: string) => void
-  tokenOptions: string[]
+  tokenOptions: TokenName[]
   selectedToken: typeof tokenOptions[number]
   onSelectToken: (token: typeof selectedToken) => void
 }) {
