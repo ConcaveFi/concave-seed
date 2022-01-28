@@ -41,7 +41,7 @@ function CNVSeed() {
         <Flex direction="column" gap={12}>
           <Flex gap={6} flexWrap="wrap" justify="center">
             {state === 'loading' && <Spinner />}
-            {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />}
+            {/* {state === 'wrong_network' && <WrongNetworkCard supportedNetwork={appNetwork} />} */}
             {state === 'not_connected' && <NotConnectedCard />}
             {state === 'not_whitelisted' && <NotWhitelistedCard />}
             {/* {state === 'already_claimed_bbtCNV' && <AlreadyClaimedCard token='bbtCNV' />}
