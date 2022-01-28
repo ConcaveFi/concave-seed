@@ -67,7 +67,6 @@ const useClaimableAmount = (tokenName: TokenName, userAddress) => {
       [tokenName, userAddress],
     ),
   )
-  console.log(alreadyClaimedAmount)
   return (
     getMaxClaimableAmount(userAddress, tokenName) -
     parseFloat(formatUnits(alreadyClaimedAmount.data || 0, 18))
@@ -81,58 +80,64 @@ export function ClaimCard({ userAddress }: { userAddress: string }) {
   return <ClaimCCNVCard userAddress={userAddress} />
 }
 
+const YourAlsoWhitelisted = ({ tokenName }) => (
+  <Button borderRadius="2xl" p={6} variant="secondary" bgGradient={colors.gradients.green}>
+    Your also whitelisted for claiming {tokenName}
+    <ArrowRightIcon ml={3} h={3} />
+  </Button>
+)
+
 const ClaimCCNVCard = ({ userAddress }) => {
   const claimableAmountCCNV = useClaimableAmount('cCNV', userAddress)
 
-  if (claimableAmountCCNV === 0) return <AlreadyClaimedCard tokenName="cCNV" />
-
   return (
     <Stack spacing={3} align="center">
-      <ClaimTokenCard
-        userAddress={userAddress}
-        claimableAmount={claimableAmountCCNV}
-        claimingToken="cCNV"
-      />
-      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-          discord
-        </Link>
-      </Text>
+      {claimableAmountCCNV === 0 ? (
+        <AlreadyClaimedCard tokenName="cCNV" />
+      ) : (
+        <>
+          <ClaimTokenCard
+            userAddress={userAddress}
+            claimableAmount={claimableAmountCCNV}
+            claimingToken="cCNV"
+          />
+          <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
+            Feel free to ping us in{' '}
+            <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+              discord
+            </Link>
+          </Text>
+        </>
+      )}
+      {isWhitelisted(userAddress, 'bbtCNV') && <YourAlsoWhitelisted tokenName="bbtCNV" />}
     </Stack>
   )
 }
 
 const ClaimBBTCNVCard = ({ userAddress }) => {
   const claimableAmountBbtCNV = useClaimableAmount('bbtCNV', userAddress)
-  const claimableAmountCCNV = useClaimableAmount('cCNV', userAddress)
 
-  if (claimableAmountBbtCNV === 0)
-    return (
-      <>
-        <AlreadyClaimedCard tokenName="bbtCNV" />
-        {claimableAmountCCNV > 1 && (
-          <Button borderRadius="2xl" p={6}>
-            Your also whitelisted for claiming cCNV
-            <ArrowRightIcon ml={3} h={3} />
-          </Button>
-        )}
-      </>
-    )
   return (
     <Stack spacing={3} align="center">
-      <ClaimTokenCard
-        userAddress={userAddress}
-        claimableAmount={claimableAmountBbtCNV}
-        claimingToken="bbtCNV"
-      />
-      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-          discord
-        </Link>{' '}
-        if you need help claiming using a multisig
-      </Text>
+      {claimableAmountBbtCNV === 0 ? (
+        <AlreadyClaimedCard tokenName="cCNV" />
+      ) : (
+        <>
+          <ClaimTokenCard
+            userAddress={userAddress}
+            claimableAmount={claimableAmountBbtCNV}
+            claimingToken="bbtCNV"
+          />
+          <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
+            Feel free to ping us in{' '}
+            <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+              discord
+            </Link>{' '}
+            if you need help claiming using a multisig
+          </Text>
+        </>
+      )}
+      {isWhitelisted(userAddress, 'cCNV') && <YourAlsoWhitelisted tokenName="cCNV" />}
     </Stack>
   )
 }
@@ -156,9 +161,8 @@ export function ClaimTokenCard({
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
 
-  const needsApproval: boolean = approveTx.data || allowance.data?.lt(
-    getMaxStableBuyAmount(userAddress, claimingToken),
-  )
+  const needsApproval: boolean =
+    approveTx.data || allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken))
 
   const [claimTx, claim] = useContractWrite(
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
