@@ -11,7 +11,7 @@ export const useAllowance = (allowed: TokenName, spender: TokenName, userAddress
     useMemo(
       () => ({
         skip: !userAddress,
-        // watch: true,
+        watch: true,
         args: [userAddress, addresses[appNetwork.id][spender]],
         overrides: { from: userAddress },
       }),
