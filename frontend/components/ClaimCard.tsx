@@ -5,7 +5,7 @@ import colors from 'theme/colors'
 import { AmountInput } from './Input'
 import { useContractRead, useContractWrite } from 'wagmi'
 import { appNetwork } from 'pages/_app'
-import { addresses, TokenName } from 'eth-sdk/addresses'
+import { addresses, TokenName } from '../eth-sdk/addresses'
 import erc20Abi from 'eth-sdk/abis/erc20.json'
 import { useAllowance } from 'hooks/useAllowance'
 import { BigNumberish } from 'ethers'
@@ -115,7 +115,7 @@ const YourAlsoWhitelisted = ({ tokenName, ...props }: { tokenName: TokenName } &
     bg="none"
     {...props}
   >
-    Your also whitelisted for claiming {tokenName}
+    {`You're also whitelisted for claiming ${tokenName}`}
     <ArrowRightIcon ml={3} h={3} />
   </Button>
 )
