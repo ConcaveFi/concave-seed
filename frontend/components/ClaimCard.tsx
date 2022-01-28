@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { Box, Button, ButtonProps, Heading, Link, Spinner, Stack, Text } from '@chakra-ui/react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, ButtonProps, Heading, Link, Stack, Text } from '@chakra-ui/react'
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
@@ -120,6 +120,20 @@ const YourAlsoWhitelisted = ({ tokenName, ...props }: { tokenName: TokenName } &
   </Button>
 )
 
+const useConfirmations = (tx, confirmations, fn = () => null) => {
+  const [confirmation, setConfirmation] = useState<'idle' | 'loading' | 'confirmed'>('idle')
+
+  useEffect(() => {
+    if (!tx?.wait) return
+    setConfirmation('loading')
+    tx.wait(confirmations)
+      .then(() => setConfirmation('confirmed'))
+      .then(() => fn())
+  }, [confirmations, fn, tx])
+
+  return confirmation
+}
+
 export function ClaimTokenCard({
   userAddress,
   claimingToken,
@@ -136,6 +150,7 @@ export function ClaimTokenCard({
     claimingToken,
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
+  const approveConfirmation = useConfirmations(approveTx.data, 1, () => syncAllowance())
 
   const [claimableAmount, syncClaimableAmount] = useClaimableAmount(claimingToken, userAddress)
   const stableClaimableAmount = getStableClaimableAmount(claimableAmount, claimingToken)
@@ -147,24 +162,15 @@ export function ClaimTokenCard({
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
     'mint',
   )
+  const claimConfirmation = useConfirmations(claimTx.data, 1, () => syncClaimableAmount())
 
-  const isLoading =
-    getState(allowance) === 'loading' ||
-    getState(claimTx) === 'loading' ||
-    getState(approveTx) === 'loading'
-
-  const onApprove = async () => {
-    await approveToken()
-    syncAllowance()
-  }
-
-  const onClaim = async () => {
+  const onClaim = () => {
     const tokenIn = addresses[appNetwork.id][inputToken]
     const tokenInDecimals = 18
     const proof = MerkleTrees[claimingToken].getHexProof(leafOf(claimingToken)(userAddress))
     const maxClaimableAmount = getMaxClaimableAmount(userAddress, claimingToken)
 
-    await claim({
+    claim({
       args: [
         userAddress,
         tokenIn,
@@ -172,9 +178,22 @@ export function ClaimTokenCard({
         parseUnits(amount, tokenInDecimals),
         proof,
       ],
-    }).then(console.log)
-    syncClaimableAmount()
+      overrides: {
+        gasLimit: 210000,
+      },
+    })
   }
+
+  useEffect(() => {
+    syncAllowance()
+  }, [inputToken, syncAllowance])
+
+  const isLoading =
+    getState(allowance) === 'loading' ||
+    getState(claimTx) === 'loading' ||
+    getState(approveTx) === 'loading' ||
+    claimConfirmation === 'loading' ||
+    approveConfirmation === 'loading'
 
   if (claimableAmount === 0) return <AlreadyClaimedCard tokenName={claimingToken} />
 
@@ -191,9 +210,10 @@ export function ClaimTokenCard({
         />
         {needsApproval ? (
           <ApproveButton
-            onClick={onApprove}
+            onClick={() => approveToken()}
             isLoading={approveTx.loading}
             tokenToApprove={inputToken}
+            loadingText={approveConfirmation === 'loading' && 'Waiting block confirmation'}
           />
         ) : (
           <Button
@@ -204,6 +224,7 @@ export function ClaimTokenCard({
             size="large"
             fontSize={24}
             isFullWidth
+            loadingText={claimConfirmation === 'loading' && 'Waiting block confirmation'}
           >
             Claim {claimingToken}
           </Button>
