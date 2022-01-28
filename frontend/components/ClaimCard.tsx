@@ -56,7 +56,7 @@ const ApproveButton = ({ tokenToApprove, ...props }) => {
 }
 
 const useClaimableAmount = (tokenName: TokenName, userAddress) => {
-  const [alreadyClaimedAmount] = useContractRead(
+  const [alreadyClaimedAmount, syncClaimableAmount] = useContractRead(
     { addressOrName: addresses[appNetwork.id][tokenName], contractInterface: CNVAbi },
     'spentAmounts',
     useMemo(
@@ -67,10 +67,11 @@ const useClaimableAmount = (tokenName: TokenName, userAddress) => {
       [tokenName, userAddress],
     ),
   )
-  return (
+  return [
     getMaxClaimableAmount(userAddress, tokenName) -
-    parseFloat(formatUnits(alreadyClaimedAmount.data || 0, 18))
-  )
+      parseFloat(formatUnits(alreadyClaimedAmount.data || 0, 18)),
+    syncClaimableAmount,
+  ] as const
 }
 
 const inputTokens = ['dai', 'frax'] as TokenName[]
@@ -88,55 +89,31 @@ const YourAlsoWhitelisted = ({ tokenName }) => (
 )
 
 const ClaimCCNVCard = ({ userAddress }) => {
-  const claimableAmountCCNV = useClaimableAmount('cCNV', userAddress)
-
   return (
     <Stack spacing={3} align="center">
-      {claimableAmountCCNV === 0 ? (
-        <AlreadyClaimedCard tokenName="cCNV" />
-      ) : (
-        <>
-          <ClaimTokenCard
-            userAddress={userAddress}
-            claimableAmount={claimableAmountCCNV}
-            claimingToken="cCNV"
-          />
-          <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-            Feel free to ping us in{' '}
-            <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-              discord
-            </Link>
-          </Text>
-        </>
-      )}
+      <ClaimTokenCard userAddress={userAddress} claimingToken="cCNV" />
+      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
+        Feel free to ping us in{' '}
+        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+          discord
+        </Link>
+      </Text>
       {isWhitelisted(userAddress, 'bbtCNV') && <YourAlsoWhitelisted tokenName="bbtCNV" />}
     </Stack>
   )
 }
 
 const ClaimBBTCNVCard = ({ userAddress }) => {
-  const claimableAmountBbtCNV = useClaimableAmount('bbtCNV', userAddress)
-
   return (
     <Stack spacing={3} align="center">
-      {claimableAmountBbtCNV === 0 ? (
-        <AlreadyClaimedCard tokenName="cCNV" />
-      ) : (
-        <>
-          <ClaimTokenCard
-            userAddress={userAddress}
-            claimableAmount={claimableAmountBbtCNV}
-            claimingToken="bbtCNV"
-          />
-          <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-            Feel free to ping us in{' '}
-            <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
-              discord
-            </Link>{' '}
-            if you need help claiming using a multisig
-          </Text>
-        </>
-      )}
+      <ClaimTokenCard userAddress={userAddress} claimingToken="bbtCNV" />
+      <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
+        Feel free to ping us in{' '}
+        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+          discord
+        </Link>{' '}
+        if you need help claiming using a multisig
+      </Text>
       {isWhitelisted(userAddress, 'cCNV') && <YourAlsoWhitelisted tokenName="cCNV" />}
     </Stack>
   )
@@ -145,31 +122,29 @@ const ClaimBBTCNVCard = ({ userAddress }) => {
 export function ClaimTokenCard({
   userAddress,
   claimingToken,
-  claimableAmount,
 }: {
   userAddress: string
   claimingToken: TokenName
-  claimableAmount: number
 }) {
   const [amount, setAmount] = useState('0')
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
-  const [allowance] = useAllowance(inputToken, claimingToken, userAddress)
+  const [allowance, syncAllowance] = useAllowance(inputToken, claimingToken, userAddress)
   const [approveTx, approveToken] = useApproval(
     inputToken,
     claimingToken,
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
-  console.log(getMaxStableBuyAmount(userAddress, claimingToken))
-  console.log(allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken)))
 
-  const needsApproval: boolean =
-    !approveTx.data || allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken))
+  const [claimableAmount, syncClaimableAmount] = useClaimableAmount(claimingToken, userAddress)
+  const stableClaimableAmount = getStableClaimableAmount(claimableAmount, claimingToken)
+
+  const formattedAllowance = allowance.data && parseFloat(formatUnits(allowance.data, 18))
+  const needsApproval: boolean = formattedAllowance < stableClaimableAmount
 
   const [claimTx, claim] = useContractWrite(
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
     'mint',
-    useMemo(() => ({ overrides: { gasLimit: 210000 } }), []),
   )
 
   const isLoading =
@@ -177,13 +152,18 @@ export function ClaimTokenCard({
     getState(claimTx) === 'loading' ||
     getState(approveTx) === 'loading'
 
-  const onClaim = () => {
+  const onApprove = async () => {
+    await approveToken()
+    syncAllowance()
+  }
+
+  const onClaim = async () => {
     const tokenIn = addresses[appNetwork.id][inputToken]
     const tokenInDecimals = 18
     const proof = MerkleTrees[claimingToken].getHexProof(leafOf(claimingToken)(userAddress))
     const maxClaimableAmount = getMaxClaimableAmount(userAddress, claimingToken)
 
-    claim({
+    await claim({
       args: [
         userAddress,
         tokenIn,
@@ -191,13 +171,16 @@ export function ClaimTokenCard({
         parseUnits(amount, tokenInDecimals),
         proof,
       ],
-    })
+    }).then(console.log)
+    syncClaimableAmount()
   }
+
+  if (claimableAmount === 0) return <AlreadyClaimedCard tokenName={claimingToken} />
 
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
       <AmountInput
-        maxAmount={getStableClaimableAmount(claimableAmount, claimingToken)}
+        maxAmount={stableClaimableAmount}
         value={amount}
         onChangeValue={setAmount}
         tokenOptions={inputTokens}
@@ -206,7 +189,7 @@ export function ClaimTokenCard({
       />
       {needsApproval ? (
         <ApproveButton
-          onClick={() => approveToken()}
+          onClick={onApprove}
           isLoading={approveTx.loading}
           tokenToApprove={inputToken}
         />
