@@ -3,7 +3,7 @@ import { Button, ButtonProps, Heading, Link, Stack, Text } from '@chakra-ui/reac
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-import { useContractRead, useContractWrite } from 'wagmi'
+import { useBalance, useContractRead, useContractWrite } from 'wagmi'
 import { appNetwork } from 'pages/_app'
 import { addresses, TokenName } from '../eth-sdk/addresses'
 import erc20Abi from 'eth-sdk/abis/erc20.json'
@@ -14,6 +14,7 @@ import { parseUnits, formatUnits } from 'ethers/lib/utils'
 import CNVAbi from 'eth-sdk/abis/mainnet/pCNV.json'
 import { AlreadyClaimedCard } from './AlreadyClaimedCard'
 import { ArrowRightIcon } from '@chakra-ui/icons'
+import { Tokens } from 'lib/tokens'
 
 const getState = ({ data, error, loading }) => {
   if (!data && !error && !loading) return 'idle'
@@ -135,7 +136,7 @@ export function ClaimTokenCard({
   userAddress: string
   claimingToken: TokenName
 }) {
-  const [amount, setAmount] = useState('0')
+  const [amount, setAmount] = useState<string>()
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
   const [allowance, syncAllowance] = useAllowance(inputToken, claimingToken, userAddress)
@@ -179,7 +180,13 @@ export function ClaimTokenCard({
 
   useEffect(() => {
     syncAllowance()
-  }, [inputToken])
+  }, [inputToken, syncAllowance])
+
+  const [{ data: inputTokenBalance }] = useBalance({
+    addressOrName: userAddress,
+    token: addresses[appNetwork.id][inputToken],
+    formatUnits: 18,
+  })
 
   const isLoading =
     getState(allowance) === 'loading' ||
@@ -194,6 +201,7 @@ export function ClaimTokenCard({
     <Stack spacing={3} align="center">
       <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
         <AmountInput
+          inputTokenBalance={inputTokenBalance?.formatted}
           maxAmount={claimableAmount}
           value={amount}
           onChangeValue={setAmount}
@@ -212,7 +220,7 @@ export function ClaimTokenCard({
           <Button
             onClick={onClaim}
             isLoading={isLoading}
-            isDisabled={Number(amount) < 1}
+            isDisabled={Number(amount) < 1 || Number(amount) > Number(inputTokenBalance?.formatted)}
             variant="primary"
             size="large"
             fontSize={24}
