@@ -38,7 +38,7 @@ const makeMerkleTree = (tokenName: TokenName) =>
   })
 
 export const MerkleTrees = {
-  cCNV: makeMerkleTree('cCNV'),
+  cCNV: makeMerkleTree('aCNV'),
   bbtCNV: makeMerkleTree('bbtCNV'),
 }
 
