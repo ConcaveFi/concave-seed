@@ -4,7 +4,7 @@ import bbtCNVWhitelist from './bbtCNV_whitelist.json'
 import aCNVWhitelist from './aCNV_whitelist.json'
 
 export const Tokens = {
-  cCNV: {
+  aCNV: {
     decimals: 18,
     whitelist: aCNVWhitelist,
     price: 10,
