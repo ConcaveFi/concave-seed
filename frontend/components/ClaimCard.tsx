@@ -9,14 +9,7 @@ import { addresses, TokenName } from '../eth-sdk/addresses'
 import erc20Abi from 'eth-sdk/abis/erc20.json'
 import { useAllowance } from 'hooks/useAllowance'
 import { BigNumberish } from 'ethers'
-import {
-  getMaxClaimableAmount,
-  getMaxStableBuyAmount,
-  getStableClaimableAmount,
-  isWhitelisted,
-  leafOf,
-  MerkleTrees,
-} from 'lib/merkletree'
+import { getMaxStableBuyAmount, isWhitelisted, leafOf, MerkleTrees } from 'lib/merkletree'
 import { parseUnits, formatUnits } from 'ethers/lib/utils'
 import CNVAbi from 'eth-sdk/abis/mainnet/pCNV.json'
 import { AlreadyClaimedCard } from './AlreadyClaimedCard'
@@ -68,7 +61,7 @@ const useClaimableAmount = (tokenName: TokenName, userAddress) => {
     ),
   )
   return [
-    getMaxClaimableAmount(userAddress, tokenName) -
+    getMaxStableBuyAmount(userAddress, tokenName) -
       parseFloat(formatUnits(alreadyClaimedAmount.data || 0, 18)),
     syncClaimableAmount,
   ] as const
@@ -124,11 +117,12 @@ const useConfirmations = (tx, confirmations, fn = () => null) => {
   const [confirmation, setConfirmation] = useState<'idle' | 'loading' | 'confirmed'>('idle')
 
   useEffect(() => {
-    if (!tx?.wait) return
+    if (!tx) return
     setConfirmation('loading')
     tx.wait(confirmations)
       .then(() => setConfirmation('confirmed'))
       .then(() => fn())
+      .catch(console.log)
   }, [confirmations, fn, tx])
 
   return confirmation
@@ -153,10 +147,9 @@ export function ClaimTokenCard({
   const approveConfirmation = useConfirmations(approveTx.data, 1, () => syncAllowance())
 
   const [claimableAmount, syncClaimableAmount] = useClaimableAmount(claimingToken, userAddress)
-  const stableClaimableAmount = getStableClaimableAmount(claimableAmount, claimingToken)
 
   const formattedAllowance = allowance.data && parseFloat(formatUnits(allowance.data, 18))
-  const needsApproval: boolean = formattedAllowance < stableClaimableAmount
+  const needsApproval: boolean = formattedAllowance < claimableAmount
 
   const [claimTx, claim] = useContractWrite(
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
@@ -168,7 +161,7 @@ export function ClaimTokenCard({
     const tokenIn = addresses[appNetwork.id][inputToken]
     const tokenInDecimals = 18
     const proof = MerkleTrees[claimingToken].getHexProof(leafOf(claimingToken)(userAddress))
-    const maxClaimableAmount = getMaxClaimableAmount(userAddress, claimingToken)
+    const maxClaimableAmount = getMaxStableBuyAmount(userAddress, claimingToken)
 
     claim({
       args: [
@@ -186,7 +179,7 @@ export function ClaimTokenCard({
 
   useEffect(() => {
     syncAllowance()
-  }, [inputToken, syncAllowance])
+  }, [inputToken])
 
   const isLoading =
     getState(allowance) === 'loading' ||
@@ -201,7 +194,7 @@ export function ClaimTokenCard({
     <Stack spacing={3} align="center">
       <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
         <AmountInput
-          maxAmount={stableClaimableAmount}
+          maxAmount={claimableAmount}
           value={amount}
           onChangeValue={setAmount}
           tokenOptions={inputTokens}
