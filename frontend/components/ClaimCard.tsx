@@ -164,7 +164,7 @@ export function ClaimTokenCard({
   console.log(allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken)))
 
   const needsApproval: boolean =
-    approveTx.data || allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken))
+    !approveTx.data || allowance.data?.lt(getMaxStableBuyAmount(userAddress, claimingToken))
 
   const [claimTx, claim] = useContractWrite(
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
