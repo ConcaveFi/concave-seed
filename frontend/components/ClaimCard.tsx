@@ -198,7 +198,10 @@ export function ClaimTokenCard({
   if (state === 'already_claimed')
     return (
       <>
-        <AlreadyClaimedCard tokenName={claimingToken} amountClaimed={amount} />
+        <AlreadyClaimedCard
+          tokenName={claimingToken}
+          amountClaimed={getMaxStableBuyAmount(userAddress, claimingToken) - claimableAmount}
+        />
         {claimableAmount > 0 && (
           <Button
             variant="secondary"
