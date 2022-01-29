@@ -135,7 +135,7 @@ const MaxBalance = ({ tokenName, balance, ...props }) => (
     w="min"
     {...props}
   >
-    {tokenName.toUpperCase()} balance: {balance}
+    {tokenName.toUpperCase()} balance: {Number(balance).toFixed(2)}
     {/* <Text textColor={'text.highlight'}>Max</Text> */}
   </Button>
 )
@@ -171,7 +171,13 @@ export function AmountInput({
               ml={-3}
               tokenName={selectedToken}
               balance={inputTokenBalance}
-              onClick={() => onChangeValue(inputTokenBalance.toString())}
+              onClick={() =>
+                onChangeValue(
+                  maxAmount < Number(inputTokenBalance)
+                    ? maxAmount.toString()
+                    : inputTokenBalance.toString(),
+                )
+              }
             />
           )}
         </Flex>

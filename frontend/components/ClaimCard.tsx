@@ -3,7 +3,7 @@ import { Button, ButtonProps, Heading, Link, Stack, Text } from '@chakra-ui/reac
 import { Card } from 'components/Card'
 import colors from 'theme/colors'
 import { AmountInput } from './Input'
-import { useBalance, useContractRead, useContractWrite } from 'wagmi'
+import { useBalance, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
 import { appNetwork } from 'pages/_app'
 import { addresses, TokenName } from '../eth-sdk/addresses'
 import erc20Abi from 'eth-sdk/abis/erc20.json'
@@ -14,7 +14,6 @@ import { parseUnits, formatUnits } from 'ethers/lib/utils'
 import CNVAbi from 'eth-sdk/abis/mainnet/pCNV.json'
 import { AlreadyClaimedCard } from './AlreadyClaimedCard'
 import { ArrowRightIcon } from '@chakra-ui/icons'
-import { Tokens } from 'lib/tokens'
 
 const getState = ({ data, error, loading }) => {
   if (!data && !error && !loading) return 'idle'
@@ -114,21 +113,6 @@ const YourAlsoWhitelisted = ({ tokenName, ...props }: { tokenName: TokenName } &
   </Button>
 )
 
-const useConfirmations = (tx, confirmations, fn = () => null) => {
-  const [confirmation, setConfirmation] = useState<'idle' | 'loading' | 'confirmed'>('idle')
-
-  useEffect(() => {
-    if (!tx) return
-    setConfirmation('loading')
-    tx.wait(confirmations)
-      .then(() => setConfirmation('confirmed'))
-      .then(() => fn())
-      .catch(console.log)
-  }, [confirmations, fn, tx])
-
-  return confirmation
-}
-
 export function ClaimTokenCard({
   userAddress,
   claimingToken,
@@ -139,13 +123,22 @@ export function ClaimTokenCard({
   const [amount, setAmount] = useState<string>()
   const [inputToken, setInputToken] = useState(inputTokens[0])
 
+  const [{ data: inputTokenBalance }, syncInputTokenBalance] = useBalance({
+    addressOrName: userAddress,
+    token: addresses[appNetwork.id][inputToken],
+    formatUnits: 18,
+  })
+
   const [allowance, syncAllowance] = useAllowance(inputToken, claimingToken, userAddress)
   const [approveTx, approveToken] = useApproval(
     inputToken,
     claimingToken,
     getMaxStableBuyAmount(userAddress, claimingToken),
   )
-  const approveConfirmation = useConfirmations(approveTx.data, 1, () => syncAllowance())
+  const [approveConfirmation] = useWaitForTransaction({ wait: approveTx.data?.wait })
+  useEffect(() => {
+    if (approveConfirmation.data) syncAllowance()
+  }, [approveConfirmation.data, syncAllowance])
 
   const [claimableAmount, syncClaimableAmount] = useClaimableAmount(claimingToken, userAddress)
 
@@ -156,7 +149,12 @@ export function ClaimTokenCard({
     { addressOrName: addresses[appNetwork.id][claimingToken], contractInterface: CNVAbi },
     'mint',
   )
-  const claimConfirmation = useConfirmations(claimTx.data, 1, () => syncClaimableAmount())
+  const [claimConfirmation] = useWaitForTransaction({ wait: claimTx.data?.wait })
+  useEffect(() => {
+    if (!claimConfirmation.data) return
+    syncClaimableAmount()
+    syncInputTokenBalance()
+  }, [claimConfirmation.data, syncClaimableAmount, syncInputTokenBalance])
 
   const onClaim = () => {
     const tokenIn = addresses[appNetwork.id][inputToken]
@@ -182,18 +180,13 @@ export function ClaimTokenCard({
     syncAllowance()
   }, [inputToken, syncAllowance])
 
-  const [{ data: inputTokenBalance }] = useBalance({
-    addressOrName: userAddress,
-    token: addresses[appNetwork.id][inputToken],
-    formatUnits: 18,
-  })
-
-  const isLoading =
-    getState(allowance) === 'loading' ||
-    getState(claimTx) === 'loading' ||
-    getState(approveTx) === 'loading' ||
-    claimConfirmation === 'loading' ||
-    approveConfirmation === 'loading'
+  const isLoading = [
+    getState(allowance),
+    getState(claimTx),
+    getState(approveTx),
+    getState(approveConfirmation),
+    getState(claimConfirmation),
+  ].includes('loading')
 
   if (claimableAmount === 0) return <AlreadyClaimedCard tokenName={claimingToken} />
 
@@ -214,7 +207,7 @@ export function ClaimTokenCard({
             onClick={() => approveToken()}
             isLoading={approveTx.loading}
             tokenToApprove={inputToken}
-            loadingText={approveConfirmation === 'loading' && 'Waiting block confirmation'}
+            loadingText={approveConfirmation.loading && 'Waiting block confirmation'}
           />
         ) : (
           <Button
@@ -225,7 +218,7 @@ export function ClaimTokenCard({
             size="large"
             fontSize={24}
             isFullWidth
-            loadingText={claimConfirmation === 'loading' && 'Waiting block confirmation'}
+            loadingText={claimConfirmation.loading && 'Waiting block confirmation'}
           >
             Claim {claimingToken}
           </Button>

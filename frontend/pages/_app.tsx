@@ -31,6 +31,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider resetCSS theme={theme} colorModeManager={colorModeManager} portalZIndex={100}>
       <Provider
+        autoConnect
         connectorStorageKey="concave"
         connectors={connectors}
         provider={provider}

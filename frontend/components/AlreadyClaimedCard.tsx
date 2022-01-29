@@ -10,7 +10,15 @@ export const AlreadyClaimedCard = ({ tokenName }) => {
   const [{ data: account }] = useAccount({ fetchEns: false })
   const [error, setError] = useState()
   return account ? (
-    <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4} align="center">
+    <Card
+      shadow="up"
+      bgGradient={colors.gradients.green}
+      px={10}
+      py={8}
+      gap={4}
+      align="center"
+      w={410}
+    >
       <Image src={Tokens[tokenName].image} w={128} h={128} mr={2} alt="" />
       <VStack spacing={1}>
         <Text>
