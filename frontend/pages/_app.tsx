@@ -10,7 +10,8 @@ import { providers } from 'ethers'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
-export const appNetwork = process.env.VERCEL_ENV !== 'production' ? chain.ropsten : chain.mainnet
+export const appNetwork =
+  process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' ? chain.ropsten : chain.mainnet
 
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
