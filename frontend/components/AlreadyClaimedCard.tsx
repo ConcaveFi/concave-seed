@@ -6,7 +6,7 @@ import { useAccount } from 'wagmi'
 import { getMaxStableBuyAmount } from 'lib/merkletree'
 import { Tokens } from 'lib/tokens'
 
-export const AlreadyClaimedCard = ({ tokenName }) => {
+export const AlreadyClaimedCard = ({ tokenName, amountClaimed }) => {
   const [{ data: account }] = useAccount({ fetchEns: false })
   const [error, setError] = useState()
   return account ? (
@@ -22,8 +22,7 @@ export const AlreadyClaimedCard = ({ tokenName }) => {
       <Image src={Tokens[tokenName].image} w={128} h={128} mr={2} alt="" />
       <VStack spacing={1}>
         <Text>
-          Your {getMaxStableBuyAmount(account.address, tokenName)} worth of {tokenName} have been
-          claimed!
+          Your {amountClaimed} worth of {tokenName} have been claimed!
         </Text>
         <Text>Thanks for participating! WAGMI</Text>
       </VStack>

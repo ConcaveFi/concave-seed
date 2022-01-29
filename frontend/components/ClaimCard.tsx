@@ -152,8 +152,10 @@ export function ClaimTokenCard({
   const [claimConfirmation] = useWaitForTransaction({ wait: claimTx.data?.wait })
   useEffect(() => {
     if (!claimConfirmation.data) return
+    // when we separete the components right, do some caches (swr/react-query), this useEffects to sync stuff will be clearer
     syncClaimableAmount()
     syncInputTokenBalance()
+    setState('already_claimable')
   }, [claimConfirmation.data, syncClaimableAmount, syncInputTokenBalance])
 
   const onClaim = () => {
@@ -188,7 +190,24 @@ export function ClaimTokenCard({
     getState(claimConfirmation),
   ].includes('loading')
 
-  if (claimableAmount === 0) return <AlreadyClaimedCard tokenName={claimingToken} />
+  const [state, setState] = useState(claimableAmount === 0 ? 'claiming' : 'already_claimed')
+
+  if (state === 'already_claimed')
+    return (
+      <>
+        <AlreadyClaimedCard tokenName={claimingToken} amountClaimed={amount} />
+        {claimableAmount > 0 && (
+          <Button
+            variant="secondary"
+            bg={colors.gradients.green}
+            borderRadius="xl"
+            onClick={() => setState('claiming')}
+          >
+            Claim more
+          </Button>
+        )}
+      </>
+    )
 
   return (
     <Stack spacing={3} align="center">
