@@ -34,4 +34,9 @@ export const MerkleTrees = {
   bbtCNV: makeMerkleTree('bbtCNV'),
 }
 
+console.log('merkle roots', {
+  aCNV: MerkleTrees.aCNV.getHexRoot(),
+  bbtCNV: MerkleTrees.bbtCNV.getHexRoot(),
+})
+
 export default MerkleTrees
