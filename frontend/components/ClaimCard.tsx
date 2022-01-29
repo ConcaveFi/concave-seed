@@ -180,8 +180,8 @@ export function ClaimTokenCard({
 
   const [state, setState] = useState(claimableAmount === 0 ? 'already_claimed' : 'claiming')
   useEffect(() => {
-    setState(claimableAmount === 0 ? 'already_claimed' : 'claiming')
-  }, [claimableAmount])
+    setState(claimableAmount !== 0 && !claimConfirmation.data ? 'claiming' : 'already_claimed')
+  }, [claimConfirmation.data, claimableAmount])
 
   useEffect(() => {
     syncAllowance()
