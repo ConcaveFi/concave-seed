@@ -62,10 +62,16 @@ rate: 10000000000000000000 (10e18)
 aCNV
 merkleRoot: 0x304c55b6afd8dd52f28b62a43710bdff2d7de4b0355610e65276325182973a75
 rate: 50000000000000000000 (50e18)
+
+merkleRoot: 0x397592c6cdcfbfc924ab491bf7039c8823e1ec6e061be4415a1502058b8c8cf6
+rate: 50000000000000000000 (50e18)
 ```
 
 ```
 cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  0xc32baea7792bf39b8b89fa33a108d2064db43ee5 "setRound(bytes32,uint256)" 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2 10000000000000000000
+
+cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  <CONTRACT_ADDRESS> "setRound(bytes32,uint256)" <MERKLE_ROOT> <RATE>
+
 ```
 
 ## extra
