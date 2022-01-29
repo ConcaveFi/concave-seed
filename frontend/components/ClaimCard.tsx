@@ -152,10 +152,10 @@ export function ClaimTokenCard({
   const [claimConfirmation] = useWaitForTransaction({ wait: claimTx.data?.wait })
   useEffect(() => {
     if (!claimConfirmation.data) return
-    // when we separete the components right, do some caches (swr/react-query), this useEffects to sync stuff will be clearer
+    // when we split the components right, do some caches (swr/react-query), this useEffects to sync stuff will be clearer
     syncClaimableAmount()
     syncInputTokenBalance()
-    setState('already_claimable')
+    setState('already_claimed')
   }, [claimConfirmation.data, syncClaimableAmount, syncInputTokenBalance])
 
   const onClaim = () => {
@@ -178,6 +178,11 @@ export function ClaimTokenCard({
     })
   }
 
+  const [state, setState] = useState(claimableAmount === 0 ? 'already_claimed' : 'claiming')
+  useEffect(() => {
+    setState(claimableAmount === 0 ? 'already_claimed' : 'claiming')
+  }, [claimableAmount])
+
   useEffect(() => {
     syncAllowance()
   }, [inputToken, syncAllowance])
@@ -190,8 +195,6 @@ export function ClaimTokenCard({
     getState(claimConfirmation),
   ].includes('loading')
 
-  const [state, setState] = useState(claimableAmount === 0 ? 'claiming' : 'already_claimed')
-
   if (state === 'already_claimed')
     return (
       <>
@@ -199,7 +202,7 @@ export function ClaimTokenCard({
         {claimableAmount > 0 && (
           <Button
             variant="secondary"
-            bg={colors.gradients.green}
+            bgGradient={colors.gradients.green}
             borderRadius="xl"
             onClick={() => setState('claiming')}
           >
