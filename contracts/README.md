@@ -57,6 +57,10 @@ forge create aCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize  -
 bbtCNV
 merkleRoot: 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2
 rate: 10000000000000000000 (10e18)
+
+
+merkleRoot: 0xc62a267a0815ae998a58e3a556a0159d80acfdd07de890f01d8d2e2f42e810b8
+rate: 10000000000000000000 (10e18)
 ```
 ```
 aCNV
@@ -75,7 +79,6 @@ rate: 50000000000000000000 (50e18)
 cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  0xc32baea7792bf39b8b89fa33a108d2064db43ee5 "setRound(bytes32,uint256)" 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2 10000000000000000000
 
 cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  <CONTRACT_ADDRESS> "setRound(bytes32,uint256)" <MERKLE_ROOT> <RATE>
-
 
 
 ```
