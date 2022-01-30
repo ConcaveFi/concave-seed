@@ -4,7 +4,7 @@ export const addresses = {
   [NetworkID.MAINNET]: {
     frax: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
     dai: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    bbtCNV: '0xc32baea7792bf39b8b89fa33a108d2064db43ee5',
+    bbtCNV: '0x0000000012a0592C154D552C410030E724b2eA00',
     aCNV: '0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf',
   },
   [NetworkID.ROPSTEN]: {
