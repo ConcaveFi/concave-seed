@@ -20,8 +20,8 @@ const connectors = [
     options: { infuraId, qrcode: true },
   }),
 ]
-const provider = ({ chainId }) => new providers.InfuraProvider(chainId, infuraId)
-const webSocketProvider = ({ chainId }) => new providers.InfuraWebSocketProvider(chainId, infuraId)
+const provider = ({ chainId }) => (new providers.InfuraProvider((chainId !== 1 ? 1 : chainId), infuraId))
+const webSocketProvider = ({ chainId }) => new providers.InfuraWebSocketProvider((chainId !== 1 ? 1 : chainId), infuraId)
 
 export default function App({ Component, pageProps }: AppProps) {
   // this ensures the theme will be right even on ssr pages (won't flash wrong theme)
