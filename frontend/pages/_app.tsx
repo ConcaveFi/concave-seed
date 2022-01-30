@@ -10,7 +10,8 @@ import { providers } from 'ethers'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
-export const appNetwork = process.env.NODE_ENV === 'development' ? chain.mainnet : chain.mainnet
+export const appNetwork =
+  process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production' ? chain.ropsten : chain.mainnet
 
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
@@ -31,6 +32,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider resetCSS theme={theme} colorModeManager={colorModeManager} portalZIndex={100}>
       <Provider
+        autoConnect
         connectorStorageKey="concave"
         connectors={connectors}
         provider={provider}

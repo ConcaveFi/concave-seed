@@ -5,7 +5,7 @@ export const TopBar = () => {
   return (
     <Box as="header">
       <Container maxWidth="container.xl">
-        <Flex justify="space-between" align="center" py={3}>
+        <Flex justify="space-between" align="center" pt={4} pb={12}>
           <Image
             src={'/images/CNV_white_svg.svg'}
             alt="concave logo"

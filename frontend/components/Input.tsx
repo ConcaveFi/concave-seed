@@ -18,6 +18,7 @@ import Image from 'next/image'
 import React from 'react'
 import colors from 'theme/colors'
 import NumberFormat, { NumberFormatProps } from 'react-number-format'
+import { TokenName } from 'eth-sdk/addresses'
 
 const BaseInput = (props: InputProps & NumberFormatProps) => (
   <Input
@@ -107,12 +108,35 @@ const MaxAllowed = ({ max, ...props }: { max: number } & ButtonProps) => (
     fontSize={12}
     fontWeight={500}
     height="auto"
-    textColor="grey.700"
+    textColor="text.3"
     whiteSpace="nowrap"
     {...props}
   >
     Max claimable: {max}
     <Text textColor={'text.highlight'}>Max</Text>
+  </Button>
+)
+
+const MaxBalance = ({ tokenName, balance, ...props }) => (
+  <Button
+    borderRadius="full"
+    py={1}
+    px={3}
+    bg="none"
+    _hover={{
+      bg: 'whiteAlpha.50',
+    }}
+    gap={1}
+    fontSize={12}
+    fontWeight={500}
+    height="auto"
+    textColor="text.3"
+    whiteSpace="nowrap"
+    w="min"
+    {...props}
+  >
+    {tokenName.toUpperCase()} balance: {Number(balance).toFixed(2)}
+    {/* <Text textColor={'text.highlight'}>Max</Text> */}
   </Button>
 )
 
@@ -123,22 +147,40 @@ export function AmountInput({
   tokenOptions,
   selectedToken,
   onSelectToken,
+  inputTokenBalance,
 }: {
+  inputTokenBalance: string
   maxAmount: number
   value: string
   onChangeValue: (value: string) => void
-  tokenOptions: string[]
+  tokenOptions: TokenName[]
   selectedToken: typeof tokenOptions[number]
   onSelectToken: (token: typeof selectedToken) => void
 }) {
   return (
     <Flex direction="column" gap={1} px={5}>
       <InputContainer shadow="down">
-        <BaseInput
-          value={value}
-          onValueChange={({ value }) => onChangeValue(value)}
-          isAllowed={({ floatValue }) => floatValue <= maxAmount}
-        />
+        <Flex direction="column" justify="space-between" h="100%">
+          <BaseInput
+            value={value}
+            onValueChange={({ value }) => onChangeValue(value)}
+            isAllowed={({ floatValue }) => floatValue <= maxAmount}
+          />
+          {inputTokenBalance && (
+            <MaxBalance
+              ml={-3}
+              tokenName={selectedToken}
+              balance={inputTokenBalance}
+              onClick={() =>
+                onChangeValue(
+                  maxAmount < Number(inputTokenBalance)
+                    ? maxAmount.toString()
+                    : inputTokenBalance.toString(),
+                )
+              }
+            />
+          )}
+        </Flex>
         <Stack align="end">
           <Select tokens={tokenOptions} onSelect={onSelectToken} selected={selectedToken} />
           <MaxAllowed max={maxAmount} onClick={() => onChangeValue(maxAmount.toString())} />
