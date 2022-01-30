@@ -252,7 +252,7 @@ export function ClaimTokenCard({
       </Card>
       <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
         Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+        <Link color="text.highlight" href="https://discord.gg/HG4eUFvZa6">
           discord
         </Link>
       </Text>

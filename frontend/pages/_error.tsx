@@ -55,7 +55,7 @@ const ErrorPage = ({ statusCode, isReadyToRender, err }: ErrorPageProps): JSX.El
                 <Text>Something went wrong</Text>
                 <Text>
                   please ping us on{' '}
-                  <Link color="text.highlight" href="https://discord.gg/tB3tPby3">
+                  <Link color="text.highlight" href="https://discord.gg/HG4eUFvZa6">
                     discord
                   </Link>
                 </Text>
