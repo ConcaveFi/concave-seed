@@ -16,8 +16,8 @@ export const Head = ({ customMeta }: { customMeta?: MetaProps }): JSX.Element =>
   const router = useRouter()
   router.basePath
   const meta: MetaProps = {
-    title: 'Concave Seed',
-    description: 'Seed round for pCNV',
+    title: 'Concave Whitelist',
+    description: 'Concave is at heart a builder/community fund CO-OP. Our aim is to be one of the biggest CO-OPs in the defi ecosystem, combining our innovative collective strengths and experiences within our team and community to create innovative USPs for our protocol to accrue value back to every single token holder.',
     image: `${HOST_URL}/images/site-preview.png`,
     type: 'website',
     ...customMeta,
