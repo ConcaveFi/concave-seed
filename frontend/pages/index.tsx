@@ -15,20 +15,14 @@ function CNVSeed() {
   const [{ data: network, loading: networkLoading }] = useNetwork()
   const [{ data: account, loading: accountLoading }] = useAccount({ fetchEns: false })
 
-  const [state, setState] = useState<AppState>('loading')
-
-  const syncState = useCallback(() => {
-    ;(async () => {
-      if (accountLoading || networkLoading) return 'loading'
-      if (network?.chain?.unsupported) return 'wrong_network'
-      if (!account?.address) return 'not_connected'
-      if (!isWhitelisted(account.address, 'bbtCNV') && !isWhitelisted(account.address, 'aCNV'))
-        return 'not_whitelisted'
-      return 'claiming'
-    })().then(setState)
-  }, [account?.address, accountLoading, network?.chain?.unsupported, networkLoading])
-
-  useEffect(() => syncState(), [syncState])
+  const state: AppState = (() => {
+    if (accountLoading || networkLoading) return 'loading'
+    if (network?.chain?.unsupported) return 'wrong_network'
+    if (!account?.address) return 'not_connected'
+    if (!isWhitelisted(account.address, 'bbtCNV') && !isWhitelisted(account.address, 'aCNV'))
+      return 'not_whitelisted'
+    return 'claiming'
+  })()
 
   return (
     <Layout>
