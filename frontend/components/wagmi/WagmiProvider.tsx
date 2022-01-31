@@ -22,11 +22,10 @@ const connectors = [
 const isChainSupported = (chainId?: number) => defaultChains.some((x) => x.id === chainId)
 
 const provider = ({ chainId }) =>
-  providers.getDefaultProvider(isChainSupported(chainId) ? chainId : appNetwork.id, {
-    alchemy,
-    etherscan,
-    infuraId,
-  })
+  new providers.JsonRpcProvider(
+    'https://api.concave.lol/',
+    isChainSupported(chainId) ? chainId : appNetwork.id,
+  )
 const webSocketProvider = ({ chainId }) =>
   new providers.InfuraWebSocketProvider(
     isChainSupported(chainId) ? chainId : appNetwork.id,
