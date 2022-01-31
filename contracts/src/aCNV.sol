@@ -81,7 +81,7 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
     // bool public redeemable;
 
     /// @notice Returns whether transfers are paused
-    bool public transfersPaused;
+    bool public transfersPaused = true;
 
     /* ---------------------------------------------------------------------- */
     /*                              STRUCTURED STATE                          */
