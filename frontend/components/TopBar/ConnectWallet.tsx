@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button, Image, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react'
 import { useAccount, useConnect } from 'wagmi'
 import colors from 'theme/colors'
@@ -10,7 +10,7 @@ const DisconnectButton = () => {
   const [{ data, loading }, disconnect] = useAccount({ fetchEns: false })
   return (
     <Menu placement="bottom-end">
-      <MenuButton as={Button} isLoading={loading} borderRadius="xl">
+      <MenuButton as={Button} isLoading={loading} borderRadius="xl" variant="secondary">
         {data.address && miniAddress(data.address)}
       </MenuButton>
       <MenuList bg="green.500" borderRadius="xl" px={1}>

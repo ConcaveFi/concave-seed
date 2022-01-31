@@ -7,31 +7,32 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "contracts": "yarn eth-sdk --path .",
+    "contracts": "yarn eth-sdk --path ./eth-sdk",
     "postinstall": "yarn contracts",
     "prod": "next build && next start"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.1.1",
-    "@chakra-ui/react": "^1.7.4",
+    "@chakra-ui/react": "^1.8.1",
     "@chakra-ui/theme-tools": "^1.3.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
-    "@sentry/nextjs": "^6.16.1",
+    "@sentry/nextjs": "^6.17.2",
     "@xstate/react": "^1.6.3",
     "bytes32": "^0.0.3",
     "eslint-config-prettier": "^8.3.0",
     "eth-permit": "^0.2.1",
     "ethers": "^5.5.3",
-    "framer-motion": "^6.0.0",
+    "framer-motion": "^6.2.3",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
     "next": "^12.0.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-number-format": "^4.9.1",
+    "swr": "^1.2.0",
     "ts-node": "^10.4.0",
-    "wagmi": "^0.1.7"
+    "wagmi": "^0.2.1"
   },
   "devDependencies": {
     "@dethcrypto/eth-sdk": "^0.3.0",
@@ -40,6 +41,6 @@
     "eslint": "^8.7.0",
     "eslint-config-next": "^12.0.8",
     "prettier": "^2.5.1",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.5"
   }
 }
