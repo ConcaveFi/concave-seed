@@ -1,5 +1,5 @@
 import { addresses, TokenName } from 'eth-sdk/addresses'
-import { appNetwork } from 'pages/_app'
+import { appNetwork } from 'components/wagmi/WagmiProvider'
 import { useMemo } from 'react'
 import { erc20ABI, useContractRead } from 'wagmi'
 

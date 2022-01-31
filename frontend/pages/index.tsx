@@ -7,7 +7,7 @@ import { WrongNetworkCard } from 'components/WrongNetwork'
 import { NotConnectedCard } from 'components/NotConnectedCard'
 import { ClaimCard } from 'components/ClaimCard'
 import { NotWhitelistedCard } from 'components/NotWhitelistedCard'
-import { appNetwork } from './_app'
+import { appNetwork } from 'components/wagmi/WagmiProvider'
 
 type AppState = 'loading' | 'wrong_network' | 'not_connected' | 'not_whitelisted' | 'claiming'
 
