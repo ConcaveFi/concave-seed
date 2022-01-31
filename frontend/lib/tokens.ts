@@ -1,5 +1,5 @@
 import { addresses } from 'eth-sdk/addresses'
-import { appNetwork } from 'pages/_app'
+import { appNetwork } from 'components/wagmi/WagmiProvider'
 import bbtCNVWhitelist from './bbtCNV_whitelist.json'
 import aCNVWhitelist from './aCNV_whitelist.json'
 import { getAddress } from 'ethers/lib/utils'

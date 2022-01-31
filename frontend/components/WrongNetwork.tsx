@@ -6,10 +6,10 @@ import { Card } from 'components/Card'
 
 export const WrongNetworkCard = ({ supportedNetwork }: { supportedNetwork: Chain }) => {
   const [{ data: currentNetwork }, switchNetwork] = useNetwork()
-  const name = currentNetwork?.chain?.name;
+  const name = currentNetwork?.chain?.name
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
-      <Text>{`You're connected to ${name ? currentNetwork.chain.name : 'an incompatible network'}`}</Text>
+      <Text>{`You're connected to ${name || 'an incompatible network'}`}</Text>
       <Button
         onClick={() => switchNetwork(supportedNetwork.id)}
         variant="primary"
