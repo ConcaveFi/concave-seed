@@ -8,7 +8,7 @@ import "./utils/VM.sol";
 import { pCNVWhitelist } from "./utils/pCNVWhitelist.sol";
 import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol"; // OZ: IERC20
 import { MockCNV } from "./MockCNV.sol"; // Test scaffolding
-import { bbtCNV } from "../bbtCNV.sol"; // Test scaffolding
+import { aCNV } from "../aCNV.sol"; // Test scaffolding
 
 
 
@@ -29,11 +29,11 @@ contract pCNVTest is DSTest, pCNVWhitelist {
     Vm vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
 
-    bbtCNV PCNV;
+    aCNV PCNV;
     MockCNV CNV;
 
     function setUp() public virtual {
-        PCNV = new bbtCNV();
+        PCNV = new aCNV();
         vm.startPrank(0x226e7AF139a0F34c6771DeB252F9988876ac1Ced);
 		PCNV.setTreasury(treasury);
         vm.stopPrank();
@@ -684,8 +684,10 @@ contract pCNVTest is DSTest, pCNVWhitelist {
 		}
 		require(IERC20(FRAX).balanceOf(treasury) == whitelist_maxDebt_in_stables,"TESTFAIL:6");
 		require(PCNV.totalMinted() == PCNV.totalSupply(),"TESTFAIL:7");
-        // emit log_uint(PCNV.totalMinted());
-        // emit log_uint(whitelist_maxDebt);
+        emit log_uint(PCNV.totalMinted());
+        emit log_uint(whitelist_maxDebt);
+        emit log_uint(PCNV.maxSupply());
+        emit log_uint(IERC20(FRAX).balanceOf(treasury));
 		require(PCNV.totalMinted()/1e15 == whitelist_maxDebt/1e15,"TESTFAIL:8");
 	}
 
