@@ -352,4 +352,15 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
     }
 }
 
-// © 2022 WTFPL – Do What the Fuck You Want to Public License.
+/**
+
+    "someone spent a lot of computational power and time to bruteforce that contract address
+    so basically to have that many leading zeros
+    you can't just create a contract and get that, the odds are 1 in trillions to get something like that
+    there's a way to guess which contract address you will get, using a script.. and you have to bruteforce for a very long time to get that many leading 0's
+    fun fact, the more leading 0's a contract has, the cheaper gas will be for users to interact with the contract"
+
+        - some solidity dev
+
+    © 2022 WTFPL – Do What the Fuck You Want to Public License.
+*/
