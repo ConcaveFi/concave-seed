@@ -256,10 +256,10 @@ export function ClaimTokenCard({
         {/* {approveTx.error && <Text color="red.300">{inputToken.toUpperCase()} not approved</Text>} */}
       </Card>
       <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/HG4eUFvZa6">
+        Please create a ticket in {' '}
+        <Link color="text.highlight" href="https://discord.com/channels/910961041003913216/920754843197521951/938187923596132456">
           discord
-        </Link>
+        </Link>{' '} for any issues claiming!
       </Text>
     </Stack>
   )
