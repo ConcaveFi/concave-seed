@@ -5,7 +5,7 @@ contract pCNVWhitelist {
 
     bytes32 whitelist_merkleroot = 0xfb81565e4c9084b6b582aef7a3f8fdc5cedc4a3c28de4e510baefbfea40ebd88;
     uint256 whitelist_maxDebt_in_stables = 4508000e18;
-    uint256 whitelist_rate = 10e18;
+    uint256 whitelist_rate = 50e18;
     // uint256 whitelist_rate = 1e18;
     uint256 whitelist_maxDebt = whitelist_maxDebt_in_stables * 1e18 / whitelist_rate;
     uint256 whitelist_deadline = block.timestamp+1000;
