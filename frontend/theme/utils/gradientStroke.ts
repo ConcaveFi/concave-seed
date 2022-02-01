@@ -16,7 +16,6 @@ export const gradientStroke = ({
     right: 0,
     bottom: 0,
     borderRadius: 'inherit',
-    zIndex: -1,
     m: `-${toPx(borderWidth)}`,
     p: toPx(borderWidth),
     bg: 'strokeReflection',
