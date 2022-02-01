@@ -195,6 +195,11 @@ export function ClaimTokenCard({
     getState(claimConfirmation),
   ].includes('loading')
 
+  const isClaimDisabled =
+    Number(amount || 0) < 1 ||
+    Number(amount) > Number(inputTokenBalance?.formatted) ||
+    Number(amount) > claimableAmount
+
   if (state === 'already_claimed')
     return (
       <>
@@ -238,7 +243,7 @@ export function ClaimTokenCard({
           <Button
             onClick={onClaim}
             isLoading={isLoading}
-            isDisabled={Number(amount) < 1 || Number(amount) > Number(inputTokenBalance?.formatted)}
+            isDisabled={isClaimDisabled}
             variant="primary"
             size="large"
             fontSize={24}

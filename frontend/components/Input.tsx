@@ -24,12 +24,13 @@ const BaseInput = (props: InputProps & NumberFormatProps) => (
   <Input
     as={NumberFormat}
     thousandSeparator
+    isNumericString
     variant="unstyled"
     placeholder="0.0"
     fontFamily="heading"
     fontWeight={700}
     fontSize={24}
-    _placeholder={{ color: 'text.1' }}
+    _placeholder={{ color: 'text.3' }}
     {...props}
   />
 )
@@ -86,8 +87,9 @@ const Select = ({
         sx={selectItemStyles}
         leftIcon={<TokenIcon tokenName={selected} />}
         rightIcon={<ChevronDownIcon />}
+        minW="max"
       >
-        {selected.toUpperCase()}
+        <Text minW="unset">{selected.toUpperCase()}</Text>
       </MenuButton>
       <MenuList bg="green.500" borderRadius="2xl" minW="min" px={1}>
         {bringToBeginning(tokens, selected).map((name) => (
@@ -98,7 +100,11 @@ const Select = ({
   )
 }
 
-const MaxAllowed = ({ max, ...props }: { max: number } & ButtonProps) => (
+const MaxAllowed = ({
+  max,
+  currentValue,
+  ...props
+}: { max: number; currentValue: number } & ButtonProps) => (
   <Button
     borderRadius="full"
     py={1}
@@ -106,9 +112,10 @@ const MaxAllowed = ({ max, ...props }: { max: number } & ButtonProps) => (
     bgColor="whiteAlpha.50"
     gap={1}
     fontSize={12}
-    fontWeight={500}
+    transform={`scale(${currentValue > max ? 1.1 : 1})`}
+    fontWeight={currentValue > max ? 700 : 500}
+    textColor={currentValue > max ? 'text.1' : 'text.3'}
     height="auto"
-    textColor="text.3"
     whiteSpace="nowrap"
     {...props}
   >
@@ -117,7 +124,7 @@ const MaxAllowed = ({ max, ...props }: { max: number } & ButtonProps) => (
   </Button>
 )
 
-const MaxBalance = ({ tokenName, balance, ...props }) => (
+const MaxBalance = ({ tokenName, balance, currentValue, ...props }) => (
   <Button
     borderRadius="full"
     py={1}
@@ -128,9 +135,10 @@ const MaxBalance = ({ tokenName, balance, ...props }) => (
     }}
     gap={1}
     fontSize={12}
-    fontWeight={500}
+    transform={`scale(${currentValue > balance ? 1.1 : 1})`}
+    fontWeight={currentValue > balance ? 700 : 500}
+    textColor={currentValue > balance ? 'text.1' : 'text.3'}
     height="auto"
-    textColor="text.3"
     whiteSpace="nowrap"
     w="min"
     {...props}
@@ -160,30 +168,38 @@ export function AmountInput({
   return (
     <Flex direction="column" gap={1} px={5}>
       <InputContainer shadow="down">
-        <Flex direction="column" justify="space-between" h="100%">
-          <BaseInput
-            value={value}
-            onValueChange={({ value }) => onChangeValue(value)}
-            isAllowed={({ floatValue }) => floatValue <= maxAmount}
-          />
-          {inputTokenBalance && (
-            <MaxBalance
-              ml={-3}
-              tokenName={selectedToken}
-              balance={inputTokenBalance}
-              onClick={() =>
-                onChangeValue(
-                  maxAmount < Number(inputTokenBalance)
-                    ? maxAmount.toString()
-                    : inputTokenBalance.toString(),
-                )
-              }
+        <Stack>
+          <Flex justify="space-between">
+            <BaseInput
+              value={value}
+              onValueChange={({ value }) => {
+                onChangeValue(value)
+              }}
             />
-          )}
-        </Flex>
-        <Stack align="end">
-          <Select tokens={tokenOptions} onSelect={onSelectToken} selected={selectedToken} />
-          <MaxAllowed max={maxAmount} onClick={() => onChangeValue(maxAmount.toString())} />
+            <Select tokens={tokenOptions} onSelect={onSelectToken} selected={selectedToken} />
+          </Flex>
+          <Flex flexDirection="row-reverse" justify="space-between">
+            <MaxAllowed
+              currentValue={Number(value)}
+              max={maxAmount}
+              onClick={() => onChangeValue(maxAmount.toString())}
+            />
+            {inputTokenBalance && (
+              <MaxBalance
+                ml={-3}
+                tokenName={selectedToken}
+                balance={inputTokenBalance}
+                currentValue={Number(value)}
+                onClick={() =>
+                  onChangeValue(
+                    maxAmount < Number(inputTokenBalance)
+                      ? maxAmount.toString()
+                      : inputTokenBalance.toString(),
+                  )
+                }
+              />
+            )}
+          </Flex>
         </Stack>
       </InputContainer>
     </Flex>
