@@ -9,6 +9,13 @@ export const ButtonStyles: ComponentSingleStyleConfig = {
     width: 'auto',
     borderRadius: 0,
     maxHeight: 'unset',
+    _active: {
+      transform: 'scale(0.96)',
+      outlineColor: 'outline',
+    },
+    _focus: {
+      outlineColor: 'outline',
+    },
   },
   sizes: {
     large: {
@@ -26,6 +33,9 @@ export const ButtonStyles: ComponentSingleStyleConfig = {
       ...gradientStroke(props),
       bgGradient: colors.gradients.primary,
       shadow: 'up',
+      _disabled: {
+        shadow: 'down',
+      },
     }),
     secondary: {
       shadow: 'up',

@@ -7,6 +7,8 @@ export const colors = {
     highlight: '#419ceb',
   },
 
+  outline: '#708aa7',
+
   grey: {
     500: '#5F7A99',
     700: '#708aa7',
