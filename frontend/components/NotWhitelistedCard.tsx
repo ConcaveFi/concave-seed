@@ -16,6 +16,7 @@ export const NotWhitelistedCard = () => {
           here
         </Link>
       </Text>
+      <Text>If you are here for bbtCNV feel free to ignore this message and open a ticket using seed-help on discord.</Text>
     </Card>
   )
 }
