@@ -51,6 +51,12 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
     /// @notice Error related to token address
     string constant TOKEN_IN_ERROR = "!TOKEN_IN";
 
+    /// @notice Error minting exceeds supply
+    string constant EXCEEDS_SUPPLY = "EXCEEDS_SUPPLY";
+
+    /// @notice Error transfers paused
+    string constant PAUSED = "PAUSED";
+
     /* ---------------------------------------------------------------------- */
     /*                              MUTABLE STATE                             */
     /* ---------------------------------------------------------------------- */
@@ -72,13 +78,10 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
     uint256 public rate;
 
     /// @notice Returns the max supply of pCNV that is allowed to be minted (in total)
-    // uint256 public maxSupply = 33000000000000000000000000;
+    uint256 public maxSupply = 333_000 * 1e18;
 
     /// @notice Returns the total amount of pCNV that has cumulatively been minted
     uint256 public totalMinted;
-
-    /// @notice Returns if pCNV are redeemable for CNV
-    // bool public redeemable;
 
     /// @notice Returns whether transfers are paused
     bool public transfersPaused = true;
@@ -137,6 +140,11 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         uint256 totalMinted
     );
 
+    /// @notice                 Emitted when Concave changes max supply
+    /// @param  oldMax          old max supply
+    /// @param  newMax          new max supply
+    event SupplyChanged(uint256 oldMax, uint256 newMax);
+
     /* ---------------------------------------------------------------------- */
     /*                                MODIFIERS                               */
     /* ---------------------------------------------------------------------- */
@@ -156,7 +164,6 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         address _treasury
     ) external onlyConcave {
         treasury = _treasury;
-
         emit TreasurySet(_treasury);
     }
 
@@ -177,19 +184,27 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         emit NewRound(merkleRoot,rate);
     }
 
-    /// @notice         Reduce an "amount" of available supply of pCNV or mint it to "target"
+    /// @notice         mint amount to target
     /// @param target   address to which to mint; if address(0), will burn
     /// @param amount   to reduce from max supply or mint to "target"
     function manage(
         address target,
         uint256 amount
     ) external onlyConcave {
-
-        totalMinted += amount;
+        uint256 newAmount = totalMinted + amount;
+        require(newAmount <= maxSupply,EXCEEDS_SUPPLY);
+        totalMinted = newAmount;
         // mint target amount
         _mint(target, amount);
-
         emit Managed(target, amount, totalMinted);
+    }
+
+    /// @notice             manage max supply
+    /// @param _maxSupply   new max supply
+    function manageSupply(uint256 _maxSupply) external onlyConcave {
+        require(_maxSupply >= totalMinted, "LOWER_THAN_MINT");
+        emit SupplyChanged(maxSupply, _maxSupply);
+        maxSupply = _maxSupply;
     }
 
     /// @notice         Allows Concave to pause transfers in the event of a bug
@@ -255,9 +270,7 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         address to,
         uint256 amount
     ) public virtual override returns (bool) {
-        require(!transfersPaused,"PAUSED");
-        // update vesting storage for both users
-        // _beforeTransfer(msg.sender, to, amount);
+        require(!transfersPaused,PAUSED);
         // default ERC20 transfer
         return super.transfer(to, amount);
     }
@@ -272,110 +285,10 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         address to,
         uint256 amount
     ) public virtual override returns (bool) {
-        require(!transfersPaused,"PAUSED");
-        // update vesting storage for both users
-        // _beforeTransfer(from, to, amount);
+        require(!transfersPaused,PAUSED);
         // default ERC20 transfer
         return super.transferFrom(from, to, amount);
     }
-
-    // /// @notice         redeem pCNV for CNV
-    // /// @param to       address that will receive redeemed CNV
-    // /// @param amountIn amount of pCNV to redeem
-    // function redeem(
-    //     address to,
-    //     uint256 amountIn
-    // ) external {
-    //     // Make sure pCNV is currently redeemable for CNV
-    //     require(redeemable, "!REDEEMABLE");
-    //
-    //     // Access participant storage
-    //     Participant storage participant = participants[msg.sender];
-    //
-    //     // Calculate CNV owed to sender for redeeming "amountIn"
-    //     uint256 amountOut = redeemAmountOut(msg.sender, amountIn);
-    //
-    //     // Increase participant.redeemed by amount being redeemed
-    //     participant.redeemed += amountIn;
-    //
-    //     // Burn users pCNV
-    //     _burn(msg.sender, amountIn);
-    //
-    //     // Mint user CNV
-    //     CNV.mint(to, amountOut);
-    //
-    //     emit Redeemed(msg.sender, to, amountIn, amountOut);
-    // }
-
-    /* ---------------------------------------------------------------------- */
-    /*                               PUBLIC VIEW                              */
-    /* ---------------------------------------------------------------------- */
-
-    // /// @notice         Returns the amount of CNV a user will receive for redeeming `amountIn` of pCNV
-    // /// @param who      address that will receive redeemed CNV
-    // /// @param amountIn amount of pCNV
-    // function redeemAmountOut(address who, uint256 amountIn) public view returns (uint256) {
-    //     // Make sure amountIn is less than participants maximum redeem amount in
-    //     require(amountIn <= maxRedeemAmountIn(who), AMOUNT_ERROR);
-    //
-    //     // Calculate percentage of maxRedeemAmountIn that participant is redeeming
-    //     uint256 ratio = 1e18 * amountIn / maxRedeemAmountIn(who);
-    //
-    //     // Calculate portion of maxRedeemAmountOut to mint using above percentage
-    //     return maxRedeemAmountOut(who) * ratio / 1e18;
-    // }
-
-    // /// @notice     Returns amount of pCNV that user can redeem according to vesting schedule
-    // /// @dev        Returns redeem * percentageVested / (eth normalized) - total already redeemed
-    // /// @param who  address to check
-    // function maxRedeemAmountIn(
-    //     address who
-    // ) public view returns (uint256) {
-    //     // Make sure pCNV is currently redeemable for CNV
-    //     if (!redeemable) return 0;
-    //     // Make sure there's CNV supply
-    //     if (CNV.totalSupply() == 0) return 0;
-    //     // Access sender's participant memory
-    //     Participant memory participant = participants[who];
-    //     // return maximum amount of pCNV "who" can currently redeem
-    //     return participant.purchased * purchaseVested() / 1e18 - participant.redeemed;
-    // }
-
-    // /// @notice     Returns amount of CNV that an account can currently redeem for
-    // /// @param who  address to check
-    // function maxRedeemAmountOut(
-    //     address who
-    // ) public view returns (uint256) {
-    //     return amountVested() * percentToRedeem(who) / 1e18;
-    // }
-
-    // /// @notice     Returns percentage (denominated in ether) of pCNV supply that a given account can currently redeem
-    // /// @param who  address to check
-    // function percentToRedeem(
-    //     address who
-    // ) public view returns (uint256) {
-    //     return 1e18 * maxRedeemAmountIn(who) / maxSupply;
-    // }
-
-    // /// @notice Returns the amount of time (in seconds) that has passed since the contract was created
-    // function elapsed() public view returns (uint256) {
-    //     return block.timestamp - GENESIS;
-    // }
-
-    // /// @notice Returns the percentage of CNV supply (denominated in ether) that all pCNV is currently redeemable for
-    // function supplyVested() public view returns (uint256) {
-    //     return elapsed() > TWO_YEARS ? 1e17 : 1e17 * elapsed() / TWO_YEARS;
-    // }
-    //
-    // /// @notice Returns the percent of pCNV that is redeemable
-    // function purchaseVested() public view returns (uint256) {
-    //     return elapsed() > TWO_YEARS ? 1e18 : 1e18 * elapsed() / TWO_YEARS;
-    // }
-
-    // /// @notice Returns total amount of CNV supply that is vested
-    // function amountVested() public view returns (uint256) {
-    //     return CNV.totalSupply() * supplyVested() / 1e18;
-    // }
 
     /* ---------------------------------------------------------------------- */
     /*                             INTERNAL LOGIC                             */
@@ -411,7 +324,7 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
         amountOut = amountIn * 1e18 / rate;
 
         // make sure total minted + amount is less than or equal to maximum supply
-        // require(totalMinted + amountOut <= maxSupply, AMOUNT_ERROR);
+        require(totalMinted + amountOut <= maxSupply, EXCEEDS_SUPPLY);
 
         // Interface storage for participant
         Participant storage participant = participants[to];
@@ -430,40 +343,6 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
 
         emit Minted(sender, to, amountOut, amountIn, totalMinted);
     }
-
-    // /// @notice         Maintains total amount of redeemable tokens when pCNV is being transfered
-    // /// @param from     address tokens are being transfered from
-    // /// @param to       address tokens are being sent to
-    // /// @param amount   number of tokens being transfered
-    // function _beforeTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 amount
-    // ) internal {
-    //     // transfers must not be paused
-    //     require(!transfersPaused, "PAUSED");
-
-    //     // Interface "to" participant storage
-    //     Participant storage toParticipant = participants[to];
-
-    //     // Interface "from" participant storage
-    //     Participant storage fromParticipant = participants[from];
-
-    //     // calculate amount to adjust redeem amounts by
-    //     uint256 adjustedAmount = amount * fromParticipant.redeemed / fromParticipant.purchased;
-
-    //     // reduce "from" redeemed by amount * "from" redeem purchase ratio
-    //     fromParticipant.redeemed -= adjustedAmount;
-
-    //     // reduce "from" purchased amount by the amount being sent
-    //     fromParticipant.purchased -= amount;
-
-    //     // increase "to" redeemed by amount * "from" redeem purchase ratio
-    //     toParticipant.redeemed += adjustedAmount;
-
-    //     // increase "to" purchased by amount received
-    //     toParticipant.purchased += amount;
-    // }
 
     /// @notice         Rescues accidentally sent tokens and ETH
     /// @param token    address of token to rescue, if address(0) rescue ETH
