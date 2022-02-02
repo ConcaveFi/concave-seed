@@ -7,6 +7,8 @@ export const TopBar = () => {
       <Container maxWidth="container.xl">
         <Flex justify="space-between" align="center" pt={4} pb={12}>
           <Image
+            userSelect="none"
+            draggable="false"
             src={'/images/CNV_white_svg.svg'}
             alt="concave logo"
             maxWidth="100px"
