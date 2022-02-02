@@ -5,7 +5,7 @@ export const addresses = {
     frax: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
     dai: '0x6b175474e89094c44da98b954eedeac495271d0f',
     bbtCNV: '0x0000000012a0592C154D552C410030E724b2eA00',
-    aCNV: '0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf',
+    aCNV: '0x8b8135c72058cf02b0beda28faf3e5209366744e',
   },
   [NetworkID.ROPSTEN]: {
     frax: '0xE7E9F348202f6EDfFF2607025820beE92F51cdAA',
