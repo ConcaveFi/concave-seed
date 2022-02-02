@@ -84,7 +84,7 @@ export function ClaimCard({ userAddress }: { userAddress: string }) {
           <YourAlsoWhitelisted tokenName="bbtCNV" onClick={() => setClaiming('bbtCNV')} />
         )}
       </Stack>
-      <ClaimTokenCard userAddress={userAddress} claimingToken={claiming} />
+      <ClaimTokenCard userAddress={userAddress} claimingToken={claiming} key={claiming} />
     </Stack>
   )
 }
@@ -256,10 +256,14 @@ export function ClaimTokenCard({
         {/* {approveTx.error && <Text color="red.300">{inputToken.toUpperCase()} not approved</Text>} */}
       </Card>
       <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Please create a ticket in {' '}
-        <Link color="text.highlight" href="https://discord.com/channels/910961041003913216/920754843197521951/938187923596132456">
+        Please create a ticket in{' '}
+        <Link
+          color="text.highlight"
+          href="https://discord.com/channels/910961041003913216/920754843197521951/938187923596132456"
+        >
           discord
-        </Link>{' '} for any issues claiming!
+        </Link>{' '}
+        for any issues claiming!
       </Text>
     </Stack>
   )
