@@ -20,7 +20,7 @@ export const Tokens = {
     price: 50,
     address: addresses[appNetwork.id].aCNV,
     symbol: 'aCNV',
-    image: `/seed/assets/tokens/pCNV.png`,
+    image: `https://concave-seed.vercel.app/assets/tokens/pCNV.png`,
   },
   bbtCNV: {
     decimals: 18,
@@ -28,6 +28,6 @@ export const Tokens = {
     price: 10,
     address: addresses[appNetwork.id].bbtCNV,
     symbol: 'bbtCNV',
-    image: `/seed/assets/tokens/pCNV.png`,
+    image: `https://concave-seed.vercel.app/assets/tokens/pCNV.png`,
   },
 }
