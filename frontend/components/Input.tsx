@@ -166,7 +166,7 @@ export function AmountInput({
   onSelectToken: (token: typeof selectedToken) => void
 }) {
   return (
-    <Flex direction="column" gap={1} px={5}>
+    <Flex direction="column" gap={1} px={5} zIndex={2}>
       <InputContainer shadow="down">
         <Stack>
           <Flex justify="space-between">

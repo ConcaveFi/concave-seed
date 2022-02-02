@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Text, Button, Image } from '@chakra-ui/react'
 import { useConnect } from 'wagmi'
 import colors from 'theme/colors'
 import { Card } from 'components/Card'
+import { useIsMounted } from 'hooks/useIsMounted'
 
 export const NotConnectedCard = () => {
   const [{ data, error }, connect] = useConnect()
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
       <Text>Please connect your wallet</Text>

@@ -54,16 +54,23 @@ forge create aCNV  --rpc-url <RPC_URL> --private-key <PRIVATE_KEY> --optimize  -
 
 ## set rounds
 ```
-bbtCNV
+bbtCNV (0xc32baea7792bf39b8b89fa33a108d2064db43ee5)
 merkleRoot: 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2
 rate: 10000000000000000000 (10e18)
 
 
 merkleRoot: 0xc62a267a0815ae998a58e3a556a0159d80acfdd07de890f01d8d2e2f42e810b8
 rate: 10000000000000000000 (10e18)
+
+merkleRoot: 0x3abe599d342c5fbf3087884afbddc072c3da4f12353381c3092d56a231006bc2
+rate: 10000000000000000000 (10e18)
+
+
 ```
+
+
 ```
-aCNV
+aCNV (0x6c64efbbaea3ebec73588a8e20cf058344f5f1cf)
 merkleRoot: 0x304c55b6afd8dd52f28b62a43710bdff2d7de4b0355610e65276325182973a75
 rate: 50000000000000000000 (50e18)
 
@@ -76,7 +83,16 @@ rate: 50000000000000000000 (50e18)
 
 merkleRoot: 0x36b639d7095ea3986de798d0821967f1aab8bfbfd3f57fb69ca70120ec8ba103
 rate: 50000000000000000000 (50e18)
+
+merkleRoot: 0x80e09ab01ff37b8c9a1443c5d8d89a24b23805e093c5fb2f304fd113181764a7
+rate: 50000000000000000000 (50e18)
+
 ```
+
+
+
+
+
 
 ```
 cast send --private-key <PRIVATE_KEY>  --rpc-url <RPC_URL>  0xc32baea7792bf39b8b89fa33a108d2064db43ee5 "setRound(bytes32,uint256)" 0x7f80320bf13cdc364baae45469310b4f0201b8373bc85cd17f462baf681bbea2 10000000000000000000

@@ -3,7 +3,6 @@ import { Button, Image, Text, VStack } from '@chakra-ui/react'
 import colors from 'theme/colors'
 import { Card } from 'components/Card'
 import { useAccount } from 'wagmi'
-import { getMaxStableBuyAmount } from 'lib/merkletree'
 import { Tokens } from 'lib/tokens'
 
 export const AlreadyClaimedCard = ({ tokenName, amountClaimed }) => {
@@ -21,8 +20,8 @@ export const AlreadyClaimedCard = ({ tokenName, amountClaimed }) => {
     >
       <Image src={Tokens[tokenName].image} w={128} h={128} mr={2} alt="" />
       <VStack spacing={1}>
-        <Text>
-          Your {amountClaimed} worth of {tokenName} have been claimed!
+        <Text textAlign="center">
+          Your ${Number(amountClaimed).toFixed(2)} worth of {tokenName} have been claimed!
         </Text>
         <Text>Thanks for participating! WAGMI</Text>
       </VStack>

@@ -37,7 +37,6 @@ const useApproval = (
         addresses[appNetwork.id][spender],
         parseUnits(amountToApprove.toString(), 18 /* 18 ???? better way */),
       ],
-      overrides: { gasLimit: 210000 },
     },
   )
 
@@ -85,7 +84,7 @@ export function ClaimCard({ userAddress }: { userAddress: string }) {
           <YourAlsoWhitelisted tokenName="bbtCNV" onClick={() => setClaiming('bbtCNV')} />
         )}
       </Stack>
-      <ClaimTokenCard userAddress={userAddress} claimingToken={claiming} />
+      <ClaimTokenCard userAddress={userAddress} claimingToken={claiming} key={claiming} />
     </Stack>
   )
 }
@@ -180,9 +179,6 @@ export function ClaimTokenCard({
         parseUnits(amount, tokenInDecimals),
         proof,
       ],
-      overrides: {
-        gasLimit: 210000,
-      },
     })
   }
 
@@ -264,10 +260,14 @@ export function ClaimTokenCard({
         {/* {approveTx.error && <Text color="red.300">{inputToken.toUpperCase()} not approved</Text>} */}
       </Card>
       <Text fontSize="sm" color="text.3" maxW={400} textAlign="center">
-        Feel free to ping us in{' '}
-        <Link color="text.highlight" href="https://discord.gg/HG4eUFvZa6">
+        Please create a ticket in{' '}
+        <Link
+          color="text.highlight"
+          href="https://discord.com/channels/910961041003913216/920754843197521951/938187923596132456"
+        >
           discord
-        </Link>
+        </Link>{' '}
+        for any issues claiming!
       </Text>
     </Stack>
   )
