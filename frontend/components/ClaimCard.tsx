@@ -171,9 +171,6 @@ export function ClaimTokenCard({
         parseUnits(amount, tokenInDecimals),
         proof,
       ],
-      overrides: {
-        gasLimit: 210000,
-      },
     })
   }
 
