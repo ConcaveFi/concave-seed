@@ -14,6 +14,7 @@ import { parseUnits, formatUnits } from 'ethers/lib/utils'
 import CNVAbi from 'eth-sdk/abis/mainnet/pCNV.json'
 import { AlreadyClaimedCard } from './AlreadyClaimedCard'
 import { ArrowRightIcon } from '@chakra-ui/icons'
+import { gaEvent } from '../lib/analytics'
 
 const getState = ({ data, error, loading }) => {
   if (!data && !error && !loading) return 'idle'
@@ -155,6 +156,13 @@ export function ClaimTokenCard({
     // when we split the components right, do some caches (swr/react-query), this useEffects to sync stuff will be clearer
     syncClaimableAmount()
     syncInputTokenBalance()
+
+    gaEvent({action: `claimed ${claimingToken}`, params: {
+        'event_category' : 'whitelist',
+        'event_label' : claimConfirmation.data.transactionHash,
+        'metric1': parseFloat(amount).toFixed(2)
+      }} )
+
     setState('already_claimed')
   }, [claimConfirmation.data, syncClaimableAmount, syncInputTokenBalance])
 
