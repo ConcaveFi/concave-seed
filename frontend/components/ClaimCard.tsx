@@ -36,7 +36,6 @@ const useApproval = (
         addresses[appNetwork.id][spender],
         parseUnits(amountToApprove.toString(), 18 /* 18 ???? better way */),
       ],
-      overrides: { gasLimit: 210000 },
     },
   )
 
