@@ -23,7 +23,6 @@ pragma solidity >=0.8.0;
 import { ERC20 } from "@solmate/tokens/ERC20.sol";
 import { SafeTransferLib } from "@solmate/utils/SafeTransferLib.sol";
 import { MerkleProof } from "@openzeppelin/utils/cryptography/MerkleProof.sol";
-import { ICNV } from "./interfaces/ICNV.sol";
 
 /// @notice Concave A Token
 /// @author 0xBarista & Dionysus (ConcaveFi)
@@ -60,10 +59,6 @@ contract aCNV is ERC20("Concave A Token (aCNV)", "aCNV", 18) {
     /* ---------------------------------------------------------------------- */
     /*                              MUTABLE STATE                             */
     /* ---------------------------------------------------------------------- */
-
-    /// @notice CNV ERC20 token
-    /// @dev will be address(0) until redeemable = true
-    // ICNV public CNV;
 
     /// @notice Address that is recipient of raised funds + access control
     address public treasury = 0x226e7AF139a0F34c6771DeB252F9988876ac1Ced;
