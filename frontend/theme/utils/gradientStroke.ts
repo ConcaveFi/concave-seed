@@ -20,7 +20,7 @@ export const gradientStroke = ({
     p: toPx(borderWidth),
     bg: 'strokeReflection',
     WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-    WebkitMaskComposite: 'destination-out',
+    WebkitMaskComposite: 'source-out',
     maskComposite: 'exclude',
   },
 })
