@@ -119,7 +119,7 @@ const MaxAllowed = ({
     whiteSpace="nowrap"
     {...props}
   >
-    Max claimable: {max}
+    Max claimable: {Number(max).toFixed(2)}
     <Text textColor={'text.highlight'}>Max</Text>
   </Button>
 )
