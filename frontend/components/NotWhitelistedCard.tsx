@@ -6,8 +6,7 @@ import {Heading, Link, Text } from '@chakra-ui/react'
 export const NotWhitelistedCard = () => {
   return (
     <Card shadow="up" bgGradient={colors.gradients.green} px={10} py={8} gap={4}>
-     <Heading fontSize="xx-large" color="" textAlign="center">This wallet is not whitelisted for Wave 2!</Heading>    
-      <Text textAlign="center">Wave 3: Feb 4, 2022 at 3PM UTC / 10AM EST </Text>
+     <Heading fontSize="xx-large" color="" textAlign="center">This wallet is not whitelisted for Wave 3!</Heading>    
       <Text textAlign="center">Wave 4: Feb 5, 2022 at 3PM UTC / 10AM EST </Text>
       <Text textAlign="center">The whitelist sale will be launched on ETH mainnet in waves, we want to reward our most loyal supporters and also make it an enjoyable experience without a typical rush of people crashing a website!</Text> 
       <Text textAlign="center">Please ensure you know which wave category you are in and that you connect with your whitelisted address.</Text>
