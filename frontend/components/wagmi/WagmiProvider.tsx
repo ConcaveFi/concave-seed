@@ -10,6 +10,9 @@ export const appNetwork =
 const alchemy = process.env.NEXT_PUBLIC_ALCHEMY_ID as string
 const etherscan = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY as string
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID as string
+const concaveKey = process.env.NEXT_PUBLIC_CONCAVE_RPC_KEY
+
+export const concaveRPC = 'https://eth.concave.lol/'
 
 const connectors = [
   new InjectedConnector({ chains: [appNetwork] }),
@@ -22,7 +25,7 @@ const connectors = [
 const isChainSupported = (chainId?: number) => defaultChains.some((x) => x.id === chainId)
 
 const concaveProviders = (chainId: number) => [
-  new providers.JsonRpcProvider('https://api.concave.lol/', chainId),
+  new providers.JsonRpcProvider({ url: concaveRPC, headers: { 'x-api-key': concaveKey } }, chainId),
   providers.getDefaultProvider(chainId, { alchemy, etherscan, infuraId }),
 ]
 
